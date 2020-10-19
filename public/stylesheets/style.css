@@ -6,7 +6,7 @@
 .auth-container {
   width: 600px;
   margin: auto;
-  margin-top: 70px; }
+  margin-top: 1rem; }
 
 .auth-container .title {
   text-align: center; }
@@ -22,4 +22,37 @@
   margin-left: 1px; }
 
 nav {
-  box-shadow: 2px 2px 4px 4px rgba(200, 200, 200, 0.4); }
+  box-shadow: 2px 2px 4px 4px rgba(200, 200, 200, 0.4);
+  margin-bottom: 30px; }
+  nav .logout-button {
+    transition: all 200ms ease-in;
+    font-weight: 400; }
+  nav .logout-button:hover {
+    background-color: rgba(230, 230, 230, 0.5); }
+
+.navbar-start .navbar-item {
+  font-weight: 700; }
+
+#inventory-item-container img {
+  max-height: 200px;
+  width: auto; }
+
+#inventory-item-container .title {
+  margin-bottom: 0.8rem; }
+
+#inventory-item-container .edit {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  color: #323232;
+  background-color: #fafafa;
+  border: none;
+  font-size: 0.65rem;
+  border-radius: 100px; }
+
+#inventory-item-container .inventory-description {
+  font-size: 0.85rem;
+  margin-bottom: 0; }

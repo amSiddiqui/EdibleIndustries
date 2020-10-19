@@ -116,9 +116,12 @@ const InventoryRecord = db.sequelize.define("inventory_record", {
     },
     type: {
         type: db.Sequelize.ENUM,
-        values: ['purchased', 'manufactured', 'rented', 'returned', 'discarded'],
+        values: ['purchased', 'manufactured', 'rented', 'returned', 'discarded', 'sold'],
     },
     value: {
+        type: db.Sequelize.INTEGER
+    },
+    in_stock: {
         type: db.Sequelize.INTEGER
     },
     total: {
@@ -126,6 +129,41 @@ const InventoryRecord = db.sequelize.define("inventory_record", {
     }
 });
 
+InventoryRecord.beforeCreate(async (rec, options) => {
+    var id = await InventoryRecord.max('id');
+    if (isNaN(id)) {
+        rec.in_stock = rec.value;
+        rec.total = rec.value;
+    }else{
+        var lastRec = await InventoryRecord.findByPk(id);
+        if (lastRec == null) {
+            rec.in_stock = rec.value;
+            rec.total = rec.value;
+        }else{
+            if (rec.type == 'purchased' || rec.type == 'manufactured' || rec.type == 'returned') {
+                rec.in_stock = lastRec.in_stock + rec.value;
+            }
+            else if (rec.type == 'rented' || rec.type == 'discarded' || rec.type == 'sold') {
+                rec.in_stock = lastRec.in_stock - rec.value;
+            }
+            if (rec.type == 'purchased' || rec.type == 'manufactured') {
+                rec.total = lastRec.total + rec.value;
+            }
+            else if (rec.type == 'discarded' || rec.type == 'sold') {
+                rec.total = lastRec.total - rec.value;
+            }
+            else if (rec.type == 'rented' || rec.type == 'returned') {
+                rec.total = lastRec.total;
+            }
+        }
+    }
+});
+
+Inventory.hasMany(InventoryRecord, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+});
+
 InventoryRecord.belongsTo(Inventory);
 
-module.exports = {User, Inventory};
+module.exports = {User, Inventory, InventoryRecord};

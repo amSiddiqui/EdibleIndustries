@@ -1,0 +1,72 @@
+<%include ../partials/header %>
+
+<div class="container">
+    <div class="columns">
+        <div class="column">
+            <h1 class="title">Inventory</h1>
+        </div>
+        <div class="column is-2">
+            <button class="button is-success is-rounded">
+                <span class="icon">
+                    <i class="fas fa-plus fa-xs"></i>
+                </span>
+                <span>
+                    Add Inventory Item
+                </span>
+            </button>
+        </div>
+    </div>
+    <div class="columns" id="inventory-item-container">
+        <% inventories.forEach(inventory => { %>
+        <div class="column is-4">
+            <div class="card">
+                <div class="card-content">
+                    <button class="edit" aria-label="close"><i class="fas fa-pen"></i></button>
+                    <div class="columns">
+                        <div class="column is-3">
+                            <img src="<%=inventory.image%>" alt="">
+                        </div>
+                        <div class="column">
+                            <h1 class="title is-4">
+                                <%=inventory.name%>
+                            </h1>
+                            <p class="sustitle"><%=inventory.description%></p>  
+                        </div>
+                    </div>
+                    <div class="columns inventory-description">
+                        <div class="column is-4">
+                            <p>Type: <strong><%=inventory.type.replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));%></strong> </p>
+                        </div>
+                        <% if(inventory.type == 'purchased') { %>
+                        <div class="column">
+                            <p>Cost: <strong>Re. <%=inventory.cost%></strong> </p>
+                        </div>
+                        <div class="column">
+                            <p>Total Asset: <strong>Re. <%=inventory.cost*inventory.total%></strong> </p>
+                        </div>
+                        <% } %>
+                    </div>
+                    <% if(inventory.type == 'purchased') { %>
+                    <div class="columns inventory-description">
+                        <div class="column is-4">
+                            In Stock: <strong><%= inventory.in_stock %></strong>
+                        </div>
+                        <div class="column">
+                            Total: <strong><%= inventory.total%></strong>
+                        </div>
+                    </div>
+                    <div class="columns">
+                        <div class="column">
+                            <progress class="progress is-<%=inventory.color%>" value="<%=inventory.in_stock%>" max="<%=inventory.total%>"></progress>
+                        </div>
+                    </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+        <% }); %>
+    </div>
+</div>
+
+
+<%include ../partials/footer %>

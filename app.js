@@ -11,7 +11,6 @@ const errors = require('./modules/errors');
 
 
 const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/users');
 const authRouter = require('./routes/auth');
 const customerRouter = require('./routes/customer');
 const inventoryRouter = require('./routes/inventory');
@@ -81,7 +80,6 @@ app.use((req, res, next) => {
 
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
 app.use('/auth', authRouter);
 app.use('/inventory', inventoryRouter);
 app.use('/billing', billingRouter);
