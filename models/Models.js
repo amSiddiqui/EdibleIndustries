@@ -1,7 +1,7 @@
 const db = require("../modules/database");
 const crypto = require('crypto');
 
-const User = db.sequelize.define("User", {
+const User = db.sequelize.define("user", {
     id: {
         type: db.Sequelize.INTEGER.UNSIGNED,
         primaryKey: true,
@@ -77,4 +77,55 @@ User.prototype.correctPassword = function(enteredPassword) {
     return User.encryptPassword(enteredPassword, this.salt()) === this.password()
 };
 
-module.exports = {User};
+
+const Inventory = db.sequelize.define("inventory", {
+    id: {
+        type: db.Sequelize.INTEGER.UNSIGNED,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    type: {
+        type: db.Sequelize.ENUM,
+        values: ['purchased', 'manufactured'],
+        defaultValue: 'purchased'
+    },
+    name: {
+        type: db.Sequelize.STRING,
+        allowNull: false,
+        validate: {
+            notEmpty: true
+        }
+    },
+    image: {
+        type: db.Sequelize.STRING,
+        defaultValue: '/images/warehouse.svg'
+    },
+    cost: {
+        type: db.Sequelize.DOUBLE
+    },
+    description: {
+        type: db.Sequelize.TEXT
+    }
+});
+
+const InventoryRecord = db.sequelize.define("inventory_record", {
+    id: {
+        type: db.Sequelize.INTEGER.UNSIGNED,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    type: {
+        type: db.Sequelize.ENUM,
+        values: ['purchased', 'manufactured', 'rented', 'returned', 'discarded'],
+    },
+    value: {
+        type: db.Sequelize.INTEGER
+    },
+    total: {
+        type: db.Sequelize.INTEGER
+    }
+});
+
+InventoryRecord.belongsTo(Inventory);
+
+module.exports = {User, Inventory};

@@ -1,13 +1,65 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Edible Industries</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css">
-    <link rel="stylesheet" href="/stylesheets/style.css">
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
-    <script src="https://kit.fontawesome.com/1857bf7981.js" crossorigin="anonymous"></script>
-  </head>
-  <body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Edible Industries</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
+    integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
+    crossorigin="anonymous"></script>
+  <script src="https://kit.fontawesome.com/1857bf7981.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+  <nav class="navbar" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="#">
+        <h1 class="title is-2 auth-title">Edible Industries</h1>
+      </a>
+
+      <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
+        data-target="navbarBasicExample">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+
+    <div id="navbarBasicExample" class="navbar-menu">
+      <div class="navbar-start">
+        <a href="/" class="navbar-item">
+          Home
+        </a>
+        <a href="/inventory" class="navbar-item">
+          Inventory
+        </a>
+        <a href="/customer" class="navbar-item">
+          Customer
+        </a>
+        <a href="/billing" class="navbar-item">
+          Billing
+        </a>
+        <a href="/records" class="navbar-item">
+          Records
+        </a>
+      </div>
+
+      <div class="navbar-end">
+        <div class="navbar-item">
+          Hello <%=first_name%>
+        </div>
+        <div class="navbar-item">
+          <div class="buttons">
+            <a href="/auth/logout" class="button is-primary">
+              <strong>Log Out</strong>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>

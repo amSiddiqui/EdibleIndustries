@@ -4,7 +4,7 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', middleware.auth.loggedIn(), function(req, res, next) {
-  res.render('dashboard');
+  res.render('under_construction');
 });
 
 module.exports = router;

@@ -1,80 +1,93 @@
-<%include ../partials/header %>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Edible Industries</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css">
+    <link rel="stylesheet" href="/stylesheets/style.css">
 
-<section class="section">
-    <div class="container">
-        <div class="auth-container">
-            <h1 class="title is-1 auth-title">Edible Industries</h1>
-            <div class="card auth-card">
-                <div class="card-content">
-                    <div class="content">
-                        <div class="columns">
-                            <div class="column">
-                                <h1 class="title">Login</h1>
-                                <form action="/auth/login" method="post">
-                                    <div class="field">
-                                        <label class="label">Email</label>
-                                        <div class="control has-icons-left has-icons-right">
-                                        <% if(loggin_error) { %>
-                                            <input class="input is-danger" name="email" type="email" placeholder="Email" value="<%= loggin_data.email %>">
-                                        <% }else{ %>
-                                            <input class="input" name="email" type="email" placeholder="Email">
-                                        <% } %>
-                                          <span class="icon is-small is-left">
-                                            <i class="fas fa-envelope"></i>
-                                          </span>
-                                        <% if(loggin_error) { %>
-                                            <span class="icon is-small is-right">
-                                              <i class="fas fa-exclamation-triangle"></i>
-                                            </span>
-                                        <% } %>
-                                        </div>
-                                    </div>
-                                    <div class="field">
-                                        <label class="label">Password</label>
-                                        <div class="control has-icons-left has-icons-right">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/1857bf7981.js" crossorigin="anonymous"></script>
+  </head>
+  <body>
+
+    <section class="section">
+        <div class="container">
+            <div class="auth-container">
+                <h1 class="title is-1 auth-title">Edible Industries</h1>
+                <div class="card auth-card">
+                    <div class="card-content">
+                        <div class="content">
+                            <div class="columns">
+                                <div class="column">
+                                    <h1 class="title">Login</h1>
+                                    <form action="/auth/login" method="post">
+                                        <div class="field">
+                                            <label class="label">Email</label>
+                                            <div class="control has-icons-left has-icons-right">
                                             <% if(loggin_error) { %>
-                                          <input class="input is-danger" name="password" type="password" placeholder="Password" value="<%= loggin_data.password %>">
-                                          <% }else{ %>
-                                            <input class="input" name="password" type="password" placeholder="Password">
+                                                <input class="input is-danger" name="email" type="email" placeholder="Email" value="<%= loggin_data.email %>">
+                                            <% }else{ %>
+                                                <input class="input" name="email" type="email" placeholder="Email">
                                             <% } %>
-                                          <span class="icon is-small is-left">
-                                            <i class="fas fa-key"></i>
-                                          </span>
-                                          <% if(loggin_error) { %>
-                                            <span class="icon is-small is-right">
-                                              <i class="fas fa-exclamation-triangle"></i>
+                                            <span class="icon is-small is-left">
+                                                <i class="fas fa-envelope"></i>
                                             </span>
-                                        <% } %>
+                                            <% if(loggin_error) { %>
+                                                <span class="icon is-small is-right">
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                                </span>
+                                            <% } %>
+                                            </div>
                                         </div>
-                                        <% if(loggin_error) { %>
-                                            <p class="help is-danger">Wrong Email or Password</p>
-                                        <% } %>
-                                    </div>
-                                    <div class="field">
-                                        <p class="control">
-                                          <button class="button is-success">
-                                            Login
-                                          </button>
-                                        </p>
-                                    </div>
-                                </form>
-                                <div class="columns auth-card-footer">
-                                    <div class="column">
-                                        <a href="/auth/signup">Sign Up</a>
-                                    </div>
-                                    <div class="column has-text-right">
-                                        <a href="/auth/forgot_password">Forgot Password?</a>
+                                        <div class="field">
+                                            <label class="label">Password</label>
+                                            <div class="control has-icons-left has-icons-right">
+                                                <% if(loggin_error) { %>
+                                            <input class="input is-danger" name="password" type="password" placeholder="Password" value="<%= loggin_data.password %>">
+                                            <% }else{ %>
+                                                <input class="input" name="password" type="password" placeholder="Password">
+                                                <% } %>
+                                            <span class="icon is-small is-left">
+                                                <i class="fas fa-key"></i>
+                                            </span>
+                                            <% if(loggin_error) { %>
+                                                <span class="icon is-small is-right">
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                                </span>
+                                            <% } %>
+                                            </div>
+                                            <% if(loggin_error) { %>
+                                                <p class="help is-danger">Wrong Email or Password</p>
+                                            <% } %>
+                                        </div>
+                                        <div class="field">
+                                            <p class="control">
+                                            <button class="button is-success">
+                                                Login
+                                            </button>
+                                            </p>
+                                        </div>
+                                    </form>
+                                    <div class="columns auth-card-footer">
+                                        <div class="column">
+                                            <a href="/auth/signup">Sign Up</a>
+                                        </div>
+                                        <div class="column has-text-right">
+                                            <a href="/auth/forgot_password">Forgot Password?</a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
                 </div>
-
             </div>
+
         </div>
+    </section>
 
-    </div>
-</section>
-
-<%include ../partials/footer %>
+    </body>
+</html>

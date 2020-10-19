@@ -1,31 +1,25 @@
 @font-face {
   font-family: 'Lobster';
-  src: url('/fonts/Lobster-Regular.ttf'); /* IE9 Compat Modes */  
-}
+  src: url("/fonts/Lobster-Regular.ttf");
+  /* IE9 Compat Modes */ }
 
 .auth-container {
   width: 600px;
   margin: auto;
-  
-  margin-top: 70px;
-}
+  margin-top: 70px; }
 
 .auth-container .title {
-  text-align: center;
-}
+  text-align: center; }
 
 .auth-title {
   font-family: 'Lobster';
   text-align: center;
-  font-weight: 500;
-}
+  font-weight: 500; }
 
 .auth-card-footer {
   font-size: 12px;
   margin-top: 10px;
-  margin-left: 1px;
-}
+  margin-left: 1px; }
 
 nav {
-  box-shadow: 2px 2px 4px 4px rgba(200, 200, 200, 0.4);
-}
+  box-shadow: 2px 2px 4px 4px rgba(200, 200, 200, 0.4); }

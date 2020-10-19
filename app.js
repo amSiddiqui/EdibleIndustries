@@ -7,11 +7,16 @@ const logger = require('morgan');
 const session = require('express-session');
 const flash = require('connect-flash');
 const methodOverride = require('method-override');
+const errors = require('./modules/errors');
 
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const authRouter = require('./routes/auth');
+const customerRouter = require('./routes/customer');
+const inventoryRouter = require('./routes/inventory');
+const billingRouter = require('./routes/billing');
+const recordsRouter = require('./routes/records');
 
 
 const app = express();
@@ -56,6 +61,7 @@ const models = require('./models/Models');
 
 // Sync DB
 db.sequelize.sync({force: true}).then(() => {
+  require('./modules/seed')();
   console.log("Database synchronized");
 }).catch(err => {
   console.log("Error while synchronizing data: ", err);
@@ -68,7 +74,7 @@ global.cookieOpt = {
 };
 
 app.use((req, res, next) => {
-  res.locals.user = req.cookies.user;
+  res.locals.first_name = req.session.first_name;
   next();
 });
 
@@ -77,6 +83,10 @@ app.use((req, res, next) => {
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/auth', authRouter);
+app.use('/inventory', inventoryRouter);
+app.use('/billing', billingRouter);
+app.use('/customer', customerRouter);
+app.use('/records', recordsRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

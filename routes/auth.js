@@ -24,14 +24,15 @@ router.post('/login', middleware.auth.notLoggedIn(), (req, res) => {
 
     var email = req.body.email.trim();
     var password = req.body.password.trim();
-    utility.user.userExists(email, password).then(exists => {
-        if (exists == null || !exists) {
+    utility.user.userExists(email, password).then(data => {
+        if (!data.exists) {
             req.flash('loggin_error', true);
             req.flash('loggin_data', {email, password})
             res.redirect('/auth/login');
         }else{
             req.session.loggedin = true;
             req.session.email = email;
+            req.session.first_name = data.first_name;
             res.redirect('/');
         }
     }).catch(err => {
@@ -113,6 +114,7 @@ router.post('/signup', middleware.auth.notLoggedIn(), (req, res) => {
         utility.user.createUser(data).then(user => {
             req.session.loggedin = true;
             req.session.email = email;
+            req.session.first_name = first_name;
             res.redirect('/');
         }).catch(err => {
             if (err.errors[0].validatorKey == 'not_unique') {
@@ -144,7 +146,8 @@ router.post('/signup', middleware.auth.notLoggedIn(), (req, res) => {
 
 router.get('/logout', middleware.auth.loggedIn(), (req, res) => {
     req.session.loggedin = false;
-    req.session.username = null;
+    req.session.email = null;
+    req.session.first_name = null;
     req.session.destroy();
     res.redirect('/');
 });

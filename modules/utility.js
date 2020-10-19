@@ -10,12 +10,12 @@ module.exports = {
             return new Promise((resolve, reject) => {
                 models.User.findOne({where: {email: email}}).then(function(user) {
                     if (user == null) {
-                        resolve(null);
+                        resolve({exists: false});
                     }
                     if (user.correctPassword(password)) {
-                        resolve(true);
+                        resolve({exists: true, first_name: user.first_name});
                     } else {
-                        resolve(false);
+                        resolve({exists: false});
                     }
                 }).catch(err => {
                     console.log(err);
