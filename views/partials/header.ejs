@@ -75,3 +75,15 @@
     <%=flash_message %>
   </div>
   <% } %>
+  <% if(typeof breadcrumbs !== 'undefined') { %>
+    <div class="container">
+      <div class="breadcrumb" aria-label="breadcrumbs">
+        <ul>
+          <% for (var i = 0; i < breadcrumbs.length; i++) { %>
+            <% var breadcrumb = breadcrumbs[i]; %>
+          <li <%= breadcrumbs.length == i+1? 'class=is-active':'' %> ><a href="<%=breadcrumb.link%>" <%= breadcrumbs.length == i+1? 'aria-current=page':'' %> > <%=breadcrumb.name%> </a></li>
+          <% } %>
+        </ul>
+      </div>
+    </div>
+  <% } %>

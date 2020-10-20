@@ -69,7 +69,11 @@ $(document).ready(() => {
         else if (val === 'manufactured') {
             $('.cost-label').html('Cost Of Manufacture');
         }
+    });
 
+    $(".inventory-card").click( e => {
+        var id = $(e.target).parents('.inventory-card').attr('data-value');
+        window.location.href = '/inventory/'+id;
     });
 
 });

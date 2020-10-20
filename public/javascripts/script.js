@@ -9,7 +9,7 @@ $(document).ready(() => {
 
     setTimeout(() => {
         $('.notification').animate({
-            'height': 0
+            'margin-top' : '-63px'
         }, complete = () => {
             $('.notification').hide();
         });

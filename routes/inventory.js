@@ -13,6 +13,11 @@ const helpers = require('../modules/helpers');
 
 /* GET home page. */
 router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
+  var breadcrumbs = [
+    {link: '/', name: 'Home'},
+    {link: '/inventory', name: 'Inventory'},
+  ];
+
   inventory.fetchAllInventory().then(inventories => {
     for (let index = 0; index < inventories.length; index++) {
       const inventory = inventories[index];
@@ -42,12 +47,15 @@ router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
         inventories,
         dependency: 'inventory.js',
         flash_message: flash_message,
-        flash_color: flash_color
+        flash_color: flash_color,
+        breadcrumbs
       });
     } else {
       res.render('inventory/index', {
         inventories,
-        dependency: 'inventory.js'
+        dependency: 'inventory.js',
+        breadcrumbs
+
       });
     }
     res.end();
@@ -118,12 +126,19 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
 
 router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
   let id = parseInt(req.params.id);
+  var breadcrumbs = [
+    {link: '/', name: 'Home'},
+    {link: '/inventory', name: 'Inventory'},
+    {link: '/inventory/'+id, name: 'Item'},
+    {link: '/inventory/edit/'+id, name: 'Edit'},
+  ];
   inventory.getInventory(id).then(inv => {
     var flash_message = req.flash('flash_message');
     var flash_color = req.flash('flash_color');
     var data = {
       inventory: inv,
-      dependency: 'inventory-edit.js'
+      dependency: 'inventory-edit.js',
+      breadcrumbs
     };
     if (flash_message.length !== 0 && flash_color.length !== 0) {
       data.flash_message = flash_message;
@@ -140,13 +155,51 @@ router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
 });
 
 router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
-  res.render('under_construction');
+  let id = parseInt(req.params.id);
+  var breadcrumbs = [
+    {link: '/', name: 'Home'},
+    {link: '/inventory', name: 'Inventory'},
+    {link: '/inventory/'+id, name: 'Item'},
+  ];
+  inventory.getInventory(id).then(inv => {
+    var flash_message = req.flash('flash_message');
+    var flash_color = req.flash('flash_color');
+    
+    var data = {
+      inventory: inv,
+      dependency: 'inventory-item.js',
+      recordsExists: inv.inventory_records.length !== 0,
+      in_stock: inv.inventory_records.length !== 0? inv.inventory_records[inv.inventory_records.length-1].in_stock: 0,
+      total: inv.inventory_records.length !== 0? inv.inventory_records[inv.inventory_records.length-1].total: 0,
+      color: 'success',
+      breadcrumbs
+    };
+    var percent = data.in_stock / data.total;
+    percent = percent * 100;
+    if (percent < 20) {
+      data.color = 'warning'
+    }if (percent < 10) {
+      data.color = 'danger'
+    }
+    data.percent = percent;
+    if (flash_message.length !== 0 && flash_color.length !== 0) {
+      data.flash_message = flash_message;
+      data.flash_color = flash_color;
+    }
+    res.render('inventory/item', data);
+    res.end();
+  }).catch(err => {
+    console.log(err);
+    req.flash('flash_message', 'Error opening inventory, try agina later');
+    req.flash('flash_color', 'danger');
+    res.redirect('/inventory');
+    res.end();
+  });
 });
 
 
 router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   let id = parseInt(req.params.id);
-  console.log(req.body);
   let data = {
     name: req.body.name.trim(),
     description: req.body.description.trim(),
@@ -218,7 +271,12 @@ router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
 router.delete('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   console.log("This delete page is called");
   let id = parseInt(req.params.id);
-  res.send("DELETE");
+  inventory.deleteInventory(id).then(() => {
+    req.flash('flash_message', 'Inventory Item Successfully Deleted');
+    req.flash('flash_color', 'success');
+    res.redirect('/inventory');
+    res.end(); 
+  });
 });
 
 router.get('/image/', middleware.auth.loggedIn(), function (req, res, next) {

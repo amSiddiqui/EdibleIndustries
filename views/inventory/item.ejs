@@ -1,0 +1,53 @@
+<%include ../partials/header %>
+
+<div class="container">
+    <div class="description-container">
+        <div class="columns">
+            <div class="column is-3">
+                <img src="<%=inventory.image%>" alt="">
+            </div>
+            <div class="column is-3">
+                <div class="title"><%=inventory.name%></div>
+                <div class="subtitle"><%=inventory.description%> </div>
+                <div>
+                    <p>Type:
+                        <strong><%=inventory.type.replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));%></strong>
+                    </p>
+                </div>
+            </div>
+            <div class="column">
+                <div class="columns">
+                    <div class="column is-3">
+                        <p>
+                            Cost: <strong>Re. <%=inventory.cost%></strong>
+                        </p>
+                    </div>
+                    <div class="column">
+                        <p>Total Asset: <strong>Re. <%= inventory.cost * total%></strong>
+                        </p>
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="column">
+                        In Stock: <strong><%= in_stock %></strong>
+                    </div>
+                    <div class="column is-2">
+                        Total <strong><%= total %></strong>
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="column">
+                        <progress class="progress is-<%=color%>" value="<%=in_stock%>"
+                            max="<%=total%>"><%=percent%>%</progress>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var image_location = "<%=inventory.image%>";
+</script>
+
+<%include ../partials/footer %>

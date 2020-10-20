@@ -119,3 +119,23 @@
     }
   }
   
+  .inventory-card {
+    transition: all 200ms ease-in;
+    border-radius: 20px;
+    cursor: pointer;
+  }
+
+  .inventory-card:hover {
+    background-color: rgba($color: #cfe6f1, $alpha: 0.4);
+  }
+
+  .description-container {
+    img {
+      height: 200px;
+      width: auto;
+    }
+  }
+
+  .breadcrumb {
+    margin-bottom: 30px;
+  }

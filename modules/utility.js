@@ -49,14 +49,22 @@ module.exports = {
             });
         },
         getInventory: async (id) => {
-            var inv = await models.Inventory.findByPk(id); 
+            var inv = await models.Inventory.findOne({
+                where: {
+                    id
+                },
+                include: InventoryRecord,
+                order: [
+                    [InventoryRecord, 'createdAt', 'DESC'],
+                ]
+            });
             return inv;
         },
         updateInventory: async (id, data) => {
             var inv = await models.Inventory.findByPk(id);
             if (data.inventory === '') {
                 inv.image = '/images/warehouse.svg';
-            }else{
+            } else {
                 inv.image = data.inventory;
             }
             inv.name = data.name;
@@ -64,6 +72,11 @@ module.exports = {
             inv.type = data.type;
             inv.cost = data.cost;
             await inv.save();
+            return true;
+        },
+        deleteInventory: async (id) => {
+            var inv = await models.Inventory.findByPk(id);
+            await inv.destroy();
             return true;
         },
         fetchAllInventory: () => {
