@@ -48,6 +48,24 @@ module.exports = {
                 ...data
             });
         },
+        getInventory: async (id) => {
+            var inv = await models.Inventory.findByPk(id); 
+            return inv;
+        },
+        updateInventory: async (id, data) => {
+            var inv = await models.Inventory.findByPk(id);
+            if (data.inventory === '') {
+                inv.image = '/images/warehouse.svg';
+            }else{
+                inv.image = data.inventory;
+            }
+            inv.name = data.name;
+            inv.description = data.description;
+            inv.type = data.type;
+            inv.cost = data.cost;
+            await inv.save();
+            return true;
+        },
         fetchAllInventory: () => {
             return new Promise((resolve, reject) => {
                 models.Inventory.findAll({

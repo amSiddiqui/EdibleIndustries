@@ -77,3 +77,45 @@
     }
   }
   
+  .filepond--root,
+  .filepond--root .filepond--drop-label {
+    height: 100%;
+  }
+
+  .filepond-container {
+    height: 82px;
+  }
+
+  .select, select {
+    width: 100%;
+  }
+
+  .notification {
+    margin-top: -1rem;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    padding: 0.6rem;
+    font-size: 0.83rem; 
+  }
+
+
+  #inventory-edit-container {
+    width: 50%;
+    min-width: 200px;
+    margin: auto;
+    
+  }
+
+  #confirm-delete .modal-card{
+    width: 320px;
+  }
+
+  #inventory-edit-container {
+    img {
+      height: 160px;
+      margin: auto;
+      display: block;
+      width: auto;
+    }
+  }
+  

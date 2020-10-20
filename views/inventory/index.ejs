@@ -6,7 +6,7 @@
             <h1 class="title">Inventory</h1>
         </div>
         <div class="column is-2">
-            <button class="button is-success is-rounded">
+            <button class="button is-success is-rounded" id="add-inventory-button">
                 <span class="icon">
                     <i class="fas fa-plus fa-xs"></i>
                 </span>
@@ -21,7 +21,7 @@
         <div class="column is-4">
             <div class="card">
                 <div class="card-content">
-                    <button class="edit" aria-label="close"><i class="fas fa-pen"></i></button>
+                    <button class="edit" onclick="window.location.href = '/inventory/edit/<%=inventory.id%>/'" aria-label="close"><i class="fas fa-pen"></i></button>
                     <div class="columns">
                         <div class="column is-3">
                             <img src="<%=inventory.image%>" alt="">
@@ -30,12 +30,14 @@
                             <h1 class="title is-4">
                                 <%=inventory.name%>
                             </h1>
-                            <p class="sustitle"><%=inventory.description%></p>  
+                            <p class="sustitle"><%=inventory.description%></p>
                         </div>
                     </div>
                     <div class="columns inventory-description">
                         <div class="column is-4">
-                            <p>Type: <strong><%=inventory.type.replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));%></strong> </p>
+                            <p>Type:
+                                <strong><%=inventory.type.replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));%></strong>
+                            </p>
                         </div>
                         <% if(inventory.type == 'purchased') { %>
                         <div class="column">
@@ -57,7 +59,8 @@
                     </div>
                     <div class="columns">
                         <div class="column">
-                            <progress class="progress is-<%=inventory.color%>" value="<%=inventory.in_stock%>" max="<%=inventory.total%>"></progress>
+                            <progress class="progress is-<%=inventory.color%>" value="<%=inventory.in_stock%>"
+                                max="<%=inventory.total%>"></progress>
                         </div>
                     </div>
                     <% } %>
@@ -68,5 +71,76 @@
     </div>
 </div>
 
+<div class="modal" id="add-inventory-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Add New Inventory</p>
+            <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+            <form method="post">
+                <div class="columns">
+                    <div class="column is-3">
+                        <input type="file" class="filepond" name="inventory" accept="image/png, image/jpeg, image/gif" />
+                    </div>
+                    <div class="column">
+                        <div class="field">
+                            <label class="label">Name</label>
+                            <div class="control">
+                                <input class="input" type="text" name="name" placeholder="Name">
+                                <p class="help is-danger" style="display: none;">Enter Valid Name</p>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Description</label>
+                            <div class="control">
+                                <input class="input" name="description" type="text" placeholder="Description">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="column">
+                        <div class="field">
+                            <label class="label">Type</label>
+                            <div class="control">
+                                <div class="select">
+                                    <select name="type">
+                                        <option value="purchased">Purchased</option>
+                                        <option value="manufactured">Manufactured</option>
+                                    </select>
+                                    <p class="help is-danger" style="display: none;">Enter Valid Type</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="field">
+                            <label class="label cost-label">Cost</label>
+                            
+                            <div class="control has-icons-left">
+                                <input class="input" min=".1" step="any" name="cost" type="number" placeholder="Cost">
+                                <span class="icon is-small is-left">
+                                    Re.
+                                </span>
+                                <p class="help is-danger" style="display: none;">Enter Valid Cost</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="field is-grouped">
+                    <div class="control">
+                        <button class="button is-link">Submit</button>
+                    </div>
+                    <div class="control">
+                        <button type="button" class="button is-link is-light close-modal">Cancel</button>
+                    </div>
+                </div>
+
+            </form>
+        </section>
+    </div>
+</div>
 
 <%include ../partials/footer %>

@@ -1,0 +1,109 @@
+<%include ../partials/header %>
+<div class="card" id="inventory-edit-container">
+    <div class="card-content">
+        <h1 class="title has-text-centered">Edit Inventory</h1>
+        <form method="post" action="/inventory/<%=inventory.id%>?_method=PUT">
+            <div class="columns">
+                <div class="column is-4">
+                    <div>
+                        <img src="<%=inventory.image%>" alt="">
+                    </div>
+                    <div class="filepond-container">
+                        <input type="file" class="filepond" name="inventory" accept="image/png, image/jpeg, image/gif" />
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="field">
+                        <label class="label">Name</label>
+                        <div class="control">
+                            <input class="input" value="<%=inventory.name%>" type="text" name="name" placeholder="Name">
+                            <p class="help is-danger" style="display: none;">Enter Valid Name</p>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Description</label>
+                        <div class="control">
+                            <input class="input" value="<%=inventory.description%>" name="description" type="text"
+                                placeholder="Description">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="columns">
+                <div class="column">
+                    <div class="field">
+                        <label class="label">Type</label>
+                        <div class="control">
+                            <div class="select">
+                                <select name="type">
+                                    <option <%= inventory.type == 'purchased'? 'selected': '' %> value="purchased">Purchased</option>
+                                    <option <%= inventory.type == 'manufactured'? 'selected': '' %> value="manufactured">Manufactured</option>
+                                </select>
+                                <p class="help is-danger" style="display: none;">Enter Valid Type</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="field">
+                        <label class="label cost-label">Cost</label>
+
+                        <div class="control has-icons-left">
+                            <input class="input" min=".1" value="<%=inventory.cost%>" step="any" name="cost"
+                                type="number" placeholder="Cost">
+                            <span class="icon is-small is-left">
+                                Re.
+                            </span>
+                            <p class="help is-danger" style="display: none;">Enter Valid Cost</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="columns">
+                <div class="column">
+                    <div class="field is-grouped">
+                        <div class="control">
+                            <button class="button is-link is-rounded">Submit</button>
+                        </div>
+                        <div class="control">
+                            <button type="button" onclick="window.location.href = '/inventory/<%= inventory.id %>'"
+                                class="button is-link is-light is-rounded">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="column is-2">
+                    <button type="button" class="button is-danger is-rounded" id="delete-inventory-button"
+                        value="<%= inventory.id %>">Delete</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal" id="confirm-delete">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Delete <%=inventory.name%>?</p>
+            <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+            <div class="columns">
+                <div class="column">
+                    <form action="" method="post">
+                        <button class="button is-danger is-rounded">Delete</button>
+                    </form>
+                </div>
+                <div class="column">
+                    <button type="button" class="button is-link is-light is-rounded close-modal">Cancel</button>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script>
+    var image_location = "<%=inventory.image%>";
+</script>
+
+<%include ../partials/footer %>

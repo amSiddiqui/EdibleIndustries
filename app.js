@@ -8,6 +8,7 @@ const session = require('express-session');
 const flash = require('connect-flash');
 const methodOverride = require('method-override');
 const errors = require('./modules/errors');
+const fs = require('fs');
 
 
 const indexRouter = require('./routes/index');
@@ -38,6 +39,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 app.use(flash());
 
 //for PUT and DELETE requests
@@ -77,6 +79,11 @@ app.use((req, res, next) => {
   next();
 });
 
+// Delete temp directory and create new one
+if (fs.existsSync('uploads/tmp')) {
+  fs.rmdirSync('uploads/tmp', {recursive: true});
+}
+fs.mkdirSync('uploads/tmp');
 
 
 app.use('/', indexRouter);
