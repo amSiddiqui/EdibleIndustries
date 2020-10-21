@@ -160,10 +160,108 @@ InventoryRecord.beforeCreate(async (rec, options) => {
 });
 
 Inventory.hasMany(InventoryRecord, {
-    onDelete: 'CASCADE',
+    onDelete: 'SET NULL',
     onUpdate: 'CASCADE'
 });
 
 InventoryRecord.belongsTo(Inventory);
 
-module.exports = {User, Inventory, InventoryRecord};
+const Customer = db.sequelize.define("customer", {
+    id: {
+        type: db.Sequelize.INTEGER.UNSIGNED,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    first_name: {
+        type: db.Sequelize.STRING,
+        allowNull: false,
+        validate: {
+            notEmpty: true
+        }
+    },
+    last_name: {
+        type: db.Sequelize.STRING,
+    },
+    organization: {
+        type: db.Sequelize.STRING,
+    },
+    email: {
+        type: db.Sequelize.STRING,
+        allowNull: false,
+        unique: true,
+        validate: {
+            isEmail: true,
+            notEmpty: true
+        },
+    },
+    phone: {
+        type: db.Sequelize.STRING
+    },
+    address1: {
+        type: db.Sequelize.STRING
+    },
+    anchal: {
+        type: db.Sequelize.STRING
+    },
+    jilla: {
+        type: db.Sequelize.STRING
+    },
+    postal_code: {
+        type: db.Sequelize.STRING
+    }
+});
+
+const CustomerType = db.sequelize.define("customer_type", {
+    id: {
+        type: db.Sequelize.INTEGER.UNSIGNED,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    name: {
+        type: db.Sequelize.STRING,
+        allowNull: false,
+        validate: {
+            notEmpty: true
+        }
+    }
+});
+
+const CustomerTypeRate = db.sequelize.define("customer_type_rate", {
+    id: {
+        type: db.Sequelize.INTEGER.UNSIGNED,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    rate: {
+        type: db.Sequelize.DOUBLE,
+        allowNull: false,
+        defaultValue: 0.0
+    },
+});
+
+const CustomerRate = db.sequelize.define("customer_rate", {
+    id: {
+        type: db.Sequelize.INTEGER.UNSIGNED,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    rate: {
+        type: db.Sequelize.DOUBLE,
+        allowNull: false,
+        defaultValue: 0.0
+    },
+    
+});
+
+
+CustomerType.hasMany(Customer);
+Customer.belongsTo(CustomerType);
+
+Customer.belongsToMany(Inventory, {through: CustomerRate});
+Inventory.belongsToMany(Customer, {through: CustomerRate});
+
+CustomerType.belongsToMany(Inventory, {through: CustomerTypeRate});
+Inventory.belongsToMany(CustomerType, {through: CustomerTypeRate});
+
+
+module.exports = {User, Inventory, InventoryRecord, Customer, CustomerType, CustomerTypeRate, CustomerRate};

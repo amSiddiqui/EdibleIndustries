@@ -26,6 +26,9 @@
                         <p>Total Asset: <strong>Re. <%= inventory.cost * total%></strong>
                         </p>
                     </div>
+                    <div class="column is-1">
+                        <button class="button is-success is-rounded" onclick="window.location.href = '/inventory/edit/<%=inventory.id%>/'" aria-label="close">Edit</button>
+                    </div>
                 </div>
                 <div class="columns">
                     <div class="column">

@@ -7,7 +7,7 @@ $(document).ready(() => {
     const pond = FilePond.create( inputElement, {
         labelIdle: 'Add Image',
         server: {
-            url: '/inventory/image/',
+            url: '/api/image/',
             process: 'process',
             revert: 'revert',
         },

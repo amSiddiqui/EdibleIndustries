@@ -9,7 +9,7 @@ $(document).ready(() => {
     const pond = FilePond.create( inputElement, {
         labelIdle: 'Add Image',
         server: {
-            url: '/inventory/image/',
+            url: '/api/image/',
             process: 'process',
             revert: 'revert',
         },
@@ -72,8 +72,10 @@ $(document).ready(() => {
     });
 
     $(".inventory-card").click( e => {
-        var id = $(e.target).parents('.inventory-card').attr('data-value');
-        window.location.href = '/inventory/'+id;
+        if ($(e.target).parents('.edit').length === 0) {
+            var id = $(e.target).parents('.inventory-card').attr('data-value');
+            window.location.href = '/inventory/'+id;
+        }
     });
 
 });
