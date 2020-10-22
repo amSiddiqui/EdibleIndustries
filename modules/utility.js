@@ -94,5 +94,45 @@ module.exports = {
                 });
             });
         },
+    },
+    customer_type: {
+        create: (data) => {
+            return models.CustomerType.create({
+                ...data
+            });
+        },
+        addInventoryRate: (customer_type_id, inventory_id, rate) => {
+            return models.CustomerTypeRate.create({
+                inventoryId: inventory_id,
+                customerTypeId: customer_type_id,
+                rate
+            });
+            
+        }
+    },
+    customer: {
+        create: (data) => {
+            return models.Customer.create({
+                ...data
+            });
+        },
+        addInventoryRate: (cutomer_id, inventory_id, rate) => {
+            return models.CustomerRate.create({
+                inventoryId: inventory_id,
+                cutomerId: cutomer_id,
+                rate
+            });
+        }
+    },
+    misc: {
+        zones: (data) => {
+            return models.Zone.create(data);
+        },
+        district: (data) => {
+            return models.District.create(data);
+        },
+        postal_code: (data) => {
+            return models.PostOffice.bulkCreate(data);
+        }
     }
 }

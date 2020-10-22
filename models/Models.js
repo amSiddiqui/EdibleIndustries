@@ -1,6 +1,73 @@
 const db = require("../modules/database");
 const crypto = require('crypto');
 
+
+const Zone = db.sequelize.define("zone", {
+    id: {
+        type: db.Sequelize.INTEGER.UNSIGNED,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    value: {
+        type: db.Sequelize.STRING,
+        allowNull: false,
+        validate: {
+            notEmpty: true
+        }
+    },
+}, {
+    underscored: true
+});
+
+const District = db.sequelize.define('district', {
+    id: {
+        type: db.Sequelize.INTEGER.UNSIGNED,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    value: {
+        type: db.Sequelize.STRING,
+        allowNull: false,
+        validate: {
+            notEmpty: true
+        }
+    }
+}, {
+    underscored: true
+});
+
+const PostOffice = db.sequelize.define('post_office', {
+    id: {
+        type: db.Sequelize.INTEGER.UNSIGNED,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    value: {
+        type: db.Sequelize.STRING,
+        allowNull: false,
+        validate: {
+            notEmpty: true
+        }
+    },
+
+    name: {
+        type: db.Sequelize.STRING,
+        allowNull: false,
+        validate: {
+            notEmpty: true
+        }
+    },
+}, {
+    underscored: true
+});
+
+Zone.hasMany(District);
+District.belongsTo(Zone);
+
+District.hasMany(PostOffice);
+PostOffice.belongsTo(District);
+
+
 const User = db.sequelize.define("user", {
     id: {
         type: db.Sequelize.INTEGER.UNSIGNED,
@@ -13,7 +80,7 @@ const User = db.sequelize.define("user", {
         validate: {
             notEmpty: true
         }
-    }, 
+    },
     last_name: {
         type: db.Sequelize.STRING,
         allowNull: true
@@ -33,29 +100,30 @@ const User = db.sequelize.define("user", {
             return () => this.getDataValue('password')
         },
         validate: {
-            len: [6,20],
+            len: [6, 20],
             notEmpty: true,
         }
     },
     salt: {
         type: db.Sequelize.STRING,
         get() {
-            return() => this.getDataValue('salt')
+            return () => this.getDataValue('salt')
         }
     },
 }, {
     getterMethods: {
         fullName() {
-            return this.first_name+' '+this.last_name;
+            return this.first_name + ' ' + this.last_name;
         }
-    }
+    },
+    underscored: true
 });
 
-User.generateSalt = function() {
+User.generateSalt = function () {
     return crypto.randomBytes(16).toString('base64')
 };
 
-User.encryptPassword = function(plainText, salt) {
+User.encryptPassword = function (plainText, salt) {
     return crypto
         .createHash('RSA-SHA256')
         .update(plainText)
@@ -73,7 +141,7 @@ const setSaltAndPassword = user => {
 User.beforeCreate(setSaltAndPassword);
 User.beforeUpdate(setSaltAndPassword);
 
-User.prototype.correctPassword = function(enteredPassword) {
+User.prototype.correctPassword = function (enteredPassword) {
     return User.encryptPassword(enteredPassword, this.salt()) === this.password()
 };
 
@@ -106,6 +174,8 @@ const Inventory = db.sequelize.define("inventory", {
     description: {
         type: db.Sequelize.TEXT
     }
+}, {
+    underscored: true
 });
 
 const InventoryRecord = db.sequelize.define("inventory_record", {
@@ -127,6 +197,8 @@ const InventoryRecord = db.sequelize.define("inventory_record", {
     total: {
         type: db.Sequelize.INTEGER
     }
+}, {
+    underscored: true
 });
 
 InventoryRecord.beforeCreate(async (rec, options) => {
@@ -134,29 +206,28 @@ InventoryRecord.beforeCreate(async (rec, options) => {
     if (isNaN(id)) {
         rec.in_stock = rec.value;
         rec.total = rec.value;
-    }else{
+    } else {
         var lastRec = await InventoryRecord.findByPk(id);
         if (lastRec == null) {
             rec.in_stock = rec.value;
             rec.total = rec.value;
-        }else{
+        } else {
             if (rec.type == 'purchased' || rec.type == 'manufactured' || rec.type == 'returned') {
                 rec.in_stock = lastRec.in_stock + rec.value;
-            }
-            else if (rec.type == 'rented' || rec.type == 'discarded' || rec.type == 'sold') {
+            } else if (rec.type == 'rented' || rec.type == 'discarded' || rec.type == 'sold') {
                 rec.in_stock = lastRec.in_stock - rec.value;
             }
             if (rec.type == 'purchased' || rec.type == 'manufactured') {
                 rec.total = lastRec.total + rec.value;
-            }
-            else if (rec.type == 'discarded' || rec.type == 'sold') {
+            } else if (rec.type == 'discarded' || rec.type == 'sold') {
                 rec.total = lastRec.total - rec.value;
-            }
-            else if (rec.type == 'rented' || rec.type == 'returned') {
+            } else if (rec.type == 'rented' || rec.type == 'returned') {
                 rec.total = lastRec.total;
             }
         }
     }
+}, {
+    underscored: true
 });
 
 Inventory.hasMany(InventoryRecord, {
@@ -201,14 +272,28 @@ const Customer = db.sequelize.define("customer", {
         type: db.Sequelize.STRING
     },
     anchal: {
-        type: db.Sequelize.STRING
+        type: db.Sequelize.INTEGER.UNSIGNED,
+        references: {
+            model: Zone,
+            key: 'id'
+        },
     },
     jilla: {
-        type: db.Sequelize.STRING
+        type: db.Sequelize.INTEGER.UNSIGNED,
+        references: {
+            model: District,
+            key: 'id'
+        },
     },
     postal_code: {
-        type: db.Sequelize.STRING
+        type: db.Sequelize.INTEGER.UNSIGNED,
+        references: {
+            model: PostOffice,
+            key: 'id'
+        },
     }
+}, {
+    underscored: true
 });
 
 const CustomerType = db.sequelize.define("customer_type", {
@@ -224,6 +309,8 @@ const CustomerType = db.sequelize.define("customer_type", {
             notEmpty: true
         }
     }
+}, {
+    underscored: true
 });
 
 const CustomerTypeRate = db.sequelize.define("customer_type_rate", {
@@ -237,6 +324,8 @@ const CustomerTypeRate = db.sequelize.define("customer_type_rate", {
         allowNull: false,
         defaultValue: 0.0
     },
+}, {
+    underscored: true
 });
 
 const CustomerRate = db.sequelize.define("customer_rate", {
@@ -250,18 +339,39 @@ const CustomerRate = db.sequelize.define("customer_rate", {
         allowNull: false,
         defaultValue: 0.0
     },
-    
+}, {
+    underscored: true
 });
+
 
 
 CustomerType.hasMany(Customer);
 Customer.belongsTo(CustomerType);
 
-Customer.belongsToMany(Inventory, {through: CustomerRate});
-Inventory.belongsToMany(Customer, {through: CustomerRate});
+Customer.belongsToMany(Inventory, {
+    through: CustomerRate
+});
+Inventory.belongsToMany(Customer, {
+    through: CustomerRate
+});
 
-CustomerType.belongsToMany(Inventory, {through: CustomerTypeRate});
-Inventory.belongsToMany(CustomerType, {through: CustomerTypeRate});
+CustomerType.belongsToMany(Inventory, {
+    through: CustomerTypeRate
+});
+Inventory.belongsToMany(CustomerType, {
+    through: CustomerTypeRate
+});
 
 
-module.exports = {User, Inventory, InventoryRecord, Customer, CustomerType, CustomerTypeRate, CustomerRate};
+module.exports = {
+    User,
+    Inventory,
+    InventoryRecord,
+    Customer,
+    CustomerType,
+    CustomerTypeRate,
+    CustomerRate,
+    Zone,
+    District,
+    PostOffice
+};

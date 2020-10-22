@@ -63,7 +63,7 @@ const models = require('./models/Models');
 
 // Sync DB
 db.sequelize.sync({force: true}).then(() => {
-  require('./modules/seed')();
+  require('./modules/seed')(true);
   console.log("Database synchronized");
 }).catch(err => {
   console.log("Error while synchronizing data: ", err);
