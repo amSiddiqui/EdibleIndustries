@@ -129,7 +129,7 @@ router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
     {link: '/inventory/'+id, name: 'Item'},
     {link: '/inventory/edit/'+id, name: 'Edit'},
   ];
-  inventory.getInventory(id).then(inv => {
+  inventory.fetchInventory(id).then(inv => {
     var flash_message = req.flash('flash_message');
     var flash_color = req.flash('flash_color');
     var data = {
@@ -158,7 +158,7 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     {link: '/inventory', name: 'Inventory'},
     {link: '/inventory/'+id, name: 'Item'},
   ];
-  inventory.getInventory(id).then(inv => {
+  inventory.fetchInventory(id).then(inv => {
     var flash_message = req.flash('flash_message');
     var flash_color = req.flash('flash_color');
     

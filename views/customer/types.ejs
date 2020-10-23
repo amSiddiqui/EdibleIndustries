@@ -1,0 +1,192 @@
+<%include ../partials/header %>
+
+<div class="container">
+    <div class="columns">
+        <div class="column">
+            <h1 class="title">Customer Types</h1>
+        </div>
+        <div class="column is-2">
+            <div class="field is-grouped">
+                <div class="control">
+                    <button class="button is-success is-rounded" id="add-customer-type-button">
+                        <span class="icon">
+                            <i class="fas fa-plus fa-xs"></i>
+                        </span>
+                        <span>
+                            Add Customer Type
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="columns">
+        <div class="column">
+            <table id="customer-type-table" class="table is-striped" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Index</th>
+                        <th>Customer Type</th>
+                        <% for(let i = 0; i < inventories.length; i++) { const inventory = inventories[i] %>
+                        <th><%=inventory.name%> (Re.)</th>
+                        <% } %>
+                        <th>Edit/Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for(let i = 0; i < customer_types.length; i++) { const customer_type = customer_types[i]; %>
+                    <tr>
+                        <td><%=(i+1)%></td>
+                        <td><%=customer_type.name;%></td>
+                        <% for(let j = 0; j < inventories.length; j++) { const inventory = inventories[j]; %>
+                        <% const customer_rate = get_customer_rate(customer_type, inventory.id); %>
+                        <td><%= customer_rate === -1?'':customer_rate %></td>
+                        <% } %>
+                        <td>
+                            <div class="field is-grouped">
+                                <div class="control">
+                                    <button class="type-edit-button has-text-info" data-key="<%=customer_type.name%>"
+                                        value="<%=customer_type.id%>"><i class="fas fa-pen"></i></button>
+                                </div>
+                                <div class="control">
+                                    <button class="type-delete-button has-text-danger"
+                                        data-key="<%=customer_type.name%>" value="<%=customer_type.id%>"><i
+                                            class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="confirm-delete">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title"></p>
+            <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+            <div class="columns">
+                <div class="column">
+                    <form action="" method="post">
+                        <button class="button is-danger is-rounded">Delete</button>
+                    </form>
+                </div>
+                <div class="column">
+                    <button type="button" class="button is-link is-light is-rounded close-modal">Cancel</button>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+
+<div class="modal" id="add-customer-type-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Add Customer Type</p>
+            <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+            <form action="/customer/customer-type" method="post">
+                <div class="field">
+                    <div class="control">
+                        <label for="customer-type-name" class="label">Name</label>
+                        <input type="text" name="name" class="input" id="customer-type-name" placeholder="Name">
+                        <p class="help is-danger" style="display: none;">Enter Valid Name</p>
+                    </div>
+                </div>
+                <h1 class="title is-4">Rates</h1>
+                <% for(let i = 0; i < inventories.length; i++) { const inventory = inventories[i]; %>
+                <div class="field is-horizontal">
+                    <div class="field-label">
+                        <label class="label"><%=inventory.name%></label>
+                    </div>
+                    <div class="field-body">
+                        <div class="field is-narrow">
+                            <div class="control has-icons-left">
+                                <input type="number" name="inv-<%=inventory.id%>" placeholder="Rate" class="input">
+                                <span class="icon is-left">
+                                    Re.
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
+                <div class="field is-grouped is-grouped-right">
+                    <div class="control">
+                        <button class="button is-success is-rounded">Add</button>
+                    </div>
+                    <div class="control">
+                        <div type="button" class="button is-rounded close-modal">Cancel</div>
+                    </div>
+                </div>
+
+            </form>
+        </section>
+    </div>
+</div>
+
+
+<div class="modal" id="edit-customer-type-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Edit Customer Type</p>
+            <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+            <form action="" method="post">
+                <div class="field">
+                    <div class="control">
+                        <label for="edit-customer-type-name" class="label">Name</label>
+                        <input type="text" name="name" class="input" id="edit-customer-type-name" placeholder="Name">
+                        <p class="help is-danger" style="display: none;">Enter Valid Name</p>
+                    </div>
+                </div>
+                <h1 class="title is-4">Rates</h1>
+                <% for(let i = 0; i < inventories.length; i++) { const inventory = inventories[i]; %>
+                <div class="field is-horizontal">
+                    <div class="field-label">
+                        <label class="label"><%=inventory.name%></label>
+                    </div>
+                    <div class="field-body">
+                        <div class="field is-narrow">
+                            <div class="control has-icons-left">
+                                <input type="number" name="inv-<%=inventory.id%>" placeholder="Rate" class="input">
+                                <span class="icon is-left">
+                                    Re.
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
+                <div class="field is-grouped is-grouped-right">
+                    <div class="control">
+                        <button class="button is-success is-rounded">Save</button>
+                    </div>
+                    <div class="control">
+                        <div type="button" class="button is-rounded close-modal">Cancel</div>
+                    </div>
+                </div>
+
+            </form>
+        </section>
+    </div>
+</div>
+
+
+
+<script>
+    const total_inventories = parseInt("<%= inventories.length %>");
+</script>
+
+<%include ../partials/footer %>

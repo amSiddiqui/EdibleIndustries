@@ -21,17 +21,20 @@
   margin-top: 10px;
   margin-left: 1px; }
 
-nav {
+nav.navbar {
   box-shadow: 2px 2px 4px 4px rgba(200, 200, 200, 0.4);
   margin-bottom: 30px; }
-  nav .logout-button {
+  nav.navbar .logout-button {
     transition: all 200ms ease-in;
     font-weight: 400; }
-  nav .logout-button:hover {
+  nav.navbar .logout-button:hover {
     background-color: rgba(230, 230, 230, 0.5); }
 
 .navbar-start .navbar-item {
   font-weight: 700; }
+
+.dt-bulma .select {
+  width: 83px; }
 
 #inventory-item-container img {
   max-height: 200px;
@@ -64,7 +67,8 @@ nav {
 .filepond-container {
   height: 82px; }
 
-.select, select {
+.select,
+select {
   width: 100%; }
 
 .notification {
@@ -80,7 +84,7 @@ nav {
   margin: auto; }
 
 #confirm-delete .modal-card {
-  width: 320px; }
+  width: 420px; }
 
 #inventory-edit-container img {
   height: 160px;
@@ -102,3 +106,20 @@ nav {
 
 .breadcrumb {
   margin-bottom: 30px; }
+
+.type-edit-button, .type-delete-button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 200ms ease-in-out; }
+
+.type-edit-button:active, .type-delete-button:active {
+  border: none; }
+
+.type-edit-button:hover, .type-delete-button:hover {
+  font-size: 1.1rem; }
+
+.field-label .label {
+  margin-top: 8px;
+  text-align: center;
+  font-weight: 500; }

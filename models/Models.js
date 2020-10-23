@@ -305,6 +305,7 @@ const CustomerType = db.sequelize.define("customer_type", {
     name: {
         type: db.Sequelize.STRING,
         allowNull: false,
+        unique: true,
         validate: {
             notEmpty: true
         }

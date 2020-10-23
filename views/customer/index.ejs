@@ -1,0 +1,28 @@
+<%include ../partials/header %>
+
+<div class="container">
+    <div class="columns">
+        <div class="column">
+            <h1 class="title">Customers</h1>
+        </div>
+        <div class="column is-3">
+            <div class="field is-grouped">
+                <div class="control">
+                    <button onclick="window.location.href= '/customer/customer-type'; "  class="button is-info is-rounded">Customer Types</button>
+                </div>
+                <div class="control">
+                    <button class="button is-success is-rounded" id="add-customer">
+                        <span class="icon">
+                            <i class="fas fa-plus fa-xs"></i>
+                        </span>
+                        <span>
+                            Add Customer
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%include ../partials/footer %>
