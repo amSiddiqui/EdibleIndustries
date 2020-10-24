@@ -296,6 +296,28 @@ const Customer = db.sequelize.define("customer", {
     underscored: true
 });
 
+Zone.hasMany(Customer, {
+    foreignKey: 'anchal'
+});
+Customer.belongsTo(Zone, {
+    foreignKey: 'anchal'
+});
+
+District.hasMany(Customer, {
+    foreignKey: 'jilla'
+});
+Customer.belongsTo(District, {
+    foreignKey: 'jilla'
+});
+
+PostOffice.hasMany(Customer, {
+    foreignKey: 'postal_code'
+});
+Customer.belongsTo(PostOffice, {
+    foreignKey: 'postal_code'
+});
+
+
 const CustomerType = db.sequelize.define("customer_type", {
     id: {
         type: db.Sequelize.INTEGER.UNSIGNED,

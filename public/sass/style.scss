@@ -1,8 +1,13 @@
+@charset "utf-8";
+@import "../../node_modules/bulma/bulma.sass";
+
 @font-face {
   font-family: 'Lobster';
   src: url('/fonts/Lobster-Regular.ttf');
   /* IE9 Compat Modes */
 }
+
+$shadow: rgba(200, 200, 200, 0.4);
 
 .auth-container {
   width: 600px;
@@ -28,7 +33,7 @@
 }
 
 nav.navbar {
-  box-shadow: 2px 2px 4px 4px rgba(200, 200, 200, 0.4);
+  box-shadow: 2px 2px 4px 4px $shadow;
   margin-bottom: 30px;
 
   .logout-button {
@@ -171,4 +176,26 @@ select {
     text-align: center;
     font-weight: 500;
   }
+}
+
+#customer-table {
+  td:hover {
+    cursor: pointer;
+  }
+}
+
+#customer-table {
+  tbody {
+    tr:hover{
+      background-color: $primary;
+    }
+  }
+}
+
+#add-new-customer-form {
+  .title {
+    margin-bottom: 0.6rem;
+    font-size: 1.2rem;
+  }
+  
 }

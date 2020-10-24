@@ -1,36 +1,11 @@
 var express = require('express');
 const middleware = require('../modules/middleware');
 const utility = require('../modules/utility');
+const NepaliDate = require('nepali-date-converter');
 var router = express.Router();
 
-/* GET home page. */
-router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
-  var breadcrumbs = [{
-      link: '/',
-      name: 'Home'
-    },
-    {
-      link: '/customer',
-      name: 'Customers'
-    },
-  ];
-  var data = {
-    dependency: '/customer/customer.js',
-    breadcrumbs
-  };
-  var flash_message = req.flash('flash_message');
-  var flash_color = req.flash('flash_color');
 
-  if (flash_message.length !== 0 && flash_color.length !== 0) {
-    data.flash_message = flash_message;
-    data.flash_color = flash_color;
-  }
-
-  res.render('customer/index.ejs', data);
-});
-
-
-router.get('/customer-type/:id', middleware.auth.loggedIn(), function(req, res, next) {
+router.get('/customer-type/:id', middleware.auth.loggedIn(), function (req, res, next) {
   let id = parseInt(req.params.id);
   utility.customer_type.fetchCustomerType(id).then((customer_type) => {
     customer_data = {
@@ -45,7 +20,10 @@ router.get('/customer-type/:id', middleware.auth.loggedIn(), function(req, res, 
         }
       });
     });
-    res.json({status: "success", customer_type: customer_data});
+    res.json({
+      status: "success",
+      customer_type: customer_data
+    });
   }).catch(err => {
     console.log(err);
     res.json({
@@ -56,7 +34,7 @@ router.get('/customer-type/:id', middleware.auth.loggedIn(), function(req, res, 
 });
 
 
-router.delete('/customer-type/:id', middleware.auth.loggedIn(), function(req, res, next) {
+router.delete('/customer-type/:id', middleware.auth.loggedIn(), function (req, res, next) {
   let id = parseInt(req.params.id);
   utility.customer_type.delete(id).then(() => {
     req.flash('flash_message', 'Customer type successfully deleted');
@@ -72,7 +50,7 @@ router.delete('/customer-type/:id', middleware.auth.loggedIn(), function(req, re
   });
 });
 
-router.put('/customer-type/:id', middleware.auth.loggedIn(), function(req, res, next) {
+router.put('/customer-type/:id', middleware.auth.loggedIn(), function (req, res, next) {
   let id = parseInt(req.params.id);
   var data = {
     name: req.body['name'].trim(),
@@ -83,13 +61,14 @@ router.put('/customer-type/:id', middleware.auth.loggedIn(), function(req, res, 
     req.flash('flash_color', 'danger');
     res.redirect('/customer/customer-type');
     res.end();
-  }else {
+  } else {
     utility.inventory.fetchAllInventoryID().then((inventories) => {
       inventories.forEach(inventory => {
-        data.rates.push(
-          {id: inventory.id, rate: req.body['inv-'+inventory.id].trim()}
-        );
-        utility.customer_type.editWithRates(id, data).then(()=> {
+        data.rates.push({
+          id: inventory.id,
+          rate: req.body['inv-' + inventory.id].trim()
+        });
+        utility.customer_type.editWithRates(id, data).then(() => {
           req.flash('flash_message', 'Customer type successfully edited');
           req.flash('flash_color', 'success');
           res.redirect('/customer/customer-type');
@@ -107,22 +86,21 @@ router.put('/customer-type/:id', middleware.auth.loggedIn(), function(req, res, 
 
 
 
-router.post('/customer-type-exists', middleware.auth.loggedIn(), function(req, res, next) {
+router.post('/customer-type-exists', middleware.auth.loggedIn(), function (req, res, next) {
   var name = req.body.name.trim();
   if (name.length == 0) {
     res.json({
       status: "fail",
       message: "Customer type name should not be empty"
     });
-  }
-  else {
+  } else {
     utility.customer_type.exists(name).then(result => {
       if (!result) {
         res.json({
           status: "success",
           message: "Name is unique"
         });
-      }else {
+      } else {
         res.json({
           status: "fail",
           message: "Customer type already exists"
@@ -171,7 +149,7 @@ router.get('/customer-type', middleware.auth.loggedIn(), function (req, res, nex
           return rate;
         }
       };
-      
+
       var flash_message = req.flash('flash_message');
       var flash_color = req.flash('flash_color');
 
@@ -179,7 +157,7 @@ router.get('/customer-type', middleware.auth.loggedIn(), function (req, res, nex
         data.flash_message = flash_message;
         data.flash_color = flash_color;
       }
-      res.render('customer/types.ejs', data);
+      res.render('customer/types', data);
     }).catch(err => {
       console.log(err);
       req.flash('flash_message', 'Error opening customer-type, try agina later');
@@ -197,7 +175,7 @@ router.get('/customer-type', middleware.auth.loggedIn(), function (req, res, nex
 
 });
 
-router.post('/customer-type', middleware.auth.loggedIn(), function(req, res, next) {
+router.post('/customer-type', middleware.auth.loggedIn(), function (req, res, next) {
   var data = {
     name: req.body['name'].trim(),
     rates: []
@@ -207,13 +185,14 @@ router.post('/customer-type', middleware.auth.loggedIn(), function(req, res, nex
     req.flash('flash_color', 'danger');
     res.redirect('/customer/customer-type');
     res.end();
-  }else {
+  } else {
     utility.inventory.fetchAllInventoryID().then((inventories) => {
       inventories.forEach(inventory => {
-        data.rates.push(
-          {id: inventory.id, rate: req.body['inv-'+inventory.id].trim()}
-        );
-        utility.customer_type.createWithRate(data).then(()=> {
+        data.rates.push({
+          id: inventory.id,
+          rate: req.body['inv-' + inventory.id].trim()
+        });
+        utility.customer_type.createWithRate(data).then(() => {
           req.flash('flash_message', 'Customer type successfully added');
           req.flash('flash_color', 'success');
           res.redirect('/customer/customer-type');
@@ -227,6 +206,158 @@ router.post('/customer-type', middleware.auth.loggedIn(), function(req, res, nex
       });
     });
   }
+});
+
+
+/* GET home page. */
+router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
+  var breadcrumbs = [{
+      link: '/',
+      name: 'Home'
+    },
+    {
+      link: '/customer',
+      name: 'Customers'
+    },
+  ];
+  var data = {
+    dependency: '/customer/customers.js',
+    breadcrumbs
+  };
+  var flash_message = req.flash('flash_message');
+  var flash_color = req.flash('flash_color');
+
+  if (flash_message.length !== 0 && flash_color.length !== 0) {
+    data.flash_message = flash_message;
+    data.flash_color = flash_color;
+  }
+
+  utility.customer.fetchAllCustomer().then(customers => {
+
+    for (let i = 0; i < customers.length; i++) {
+      customers[i].nepali_date = new NepaliDate(customers[i].createdAt).format("DD/MM/YYYY");
+    }
+    data.customers = customers;
+    res.render('customer/index', data);
+  });
+
+});
+
+router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
+  
+});
+
+router.get('/add', middleware.auth.loggedIn(), function (req, res, next) {
+  var breadcrumbs = [{
+      link: '/',
+      name: 'Home'
+    },
+    {
+      link: '/customer',
+      name: 'Customers'
+    },
+    {
+      link: '/customer/add',
+      name: 'Add'
+    },
+  ];
+  var data = {
+    dependency: '/customer/customer-add.js',
+    breadcrumbs
+  };
+  var flash_message = req.flash('flash_message');
+  var flash_color = req.flash('flash_color');
+
+  if (flash_message.length !== 0 && flash_color.length !== 0) {
+    data.flash_message = flash_message;
+    data.flash_color = flash_color;
+  }
+  utility.customer_type.fetchAllTypes().then(types => {
+    data.types = types;
+    utility.misc.fetchAllZones().then(zones => {
+      data.zones = zones;
+      res.render('customer/add', data);
+    }).catch(err => {
+      console.log(err);
+      req.flash('flash_message', 'Database Error. Please try again later.');
+      req.flash('flash_color', 'danger');
+      res.redirect('/customer');
+      res.end();
+    });    
+  }).catch(err => {
+    console.log(err);
+    req.flash('flash_message', 'Database Error. Please try again later.');
+    req.flash('flash_color', 'danger');
+    res.redirect('/customer');
+    res.end();
+  });
+
+});
+
+
+
+router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  let id = parseInt(req.params.id);
+  var breadcrumbs = [{
+      link: '/',
+      name: 'Home'
+    },
+    {
+      link: '/customer',
+      name: 'Customers'
+    },
+    {
+      link: '/customer/'+id,
+      name: 'Customer'
+    },
+    {
+      link: '/customer/edit/'+id,
+      name: 'Edit'
+    },
+  ];
+  var data = {
+    dependency: '/customer/customer-add.js',
+    breadcrumbs
+  };
+  var flash_message = req.flash('flash_message');
+  var flash_color = req.flash('flash_color');
+
+  if (flash_message.length !== 0 && flash_color.length !== 0) {
+    data.flash_message = flash_message;
+    data.flash_color = flash_color;
+  }
+
+  res.render('customer/edit', data);
+});
+
+router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  let id = parseInt(req.params.id);
+  var breadcrumbs = [{
+      link: '/',
+      name: 'Home'
+    },
+    {
+      link: '/customer',
+      name: 'Customers'
+    },
+    {
+      link: '/customer/'+id,
+      name: 'Customer'
+    },
+  ];
+  var data = {
+    dependency: '/customer/customer.js',
+    breadcrumbs
+  };
+  var flash_message = req.flash('flash_message');
+  var flash_color = req.flash('flash_color');
+
+  if (flash_message.length !== 0 && flash_color.length !== 0) {
+    data.flash_message = flash_message;
+    data.flash_color = flash_color;
+  }
+
+  res.render('customer/customer', data);
 });
 
 module.exports = router;

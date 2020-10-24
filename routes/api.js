@@ -5,6 +5,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const helpers = require('../modules/helpers');
+const utility = require('../modules/utility');
 
 
 router.get('/image', middleware.auth.loggedIn(), function (req, res, next) {
@@ -89,5 +90,54 @@ router.delete('/image/revert', middleware.auth.loggedIn(), function (req, res, n
         }
     }
 });
+
+router.get('/district/:id', middleware.auth.loggedIn(), function(req, res, next) {
+    let id = parseInt(req.params.id);
+    utility.misc.fetchAllDistrict(id).then(districts => {
+        res.json({
+            status: 'success',
+            districts
+        });
+    }).catch(err => {
+        console.log(err);
+        res.json({
+            status: 'fail',
+            message: 'DB error'
+        });
+    });
+});
+
+router.get('/post-office/:id', middleware.auth.loggedIn(), function(req, res, next) {
+    let id = parseInt(req.params.id);
+    utility.misc.fetchAllPostOffice(id).then(post_offices => {
+        res.json({
+            status: 'success',
+            post_offices
+        });
+    }).catch(err => {
+        console.log(err);
+        res.json({
+            status: 'fail',
+            message: 'DB error'
+        });
+    });
+});
+
+router.get('/customer-type/:id', middleware.auth.loggedIn(), function(req, res, next) {
+    let id = parseInt(req.params.id);
+    utility.customer_type.fetchCustomerType(id).then(customer_type => {
+        res.json({
+            status: 'success',
+            customer_type
+        });
+    }).catch(err => {
+        console.log(err);
+        res.json({
+            status: 'fail',
+            message: 'DB error'
+        });
+    });
+});
+
 
 module.exports = router;

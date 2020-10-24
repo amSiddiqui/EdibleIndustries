@@ -11,7 +11,7 @@
                     <button onclick="window.location.href= '/customer/customer-type'; "  class="button is-info is-rounded">Customer Types</button>
                 </div>
                 <div class="control">
-                    <button class="button is-success is-rounded" id="add-customer">
+                    <button class="button is-success is-rounded" onclick="window.location.href = '/customer/add'" id="add-customer">
                         <span class="icon">
                             <i class="fas fa-plus fa-xs"></i>
                         </span>
@@ -21,6 +21,38 @@
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
+    <div class="columns">
+        <div class="column">
+            <table id="customer-table" class="table is-striped is-hoverable" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Organization</th>
+                        <th>Type</th>
+                        <th>Added On</th>
+                        <th>Address</th>
+                        <th>City/Jilla</th>
+                        <th>Zone</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for(let i=0; i < customers.length; i++){ const customer = customers[i]; %>
+                    <tr>
+                        <td class="customer-id"><%= customer.id %></td>
+                        <td><%= customer.first_name+' '+customer.last_name %></td>
+                        <td><%= customer.organization %></td>
+                        <td><%= customer.customer_type.name %></td>
+                        <td><%= customer.nepali_date %></td>
+                        <td><%= customer.address1 %></td>
+                        <td><%= customer.post_office.name;%><br><%= customer.district.value %></td>
+                        <td><%= customer.zone.value %></td>
+                    </tr>
+                    <% } %>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

@@ -184,6 +184,24 @@ module.exports = {
                 cutomerId: cutomer_id,
                 rate
             });
+        },
+        fetchAllCustomer: () => {
+            return models.Customer.findAll({
+                include: [
+                    {
+                        model: models.Zone
+                    },
+                    {
+                        model: models.District,
+                    },
+                    {
+                        model: models.PostOffice
+                    },
+                    {
+                        model: models.CustomerType
+                    }
+                ]
+            });
         }
     },
     misc: {
@@ -195,6 +213,17 @@ module.exports = {
         },
         postal_code: (data) => {
             return models.PostOffice.bulkCreate(data);
+        },
+        fetchAllZones: () => {
+            return models.Zone.findAll();
+        },
+        fetchAllDistrict: async (zoneID) => {
+            const zone = await models.Zone.findByPk(zoneID);
+            return zone.getDistricts();
+        },
+        fetchAllPostOffice: async (districtID) => {
+            const district = await models.District.findByPk(districtID);
+            return district.getPost_offices();
         }
     }
 }

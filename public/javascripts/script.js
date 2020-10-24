@@ -14,4 +14,10 @@ $(document).ready(() => {
             $('.notification').hide();
         });
     }, 4000);
+
+    $(document).on('keypress', 'input,select', function (e) {
+        if (e.which == 13) {
+            e.preventDefault();
+        }
+    });
 });
