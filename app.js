@@ -84,7 +84,14 @@ app.use((req, res, next) => {
 if (fs.existsSync('uploads/tmp')) {
   fs.rmdirSync('uploads/tmp', {recursive: true});
 }
-fs.mkdirSync('uploads/tmp');
+
+if (fs.existsSync('uploads')) {
+  fs.mkdirSync('uploads/tmp');
+}else{
+  fs.mkdirSync('uploads');
+  fs.mkdirSync('uploads/tmp');
+}
+
 
 
 app.use('/', indexRouter);
