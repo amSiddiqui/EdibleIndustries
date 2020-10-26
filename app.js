@@ -29,15 +29,17 @@ app.set('view engine', 'ejs');
 
 // Create Session
 app.use(session({
-	secret: 'Exmn3dsaf23S122qfsan58bEXF7Jupke',
-	resave: true,
-	saveUninitialized: true
+  secret: 'Exmn3dsaf23S122qfsan58bEXF7Jupke',
+  resave: true,
+  saveUninitialized: true
 }));
 
 
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({
+  extended: false
+}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
@@ -50,19 +52,22 @@ const db = require('./modules/database');
 
 // Authentication Connection to database;
 db.sequelize.authenticate()
-    .then(()=>{
-        console.log("Connected to database successfully");
-    })
-    .catch(err => {
-        console.error("An error occured while connecting ", err);
-});
+  .then(() => {
+    console.log("Connected to database successfully");
+  })
+  .catch(err => {
+    console.error("An error occured while connecting ", err);
+    process.exit(1);
+  });
 
 
 // Initializing models
 const models = require('./models/Models');
 
 // Sync DB
-db.sequelize.sync({force: true}).then(() => {
+db.sequelize.sync({
+  force: true
+}).then(() => {
   // require('./modules/seed')(true);
   console.log("Database synchronized");
 }).catch(err => {
@@ -71,8 +76,8 @@ db.sequelize.sync({force: true}).then(() => {
 
 global.dbErrorMsg = "Database not responding try again later";
 global.cookieOpt = {
-    maxAge: 24 * 60 * 60 * 1000,
-    httpOnly: true,
+  maxAge: 24 * 60 * 60 * 1000,
+  httpOnly: true,
 };
 
 app.use((req, res, next) => {
@@ -82,12 +87,14 @@ app.use((req, res, next) => {
 
 // Delete temp directory and create new one
 if (fs.existsSync('uploads/tmp')) {
-  fs.rmdirSync('uploads/tmp', {recursive: true});
+  fs.rmdirSync('uploads/tmp', {
+    recursive: true
+  });
 }
 
 if (fs.existsSync('uploads')) {
   fs.mkdirSync('uploads/tmp');
-}else{
+} else {
   fs.mkdirSync('uploads');
   fs.mkdirSync('uploads/tmp');
 }
@@ -103,12 +110,12 @@ app.use('/records', recordsRouter);
 app.use('/api', apiRouter);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
