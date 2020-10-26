@@ -377,15 +377,18 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
 
   utility.customer.fetchCustomer(id).then(customer => {
     utility.inventory.fetchAllInventoryID().then(inventories => {
+      
       var phone = customer.phone;
       data.inventories = inventories;
       data.getInventoryRate = function(inventory_id) {
         let rate = 0;
-        customer.inventories.forEach(inventory => {
+        for (let i = 0; i < customer.inventories.length; i++) {
+          const inventory = customer.inventories[i];
           if (inventory.id == inventory_id) {
             return 'Re. '+inventory.customer_rate.rate;
           }
-        });
+        }
+        
         return 'Not Set';
       };
       if (phone.split(' ').length == 1) {
