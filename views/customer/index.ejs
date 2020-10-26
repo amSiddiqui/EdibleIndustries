@@ -40,7 +40,7 @@
                 </thead>
                 <tbody>
                     <% for(let i=0; i < customers.length; i++){ const customer = customers[i]; %>
-                    <tr>
+                    <tr onclick="window.location.href = '/customer/<%=customer.id%>';">
                         <td class="customer-id"><%= customer.id %></td>
                         <td><%= customer.first_name+' '+customer.last_name %></td>
                         <td><%= customer.organization %></td>

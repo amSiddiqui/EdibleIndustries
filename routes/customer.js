@@ -209,43 +209,6 @@ router.post('/customer-type', middleware.auth.loggedIn(), function (req, res, ne
 });
 
 
-/* GET home page. */
-router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
-  var breadcrumbs = [{
-      link: '/',
-      name: 'Home'
-    },
-    {
-      link: '/customer',
-      name: 'Customers'
-    },
-  ];
-  var data = {
-    dependency: '/customer/customers.js',
-    breadcrumbs
-  };
-  var flash_message = req.flash('flash_message');
-  var flash_color = req.flash('flash_color');
-
-  if (flash_message.length !== 0 && flash_color.length !== 0) {
-    data.flash_message = flash_message;
-    data.flash_color = flash_color;
-  }
-
-  utility.customer.fetchAllCustomer().then(customers => {
-
-    for (let i = 0; i < customers.length; i++) {
-      customers[i].nepali_date = new NepaliDate(customers[i].createdAt).format("DD/MM/YYYY");
-    }
-    data.customers = customers;
-    res.render('customer/index', data);
-  });
-
-});
-
-router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
-  
-});
 
 router.get('/add', middleware.auth.loggedIn(), function (req, res, next) {
   var breadcrumbs = [{
@@ -283,7 +246,7 @@ router.get('/add', middleware.auth.loggedIn(), function (req, res, next) {
       req.flash('flash_color', 'danger');
       res.redirect('/customer');
       res.end();
-    });    
+    });
   }).catch(err => {
     console.log(err);
     req.flash('flash_message', 'Database Error. Please try again later.');
@@ -307,11 +270,11 @@ router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
       name: 'Customers'
     },
     {
-      link: '/customer/'+id,
+      link: '/customer/' + id,
       name: 'Customer'
     },
     {
-      link: '/customer/edit/'+id,
+      link: '/customer/edit/' + id,
       name: 'Edit'
     },
   ];
@@ -326,8 +289,63 @@ router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
     data.flash_message = flash_message;
     data.flash_color = flash_color;
   }
+  utility.customer_type.fetchAllTypes().then(types => {
+    data.types = types;
+    utility.misc.fetchAllZones().then(zones => {
+      data.zones = zones;
+      utility.customer.fetchCustomer(id).then(customer => {
+        utility.inventory.fetchAllInventoryID().then(inventories => {
+          data.inventories = inventories;
+          data.getInventoryRate = function(inventory_id)  {
+            let rate = 0;
+            customer.inventories.forEach(inventory => {
+              if (inventory.id == inventory_id) {
+                return inventory.customer_rate.rate;
+              }
+            });
+            return rate;
+          };
+          var phone = customer.phone;
+          if (phone.split(' ').length == 1) {
+            customer.phone = '';
+            customer.phone_code = '+977';
+          }else{
+            var temp = phone.split(' ');
+            customer.phone_code = temp[0];
+            temp.shift();
+            customer.phone = temp.join(' ');
+          }
+          data.customer = customer;
+          res.render('customer/edit', data);
+        }).catch(err => {
+          console.log(err);
+          req.flash('flash_message', 'Database Error. Please try again later.');
+          req.flash('flash_color', 'danger');
+          res.redirect('/customer');
+          res.end();
+        });
+      }).catch(err => {
+        console.log(err);
+        req.flash('flash_message', 'Database Error. Please try again later.');
+        req.flash('flash_color', 'danger');
+        res.redirect('/customer');
+        res.end();
+      });
+    }).catch(err => {
+      console.log(err);
+      req.flash('flash_message', 'Database Error. Please try again later.');
+      req.flash('flash_color', 'danger');
+      res.redirect('/customer');
+      res.end();
+    });
+  }).catch(err => {
+    console.log(err);
+    req.flash('flash_message', 'Database Error. Please try again later.');
+    req.flash('flash_color', 'danger');
+    res.redirect('/customer');
+    res.end();
+  });
 
-  res.render('customer/edit', data);
 });
 
 router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
@@ -341,7 +359,7 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
       name: 'Customers'
     },
     {
-      link: '/customer/'+id,
+      link: '/customer/' + id,
       name: 'Customer'
     },
   ];
@@ -357,7 +375,185 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     data.flash_color = flash_color;
   }
 
-  res.render('customer/customer', data);
+  utility.customer.fetchCustomer(id).then(customer => {
+    utility.inventory.fetchAllInventoryID().then(inventories => {
+      var phone = customer.phone;
+      data.inventories = inventories;
+      data.getInventoryRate = function(inventory_id) {
+        let rate = 0;
+        customer.inventories.forEach(inventory => {
+          if (inventory.id == inventory_id) {
+            return 'Re. '+inventory.customer_rate.rate;
+          }
+        });
+        return 'Not Set';
+      };
+      if (phone.split(' ').length == 1) {
+        customer.phone = '';
+      }
+      customer.nepali_date = new NepaliDate(customer.createdAt).format('ddd, DD MMMM YYYY');
+      data.customer = customer;
+      res.render('customer/customer', data);
+    }).catch(err => {
+      console.log(err);
+      req.flash('flash_message', 'Database Error. Please try again later.');
+      req.flash('flash_color', 'danger');
+      res.redirect('/customer');
+      res.end();
+    });
+  }).catch(err => {
+    console.log(err);
+    req.flash('flash_message', 'Database Error. Please try again later.');
+    req.flash('flash_color', 'danger');
+    res.redirect('/customer');
+    res.end();
+  });
+
+});
+
+router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  let id = parseInt(req.params.id);
+  let customer_data = {
+    first_name: req.body.first_name.trim(),
+    last_name: req.body.last_name.trim(),
+    organization: req.body.organization.trim(),
+    email: req.body.email.trim(),
+    phone: req.body.phone_code.trim() + ' ' + req.body.phone.trim(),
+    address1: req.body.address.trim()
+  };
+  let address = {
+    zone: req.body.zone.trim(),
+    district: req.body.district.trim(),
+    post_office: req.body.post_office.trim(),
+  };
+  let customer_type = req.body.customer_type.trim();
+  if (customer_data.first_name.length === 0 || customer_type === 0) {
+    req.flash('flash_message', 'Cannot edit the customer make sure your inputs are correct');
+    req.flash('flash_color', 'danger');
+    res.redirect('/customer/'+id);
+    res.end();
+  }
+  utility.inventory.fetchAllInventory().then(inventories => {
+    let rates = [];
+    inventories.forEach(inventory => {
+      var rate = req.body['rate-' + inventory.id];
+      if (typeof rate != 'undefined') {
+        rate = isNaN(rate) ? 0 : parseFloat(rate);
+        rates.push({
+          inventoryId: inventory.id,
+          rate
+        })
+      }
+    });
+    utility.customer.editFull(id, customer_data, address, customer_type, rates).then(() => {
+      req.flash('flash_message', 'Customer added successfully');
+      req.flash('flash_color', 'success');
+      res.redirect('/customer/'+id);
+      res.end();
+    }).catch(err => {
+      console.log(err);
+      req.flash('flash_message', 'Cannot editing customer. DB Error');
+      req.flash('flash_color', 'danger');
+      res.redirect('/customer/'+id);
+      res.end();
+    });
+  }).catch(err => {
+    console.log(err);
+    req.flash('flash_message', 'Cannot editing customer. DB Error');
+    req.flash('flash_color', 'danger');
+    res.redirect('/customer/'+id);
+    res.end();
+  });
+});
+
+
+/* GET home page. */
+router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
+  var breadcrumbs = [{
+      link: '/',
+      name: 'Home'
+    },
+    {
+      link: '/customer',
+      name: 'Customers'
+    },
+  ];
+  var data = {
+    dependency: '/customer/customers.js',
+    breadcrumbs
+  };
+  var flash_message = req.flash('flash_message');
+  var flash_color = req.flash('flash_color');
+
+  if (flash_message.length !== 0 && flash_color.length !== 0) {
+    data.flash_message = flash_message;
+    data.flash_color = flash_color;
+  }
+
+  utility.customer.fetchAllCustomer().then(customers => {
+
+    for (let i = 0; i < customers.length; i++) {
+      customers[i].nepali_date = new NepaliDate(customers[i].createdAt).format("DD/MM/YYYY");
+    }
+    data.customers = customers;
+    res.render('customer/index', data);
+  });
+
+});
+
+router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
+  let customer_data = {
+    first_name: req.body.first_name.trim(),
+    last_name: req.body.last_name.trim(),
+    organization: req.body.organization.trim(),
+    email: req.body.email.trim(),
+    phone: req.body.phone_code.trim() + ' ' + req.body.phone.trim(),
+    address1: req.body.address.trim()
+  };
+  let address = {
+    zone: req.body.zone.trim(),
+    district: req.body.district.trim(),
+    post_office: req.body.post_office.trim(),
+  };
+  let customer_type = req.body.customer_type.trim();
+  if (customer_data.first_name.length === 0 || customer_type === 0) {
+    req.flash('flash_message', 'Cannot create new customer make sure your inputs are correct');
+    req.flash('flash_color', 'danger');
+    res.redirect('/customer');
+    res.end();
+  }
+  utility.inventory.fetchAllInventory().then(inventories => {
+    let rates = [];
+    inventories.forEach(inventory => {
+      var rate = req.body['rate-' + inventory.id];
+      if (typeof rate != 'undefined') {
+        rate = isNaN(rate) ? 0 : parseFloat(rate);
+        rates.push({
+          inventoryId: inventory.id,
+          rate
+        })
+      }
+    });
+    utility.customer.createFull(customer_data, address, customer_type, rates).then((new_id) => {
+      req.flash('flash_message', 'Customer added successfully');
+      req.flash('flash_color', 'success');
+      res.redirect('/customer/'+new_id);
+      res.end();
+    }).catch(err => {
+      console.log(err);
+      req.flash('flash_message', 'Cannot create new customer. DB Error');
+      req.flash('flash_color', 'danger');
+      res.redirect('/customer');
+      res.end();
+    });
+  }).catch(err => {
+    console.log(err);
+    req.flash('flash_message', 'Cannot create new customer. DB Error');
+    req.flash('flash_color', 'danger');
+    res.redirect('/customer');
+    res.end();
+  });
+
 });
 
 module.exports = router;

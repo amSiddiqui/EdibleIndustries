@@ -258,12 +258,6 @@ const Customer = db.sequelize.define("customer", {
     },
     email: {
         type: db.Sequelize.STRING,
-        allowNull: false,
-        unique: true,
-        validate: {
-            isEmail: true,
-            notEmpty: true
-        },
     },
     phone: {
         type: db.Sequelize.STRING

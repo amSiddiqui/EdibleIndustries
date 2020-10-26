@@ -126,10 +126,47 @@ router.get('/post-office/:id', middleware.auth.loggedIn(), function(req, res, ne
 router.get('/customer-type/:id', middleware.auth.loggedIn(), function(req, res, next) {
     let id = parseInt(req.params.id);
     utility.customer_type.fetchCustomerType(id).then(customer_type => {
-        res.json({
-            status: 'success',
-            customer_type
+        utility.inventory.fetchAllInventoryID().then(inventories => {
+            res.json({
+                status: 'success',
+                customer_type,
+                inventories
+            });
         });
+    }).catch(err => {
+        console.log(err);
+        res.json({
+            status: 'fail',
+            message: 'DB error'
+        });
+    });
+});
+
+router.get('/customer/:id', middleware.auth.loggedIn(), function(req, res, next) {
+    let id = parseInt(req.params.id);
+    utility.customer.fetchCustomer(id).then(customer => {
+        utility.inventory.fetchAllInventoryID().then(inventories => {
+            utility.customer_type.fetchCustomerType(customer.customer_type.id).then( customer_type => {
+                res.json({
+                    status: 'success',
+                    customer_type,
+                    inventories,
+                    customer
+                });
+            }).catch(err => {
+                console.log(err);
+                res.json({
+                    status: 'fail',
+                    message: 'DB error'
+                });
+            });;
+        }).catch(err => {
+            console.log(err);
+            res.json({
+                status: 'fail',
+                message: 'DB error'
+            });
+        });;
     }).catch(err => {
         console.log(err);
         res.json({

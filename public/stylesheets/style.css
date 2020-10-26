@@ -7837,3 +7837,8 @@ select {
 #add-new-customer-form .title {
   margin-bottom: 0.6rem;
   font-size: 1.2rem; }
+
+#edit-cutomer-button {
+  position: absolute;
+  right: 10px;
+  top: 10px; }

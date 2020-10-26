@@ -178,6 +178,51 @@ module.exports = {
                 ...data
             });
         },
+        createFull: async (customerData, addressData, customerType, rates) => {
+            var customer = await models.Customer.create({...customerData});
+            var zone = await models.Zone.findByPk(addressData.zone);
+            var district = await models.District.findByPk(addressData.district);
+            var post_office = await models.PostOffice.findByPk(addressData.post_office);
+            customer.setZone(zone);
+            customer.setDistrict(district);
+            customer.setPost_office(post_office);
+            var customer_type = await models.CustomerType.findByPk(customerType);
+            customer.setCustomer_type(customer_type);
+            await customer.save();
+            for (let i = 0; i < rates.length; i++) {
+                 rates[i].customerId = customer.id;
+            }
+            var created = await models.CustomerRate.bulkCreate(rates);
+            return customer.id;
+        },
+        editFull: async (id, customerData, addressData, customerType, rates) => {
+            var customer = await models.Customer.findByPk(id);
+            customer.first_name = customerData.first_name;
+            customer.last_name = customerData.last_name;
+            customer.organization = customerData.organization;
+            customer.email = customerData.email;
+            customer.phone = customerData.phone;
+            customer.address1 = customerData.address1;
+            var zone = await models.Zone.findByPk(addressData.zone);
+            var district = await models.District.findByPk(addressData.district);
+            var post_office = await models.PostOffice.findByPk(addressData.post_office);
+            customer.setZone(zone);
+            customer.setDistrict(district);
+            customer.setPost_office(post_office);
+            var customer_type = await models.CustomerType.findByPk(customerType);
+            customer.setCustomer_type(customer_type);
+            await customer.save();
+            await models.CustomerRate.destroy({
+                where: {
+                    customerId: customer.id
+                }
+            })
+            for (let i = 0; i < rates.length; i++) {
+                 rates[i].customerId = customer.id;
+            }
+            await models.CustomerRate.bulkCreate(rates);
+            return customer.id;
+        },
         addInventoryRate: (cutomer_id, inventory_id, rate) => {
             return models.CustomerRate.create({
                 inventoryId: inventory_id,
@@ -199,6 +244,27 @@ module.exports = {
                     },
                     {
                         model: models.CustomerType
+                    }
+                ]
+            });
+        },
+        fetchCustomer: (id) => {
+            return models.Customer.findByPk(id, {
+                include: [
+                    {
+                        model: models.Zone
+                    },
+                    {
+                        model: models.District,
+                    },
+                    {
+                        model: models.PostOffice
+                    },
+                    {
+                        model: models.CustomerType
+                    },
+                    {
+                        model: models.Inventory
                     }
                 ]
             });
