@@ -13,8 +13,8 @@ module.exports = {
             return (req, res, next) => {
                 if (!req.session.loggedin) {
                     // TODO: REMOVE ON DEPLOY
-                    // next();
-                    res.redirect(redirect);
+                    next();
+                    // res.redirect(redirect);
                 }else{
                     next();
                 }
