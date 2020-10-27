@@ -112,7 +112,7 @@ module.exports = function (fillAdd) {
         first_name: 'Aamir',
         last_name: 'Siddiqui',
         email: 'gt_ams@yahoo.in',
-        password: 'password',
+        password: 'Edible1077',
     }]
 
     data.forEach(d => {
