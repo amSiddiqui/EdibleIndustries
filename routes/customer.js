@@ -382,7 +382,7 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
       if (phone.split(' ').length == 1) {
         customer.phone = '';
       }
-      customer.nepali_date = new NepaliDate(customer.createdAt).format('ddd, DD MMMM YYYY');
+      customer.nepali_date = new NepaliDate(customer.createdAt).format('ddd, DD MMMM YYYY', 'np');
       data.customer = customer;
       res.render('customer/customer', data);
     }).catch(err => {
