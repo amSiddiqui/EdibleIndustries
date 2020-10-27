@@ -9,7 +9,7 @@ $(document).ready(() => {
 
     setTimeout(() => {
         $('.notification').animate({
-            'margin-top' : '-63px'
+            'margin-top': '-63px'
         }, complete = () => {
             $('.notification').hide();
         });
@@ -20,4 +20,14 @@ $(document).ready(() => {
             e.preventDefault();
         }
     });
+    var nabarShow = false;
+    $(".navbar-burger").click(function() {
+        if (!nabarShow) {
+            $("#navMenu").show();
+        }else{
+            $("#navMenu").hide();
+        }
+        nabarShow = !nabarShow;
+    });
+    
 });

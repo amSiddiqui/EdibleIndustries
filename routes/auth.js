@@ -45,11 +45,17 @@ router.post('/login', middleware.auth.notLoggedIn(), (req, res) => {
 });
 
 
-router.get('/signup', middleware.auth.notLoggedIn(), (req, res) => {
+router.get('/signup', middleware.auth.loggedIn(), (req, res) => {
     data = {
         signup_error: false,
         errors: {}
     };
+    var breadcrumbs = [{
+        link: '/signup',
+        name: 'Add User'
+      }
+    ];
+    data.breadcrumbs = breadcrumbs;
     flashData = req.flash("signup_error");
     if (flashData.length != 0) {
         data.signup_error = true;
@@ -59,7 +65,7 @@ router.get('/signup', middleware.auth.notLoggedIn(), (req, res) => {
 });
 
 
-router.post('/signup', middleware.auth.notLoggedIn(), (req, res) => {
+router.post('/signup', middleware.auth.loggedIn(), (req, res) => {
     var first_name = req.body.first_name.trim();
     var last_name = req.body.last_name.trim();
     var email = req.body.email.trim();
@@ -112,9 +118,8 @@ router.post('/signup', middleware.auth.notLoggedIn(), (req, res) => {
     }
     if (!error) {
         utility.user.createUser(data).then(user => {
-            req.session.loggedin = true;
-            req.session.email = email;
-            req.session.first_name = first_name;
+            req.flash('flash_message', 'Added User');
+            req.flash('flash_color', 'success');
             res.redirect('/');
         }).catch(err => {
             if (err.errors[0].validatorKey == 'not_unique') {

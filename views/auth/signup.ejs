@@ -1,174 +1,244 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Edible Industries</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css">
-    <link rel="stylesheet" href="/stylesheets/style.css">
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
-    <script src="https://kit.fontawesome.com/1857bf7981.js" crossorigin="anonymous"></script>
-  </head>
-  <body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Edible Industries</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css">
+  <link rel="stylesheet" href="/stylesheets/style.css">
 
-  <section class="section">
-      <div class="container">
-          <div class="auth-container">
-              <h1 class="title is-1 auth-title">Edible Industries</h1>
-              <div class="card auth-card">
-                  <div class="card-content">
-                      <div class="content">
-                          <div class="columns">
-                              <div class="column">
-                                  <h1 class="title">Sign Up</h1>
-                                  <form action="/auth/signup" method="post">
-                                      <div class="columns">
-                                          <div class="column">
-                                              <div class="field">
-                                                  <label class="label">First Name</label>
-                                                  <div class="control has-icons-right">
-                                                  <% if (signup_error) { %>
-                                                    <% if(errors.name_error) { %>
-                                                      <input name="first_name" class="input is-danger" type="text" placeholder="Firt Name" value="<%= errors.first_name %>">
-                                                      <span class="icon is-small is-right">
-                                                        <i class="fas fa-exclamation-triangle"></i>
-                                                      </span>
-                                                      <p class="help is-danger">Please Enter Name</p>
-                                                    <% } else{ %>
-                                                      <input name="first_name" class="input is-success" type="text" placeholder="Firt Name" value="<%= errors.first_name %>">
-                                                      
-                                                    <% } %>
-                                                  <% }else{ %>
-                                                    <input name="first_name" class="input" type="text" placeholder="Firt Name">
-                                                  <% } %>
-                                                    
-                                                    
-                                                  </div>
-                                              </div>
-                                          </div>
-                                          <div class="column">
-                                              <div class="field">
-                                                  <label class="label">Last Name</label>
-                                                  <div class="control has-icons-right">
-                                                    <% if (signup_error) { %>
-                                                    <input name="last_name" class="input" type="text" placeholder="Last Name"  value="<%= errors.last_name %>">
-                                                    <% }else{ %>
-                                                      <input name="last_name" class="input" type="text" placeholder="Last Name">
-                                                    <% } %>
-                                                    
-                                                  </div>
-                                              </div>
-                                          </div>
-                                      </div>                                    
-                                      <div class="field">
-                                          <label class="label">Email</label>
-                                          <div class="control has-icons-left has-icons-right">
-                                            <% if (signup_error) { %>
-                                              <% if(errors.email_error) { %>
-                                              <input name="email" class="input is-danger" type="email" placeholder="Email" value="<%= errors.email %>">
-                                              <span class="icon is-small is-left">
-                                                <i class="fas fa-envelope"></i>
-                                              </span>
-                                              <span class="icon is-small is-right">
-                                                <i class="fas fa-exclamation-triangle"></i>
-                                              </span>
-                                              <p class="help is-danger"><%= errors.email_error_msg %></p>
-                                            <% }else{ %>
-                                              <input name="email" class="input is-success" type="text" placeholder="Email" value="<%= errors.email %>">
-                                              <span class="icon is-small is-left">
-                                                <i class="fas fa-envelope"></i>
-                                              </span>
-                                              <% } %>
-                                            <% } else {%>
-                                              <input name="email" class="input" type="text" placeholder="Email">
-                                              <span class="icon is-small is-left">
-                                                <i class="fas fa-envelope"></i>
-                                              </span>
-                                            <% } %>
-                                          </div>
-                                      </div>
-                                      <div class="field">
-                                          <label class="label">Password</label>
-                                          <div class="control has-icons-left has-icons-right">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
+    integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
+    crossorigin="anonymous"></script>
+  <script src="https://kit.fontawesome.com/1857bf7981.js" crossorigin="anonymous"></script>
+</head>
 
-                                            <% if (signup_error) { %>
-                                              <% if(errors.password_error) { %>
-                                                <input name="password" class="input is-danger" type="password" placeholder="Password" value="<%= errors.password %>">
-                                                <span class="icon is-small is-left">
-                                                  <i class="fas fa-key"></i>
-                                                </span>
-                                                <span class="icon is-small is-right">
-                                                  <i class="fas fa-exclamation-triangle"></i>
-                                                </span>
-                                              <p class="help is-danger"><%= errors.password_error_msg %></p>
-                                            <% }else{ %>
-                                              <input name="password" class="input is-success" type="password" placeholder="Password" value="<%= errors.password %>">
-                                                <span class="icon is-small is-left">
-                                                  <i class="fas fa-key"></i>
-                                                </span>
-                                              <% } %>
-                                            <% } else {%>
-                                              <input name="password" name="password" class="input" type="password" placeholder="Password">
-                                              <span class="icon is-small is-left">
-                                                <i class="fas fa-key"></i>
-                                              </span>
-                                            <% } %>
+<body>
+  <nav class="navbar" role="navigation" aria-label="main navigation">
+    <div class="container">
 
-                                          </div>
-                                          
-                                      </div>
-                                      <div class="field">
-                                          <label class="label">Confirm Password</label>
-                                          <div class="control has-icons-left has-icons-right">
-                                            <% if (signup_error) { %>
-                                              <% if(errors.re_password_error) { %>
-                                                <input name="re_password" class="input is-danger" type="password" placeholder="Confirm Password" value="<%= errors.re_password %>">
-                                                <span class="icon is-small is-left">
-                                                  <i class="fas fa-key"></i>
-                                                </span>
-                                                <span class="icon is-small is-right">
-                                                  <i class="fas fa-exclamation-triangle"></i>
-                                                </span>
-                                              <p class="help is-danger"><%= errors.re_password_error_msg %></p>
-                                            <% }else{ %>
-                                              <input name="re_password" class="input is-success" type="password" placeholder="Confirm Password" value="<%= errors.re_password %>">
-                                                <span class="icon is-small is-left">
-                                                  <i class="fas fa-key"></i>
-                                                </span>
-                                              <% } %>
-                                            <% } else {%>
-                                              <input name="re_password" name="password" class="input" type="password" placeholder="Confirm Password">
-                                              <span class="icon is-small is-left">
-                                                <i class="fas fa-key"></i>
-                                              </span>
-                                            <% } %>
-                                            
-                                          </div>
-                                      </div>
-                                      <div class="field">
-                                          <p class="control">
-                                            <button class="button is-success">
-                                              Signup
-                                            </button>
-                                          </p>
-                                      </div>
-                                  </form>
-                                  <div class="columns auth-card-footer">
-                                      <div class="column">
-                                          <a href="/auth/login">Log in</a>
-                                      </div>
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
-                  </div>
+      <div class="navbar-brand">
+        <a class="auth-title navbar-item brand-text" href="#">
+          Edible Industries
+        </a>
 
-              </div>
+        <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navMenu">
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+
+      <div id="navMenu" class="navbar-menu">
+        <div class="navbar-start">
+          <a href="/" class="navbar-item">
+            Home
+          </a>
+          <a href="/inventory" class="navbar-item">
+            Inventory
+          </a>
+          <a href="/customer" class="navbar-item">
+            Customer
+          </a>
+          <a href="/records" class="navbar-item">
+            Records
+          </a>
+          <a href="/billing" class="navbar-item">
+            Billing
+          </a>
+        </div>
+
+        <div class="navbar-end">
+          <div class="navbar-item">
+            Hello <%=first_name%>
           </div>
+          <div class="navbar-item">
+            <div class="buttons">
+              <a href="/auth/logout" class="button is-rounded logout-button">
+                <strong>Log Out</strong>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <% if(typeof breadcrumbs !== 'undefined') { %>
+  <div class="container">
+    <div class="breadcrumb" aria-label="breadcrumbs">
+      <ul>
+        <% for (var i = 0; i < breadcrumbs.length; i++) { %>
+        <% var breadcrumb = breadcrumbs[i]; %>
+        <li <%= breadcrumbs.length == i+1? 'class=is-active':'' %>><a href="<%=breadcrumb.link%>"
+            <%= breadcrumbs.length == i+1? 'aria-current=page':'' %>> <%=breadcrumb.name%> </a></li>
+        <% } %>
+      </ul>
+    </div>
+  </div>
+  <% } %>
+
+  <div class="container">
+    <div class="auth-container">
+      <div class="card auth-card">
+        <div class="card-content">
+          <div class="content">
+            <div class="columns">
+              <div class="column">
+                <h1 class="title">Add User</h1>
+                <form action="/auth/signup" method="post">
+                  <div class="columns">
+                    <div class="column">
+                      <div class="field">
+                        <label class="label">First Name</label>
+                        <div class="control has-icons-right">
+                          <% if (signup_error) { %>
+                          <% if(errors.name_error) { %>
+                          <input name="first_name" class="input is-danger" type="text" placeholder="Firt Name"
+                            value="<%= errors.first_name %>">
+                          <span class="icon is-small is-right">
+                            <i class="fas fa-exclamation-triangle"></i>
+                          </span>
+                          <p class="help is-danger">Please Enter Name</p>
+                          <% } else{ %>
+                          <input name="first_name" class="input is-success" type="text" placeholder="Firt Name"
+                            value="<%= errors.first_name %>">
+
+                          <% } %>
+                          <% }else{ %>
+                          <input name="first_name" class="input" type="text" placeholder="Firt Name">
+                          <% } %>
+
+
+                        </div>
+                      </div>
+                    </div>
+                    <div class="column">
+                      <div class="field">
+                        <label class="label">Last Name</label>
+                        <div class="control has-icons-right">
+                          <% if (signup_error) { %>
+                          <input name="last_name" class="input" type="text" placeholder="Last Name"
+                            value="<%= errors.last_name %>">
+                          <% }else{ %>
+                          <input name="last_name" class="input" type="text" placeholder="Last Name">
+                          <% } %>
+
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label class="label">Email</label>
+                    <div class="control has-icons-left has-icons-right">
+                      <% if (signup_error) { %>
+                      <% if(errors.email_error) { %>
+                      <input name="email" class="input is-danger" type="email" placeholder="Email"
+                        value="<%= errors.email %>">
+                      <span class="icon is-small is-left">
+                        <i class="fas fa-envelope"></i>
+                      </span>
+                      <span class="icon is-small is-right">
+                        <i class="fas fa-exclamation-triangle"></i>
+                      </span>
+                      <p class="help is-danger"><%= errors.email_error_msg %></p>
+                      <% }else{ %>
+                      <input name="email" class="input is-success" type="text" placeholder="Email"
+                        value="<%= errors.email %>">
+                      <span class="icon is-small is-left">
+                        <i class="fas fa-envelope"></i>
+                      </span>
+                      <% } %>
+                      <% } else {%>
+                      <input name="email" class="input" type="text" placeholder="Email">
+                      <span class="icon is-small is-left">
+                        <i class="fas fa-envelope"></i>
+                      </span>
+                      <% } %>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label class="label">Password</label>
+                    <div class="control has-icons-left has-icons-right">
+
+                      <% if (signup_error) { %>
+                      <% if(errors.password_error) { %>
+                      <input name="password" class="input is-danger" type="password" placeholder="Password"
+                        value="<%= errors.password %>">
+                      <span class="icon is-small is-left">
+                        <i class="fas fa-key"></i>
+                      </span>
+                      <span class="icon is-small is-right">
+                        <i class="fas fa-exclamation-triangle"></i>
+                      </span>
+                      <p class="help is-danger"><%= errors.password_error_msg %></p>
+                      <% }else{ %>
+                      <input name="password" class="input is-success" type="password" placeholder="Password"
+                        value="<%= errors.password %>">
+                      <span class="icon is-small is-left">
+                        <i class="fas fa-key"></i>
+                      </span>
+                      <% } %>
+                      <% } else {%>
+                      <input name="password" name="password" class="input" type="password" placeholder="Password">
+                      <span class="icon is-small is-left">
+                        <i class="fas fa-key"></i>
+                      </span>
+                      <% } %>
+
+                    </div>
+
+                  </div>
+                  <div class="field">
+                    <label class="label">Confirm Password</label>
+                    <div class="control has-icons-left has-icons-right">
+                      <% if (signup_error) { %>
+                      <% if(errors.re_password_error) { %>
+                      <input name="re_password" class="input is-danger" type="password" placeholder="Confirm Password"
+                        value="<%= errors.re_password %>">
+                      <span class="icon is-small is-left">
+                        <i class="fas fa-key"></i>
+                      </span>
+                      <span class="icon is-small is-right">
+                        <i class="fas fa-exclamation-triangle"></i>
+                      </span>
+                      <p class="help is-danger"><%= errors.re_password_error_msg %></p>
+                      <% }else{ %>
+                      <input name="re_password" class="input is-success" type="password" placeholder="Confirm Password"
+                        value="<%= errors.re_password %>">
+                      <span class="icon is-small is-left">
+                        <i class="fas fa-key"></i>
+                      </span>
+                      <% } %>
+                      <% } else {%>
+                      <input name="re_password" name="password" class="input" type="password"
+                        placeholder="Confirm Password">
+                      <span class="icon is-small is-left">
+                        <i class="fas fa-key"></i>
+                      </span>
+                      <% } %>
+
+                    </div>
+                  </div>
+                  <div class="field">
+                    <p class="control">
+                      <button class="button is-success">
+                        Signup
+                      </button>
+                    </p>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
 
       </div>
-  </section>
+    </div>
 
-  </body>
+  </div>
+
+</body>
+
 </html>

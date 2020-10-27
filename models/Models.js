@@ -1,6 +1,8 @@
 const db = require("../modules/database");
 const crypto = require('crypto');
-
+const NepaliDate = require('nepali-date-converter');
+const { sequelize } = require("../modules/database");
+const { Op } = require('sequelize');
 
 const Zone = db.sequelize.define("zone", {
     id: {
@@ -380,6 +382,104 @@ Inventory.belongsToMany(CustomerType, {
 });
 
 
+// Record Model
+const Record = db.sequelize.define("record", {
+    id: {
+        type: db.Sequelize.INTEGER.UNSIGNED,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    track_id: {
+        type: db.Sequelize.STRING
+    },
+    discount: {
+        type: db.Sequelize.DOUBLE,
+        defaultValue: 0.0
+    },
+    taxRate: {
+        type: db.Sequelize.DOUBLE,
+        defaultValue: 0.0
+    },
+    tax: {
+        type: db.Sequelize.DOUBLE,
+        defaultValue: 0.0
+    },
+    description: {
+        type: db.Sequelize.TEXT
+    },
+    paid: {
+        type: db.Sequelize.BOOLEAN,
+        defaultValue: true
+    },
+    dueDate: {
+        type: db.Sequelize.DATE
+    }
+});
+
+Record.beforeCreate(async (rec, options) => {
+    var nepali_today = new NepaliDate(new Date());
+    var rec_id = nepali_today.format('YYYY')+nepali_today.format('MM');
+    var month_id = 1;
+    var last_month = await Record.findOne({
+        where: {
+            track_id: {
+                [Op.like]: rec_id+'%'
+            }
+        },
+        order: [
+            ['id', 'DESC']
+        ]
+    });
+    if (last_month == null) {
+        month_id = (month_id+'').padStart(4, '0');
+        rec_id = rec_id+month_id;
+    }else{
+        var last_id =  parseInt(last_month.track_id.substring(6));
+        last_id++;
+        last_id = (last_id+'').padStart(4, '0');
+        rec_id = rec_id+last_id;
+    }
+    rec.track_id = rec_id;
+});
+
+const RecordTransaction = db.sequelize.define("record_transaction", {
+    id: {
+        type: db.Sequelize.INTEGER.UNSIGNED,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    inventory_transaction: {
+        type: db.Sequelize.BOOLEAN,
+        defaultValue: true
+    },
+    quantity: {
+        type: db.Sequelize.DOUBLE,
+        defaultValue: 0.0
+    },
+    item_name: {
+        type: db.Sequelize.STRING
+    },
+    item_description: {
+        type: db.Sequelize.TEXT
+    },
+    cost: {
+        type: db.Sequelize.DOUBLE
+    }
+});
+
+Record.hasMany(RecordTransaction);
+RecordTransaction.belongsTo(Record);
+
+Customer.hasMany(Record);
+Record.belongsTo(Customer);
+
+User.hasMany(Record);
+Record.belongsTo(User);
+
+InventoryRecord.hasOne(RecordTransaction);
+RecordTransaction.belongsTo(InventoryRecord);
+
+
 module.exports = {
     User,
     Inventory,
@@ -390,5 +490,7 @@ module.exports = {
     CustomerRate,
     Zone,
     District,
-    PostOffice
+    PostOffice,
+    Record,
+    RecordTransaction
 };
