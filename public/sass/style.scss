@@ -184,7 +184,22 @@ select {
   }
 }
 
+#records-table {
+  td:hover {
+    cursor: pointer;
+  }
+}
+
 #customer-table {
+  tbody {
+    tr:hover{
+      background-color: $primary;
+    }
+  }
+}
+
+
+#records-table {
   tbody {
     tr:hover{
       background-color: $primary;

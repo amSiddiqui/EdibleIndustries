@@ -111,7 +111,6 @@ module.exports = {
             });
             var rates_data = [];
             data.rates.forEach(rate => {
-                console.log(rate);
                 if (rate.rate.length > 0 && !isNaN(rate.rate)) {
                     rates_data.push({
                         inventoryId: rate.id,
@@ -121,24 +120,32 @@ module.exports = {
                 }
             });
             var temp = await models.CustomerTypeRate.bulkCreate(rates_data);
-            console.log(temp);
             return true;
         },
         editWithRates: async (id, data) => {
             var customer_type = await models.CustomerType.findByPk(id);
             customer_type.name = data.name;
-            data.rates.forEach(rate => {
-                models.CustomerTypeRate.findOne({
+            
+            for (let i = 0; i < data.rates.length; i++) {
+                const rate = data.rates[i];
+                var existingRate =  await models.CustomerTypeRate.findOne({
                     where: {
                         inventoryId: rate.id,
                         customerTypeId: customer_type.id
-                    }
-                }).then(customer_type_rate => {
-                    customer_type_rate.rate = rate.rate;
-                    customer_type_rate.save();
+                    } 
                 });
-            });
-            customer_type.save();
+                if (existingRate != null) {
+                    existingRate.rate = rate.rate;
+                    await existingRate.save();
+                }else{
+                    await models.CustomerTypeRate.create({
+                        inventoryId: rate.id,
+                        customerTypeId: customer_type.id,
+                        rate: rate.rate
+                    });
+                }
+            }
+            await customer_type.save();
         },
         addInventoryRate: (customer_type_id, inventory_id, rate) => {
             return models.CustomerTypeRate.create({
@@ -269,6 +276,24 @@ module.exports = {
                 ]
             });
         }
+    },
+    records: {
+        fetchAll: () => {
+            return models.Record.findAll({
+                include: [
+                    {
+                        model: models.RecordTransaction
+                    },
+                    {
+                        model: models.Customer,
+                        include: models.CustomerType
+                    }                
+                ],
+                order: [
+                    ['id', 'DESC']
+                ]
+            });
+        } 
     },
     misc: {
         zones: (data) => {

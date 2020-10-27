@@ -7831,7 +7831,13 @@ select {
 #customer-table td:hover {
   cursor: pointer; }
 
+#records-table td:hover {
+  cursor: pointer; }
+
 #customer-table tbody tr:hover {
+  background-color: #00d1b2; }
+
+#records-table tbody tr:hover {
   background-color: #00d1b2; }
 
 #add-new-customer-form .title {

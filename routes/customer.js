@@ -4,6 +4,53 @@ const utility = require('../modules/utility');
 const NepaliDate = require('nepali-date-converter');
 var router = express.Router();
 
+router.put('/customer-type/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  let id = parseInt(req.params.id);
+  var data = {
+    name: req.body['name'].trim(),
+    rates: []
+  };
+  if (data.name.length === 0) {
+    req.flash('flash_message', 'Error editing customer, please check your inputs.');
+    req.flash('flash_color', 'danger');
+    res.redirect('/customer/customer-type');
+  } else {
+    utility.inventory.fetchAllInventoryID().then((inventories) => {
+      inventories.forEach(inventory => {
+        data.rates.push({
+          id: inventory.id,
+          rate: req.body['inv-' + inventory.id].trim()
+        });
+      });
+      utility.customer_type.editWithRates(id, data).then(() => {
+        req.flash('flash_message', 'Customer type successfully edited');
+        req.flash('flash_color', 'success');
+        res.redirect('/customer/customer-type');
+      }).catch(err => {
+        console.log(err);
+        req.flash('flash_message', 'Error editing customer, please check your inputs');
+        req.flash('flash_color', 'danger');
+        res.redirect('/customer/customer-type');
+      });
+    });
+  }
+});
+
+
+router.delete('/customer-type/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  let id = parseInt(req.params.id);
+  utility.customer_type.delete(id).then(() => {
+    req.flash('flash_message', 'Customer type successfully deleted');
+    req.flash('flash_color', 'success');
+    res.redirect('/customer/customer-type');
+  }).catch((err) => {
+    console.log(err);
+    req.flash('flash_message', 'Error deleting customer, please check your inputs');
+    req.flash('flash_color', 'danger');
+    res.redirect('/customer/customer-type');
+  });
+});
+
 
 router.get('/customer-type/:id', middleware.auth.loggedIn(), function (req, res, next) {
   let id = parseInt(req.params.id);
@@ -33,56 +80,6 @@ router.get('/customer-type/:id', middleware.auth.loggedIn(), function (req, res,
   });
 });
 
-
-router.delete('/customer-type/:id', middleware.auth.loggedIn(), function (req, res, next) {
-  let id = parseInt(req.params.id);
-  utility.customer_type.delete(id).then(() => {
-    req.flash('flash_message', 'Customer type successfully deleted');
-    req.flash('flash_color', 'success');
-    res.redirect('/customer/customer-type');
-    res.end();
-  }).catch((err) => {
-    console.log(err);
-    req.flash('flash_message', 'Error deleting customer, please check your inputs');
-    req.flash('flash_color', 'danger');
-    res.redirect('/customer/customer-type');
-    res.end();
-  });
-});
-
-router.put('/customer-type/:id', middleware.auth.loggedIn(), function (req, res, next) {
-  let id = parseInt(req.params.id);
-  var data = {
-    name: req.body['name'].trim(),
-    rates: []
-  };
-  if (data.name.length === 0) {
-    req.flash('flash_message', 'Error editing customer, please check your inputs.');
-    req.flash('flash_color', 'danger');
-    res.redirect('/customer/customer-type');
-    res.end();
-  } else {
-    utility.inventory.fetchAllInventoryID().then((inventories) => {
-      inventories.forEach(inventory => {
-        data.rates.push({
-          id: inventory.id,
-          rate: req.body['inv-' + inventory.id].trim()
-        });
-        utility.customer_type.editWithRates(id, data).then(() => {
-          req.flash('flash_message', 'Customer type successfully edited');
-          req.flash('flash_color', 'success');
-          res.redirect('/customer/customer-type');
-          res.end();
-        }).catch(err => {
-          req.flash('flash_message', 'Error editing customer, please check your inputs');
-          req.flash('flash_color', 'danger');
-          res.redirect('/customer/customer-type');
-          res.end();
-        });
-      });
-    });
-  }
-});
 
 
 
@@ -134,7 +131,7 @@ router.get('/customer-type', middleware.auth.loggedIn(), function (req, res, nex
   utility.customer_type.fetchAllTypes().then(types => {
     utility.inventory.fetchAllInventoryID().then(inventories => {
       var data = {
-        dependency: '/customer/customer-type.js',
+        dependency: 'customer/customer-type.js',
         breadcrumbs,
         customer_types: types,
         inventories,
@@ -163,14 +160,12 @@ router.get('/customer-type', middleware.auth.loggedIn(), function (req, res, nex
       req.flash('flash_message', 'Error opening customer-type, try agina later');
       req.flash('flash_color', 'danger');
       res.redirect('/customer');
-      res.end();
     });
   }).catch(err => {
     console.log(err);
     req.flash('flash_message', 'Error opening customer-type, try agina later');
     req.flash('flash_color', 'danger');
     res.redirect('/customer');
-    res.end();
   });
 
 });
@@ -184,7 +179,6 @@ router.post('/customer-type', middleware.auth.loggedIn(), function (req, res, ne
     req.flash('flash_message', 'Error creating customer, please check your inputs.');
     req.flash('flash_color', 'danger');
     res.redirect('/customer/customer-type');
-    res.end();
   } else {
     utility.inventory.fetchAllInventoryID().then((inventories) => {
       inventories.forEach(inventory => {
@@ -192,17 +186,16 @@ router.post('/customer-type', middleware.auth.loggedIn(), function (req, res, ne
           id: inventory.id,
           rate: req.body['inv-' + inventory.id].trim()
         });
-        utility.customer_type.createWithRate(data).then(() => {
-          req.flash('flash_message', 'Customer type successfully added');
-          req.flash('flash_color', 'success');
-          res.redirect('/customer/customer-type');
-          res.end();
-        }).catch(err => {
-          req.flash('flash_message', 'Error creating customer, please check your inputs');
-          req.flash('flash_color', 'danger');
-          res.redirect('/customer/customer-type');
-          res.end();
-        });
+      });
+      utility.customer_type.createWithRate(data).then(() => {
+        req.flash('flash_message', 'Customer type successfully added');
+        req.flash('flash_color', 'success');
+        res.redirect('/customer/customer-type');
+      }).catch(err => {
+        console.log(err);
+        req.flash('flash_message', 'Error creating customer, please check your inputs');
+        req.flash('flash_color', 'danger');
+        res.redirect('/customer/customer-type');
       });
     });
   }
@@ -225,7 +218,7 @@ router.get('/add', middleware.auth.loggedIn(), function (req, res, next) {
     },
   ];
   var data = {
-    dependency: '/customer/customer-add.js',
+    dependency: 'customer/customer-add.js',
     breadcrumbs
   };
   var flash_message = req.flash('flash_message');
@@ -238,6 +231,7 @@ router.get('/add', middleware.auth.loggedIn(), function (req, res, next) {
   utility.customer_type.fetchAllTypes().then(types => {
     data.types = types;
     utility.misc.fetchAllZones().then(zones => {
+      
       data.zones = zones;
       res.render('customer/add', data);
     }).catch(err => {
@@ -245,14 +239,12 @@ router.get('/add', middleware.auth.loggedIn(), function (req, res, next) {
       req.flash('flash_message', 'Database Error. Please try again later.');
       req.flash('flash_color', 'danger');
       res.redirect('/customer');
-      res.end();
     });
   }).catch(err => {
     console.log(err);
     req.flash('flash_message', 'Database Error. Please try again later.');
     req.flash('flash_color', 'danger');
     res.redirect('/customer');
-    res.end();
   });
 
 });
@@ -279,7 +271,7 @@ router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
     },
   ];
   var data = {
-    dependency: '/customer/customer-add.js',
+    dependency: 'customer/customer-add.js',
     breadcrumbs
   };
   var flash_message = req.flash('flash_message');
@@ -296,7 +288,7 @@ router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
       utility.customer.fetchCustomer(id).then(customer => {
         utility.inventory.fetchAllInventoryID().then(inventories => {
           data.inventories = inventories;
-          data.getInventoryRate = function(inventory_id)  {
+          data.getInventoryRate = function (inventory_id) {
             let rate = 0;
             customer.inventories.forEach(inventory => {
               if (inventory.id == inventory_id) {
@@ -309,7 +301,7 @@ router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
           if (phone.split(' ').length == 1) {
             customer.phone = '';
             customer.phone_code = '+977';
-          }else{
+          } else {
             var temp = phone.split(' ');
             customer.phone_code = temp[0];
             temp.shift();
@@ -322,28 +314,24 @@ router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
           req.flash('flash_message', 'Database Error. Please try again later.');
           req.flash('flash_color', 'danger');
           res.redirect('/customer');
-          res.end();
         });
       }).catch(err => {
         console.log(err);
         req.flash('flash_message', 'Database Error. Please try again later.');
         req.flash('flash_color', 'danger');
         res.redirect('/customer');
-        res.end();
       });
     }).catch(err => {
       console.log(err);
       req.flash('flash_message', 'Database Error. Please try again later.');
       req.flash('flash_color', 'danger');
       res.redirect('/customer');
-      res.end();
     });
   }).catch(err => {
     console.log(err);
     req.flash('flash_message', 'Database Error. Please try again later.');
     req.flash('flash_color', 'danger');
     res.redirect('/customer');
-    res.end();
   });
 
 });
@@ -364,7 +352,7 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     },
   ];
   var data = {
-    dependency: '/customer/customer.js',
+    dependency: 'customer/customer.js',
     breadcrumbs
   };
   var flash_message = req.flash('flash_message');
@@ -377,18 +365,18 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
 
   utility.customer.fetchCustomer(id).then(customer => {
     utility.inventory.fetchAllInventoryID().then(inventories => {
-      
+
       var phone = customer.phone;
       data.inventories = inventories;
-      data.getInventoryRate = function(inventory_id) {
+      data.getInventoryRate = function (inventory_id) {
         let rate = 0;
         for (let i = 0; i < customer.inventories.length; i++) {
           const inventory = customer.inventories[i];
           if (inventory.id == inventory_id) {
-            return 'Re. '+inventory.customer_rate.rate;
+            return 'Re. ' + inventory.customer_rate.rate;
           }
         }
-        
+
         return 'Not Set';
       };
       if (phone.split(' ').length == 1) {
@@ -402,14 +390,12 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
       req.flash('flash_message', 'Database Error. Please try again later.');
       req.flash('flash_color', 'danger');
       res.redirect('/customer');
-      res.end();
     });
   }).catch(err => {
     console.log(err);
     req.flash('flash_message', 'Database Error. Please try again later.');
     req.flash('flash_color', 'danger');
     res.redirect('/customer');
-    res.end();
   });
 
 });
@@ -433,8 +419,7 @@ router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   if (customer_data.first_name.length === 0 || customer_type === 0) {
     req.flash('flash_message', 'Cannot edit the customer make sure your inputs are correct');
     req.flash('flash_color', 'danger');
-    res.redirect('/customer/'+id);
-    res.end();
+    res.redirect('/customer/' + id);
   }
   utility.inventory.fetchAllInventory().then(inventories => {
     let rates = [];
@@ -451,21 +436,18 @@ router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     utility.customer.editFull(id, customer_data, address, customer_type, rates).then(() => {
       req.flash('flash_message', 'Customer added successfully');
       req.flash('flash_color', 'success');
-      res.redirect('/customer/'+id);
-      res.end();
+      res.redirect('/customer/' + id);
     }).catch(err => {
       console.log(err);
       req.flash('flash_message', 'Cannot editing customer. DB Error');
       req.flash('flash_color', 'danger');
-      res.redirect('/customer/'+id);
-      res.end();
+      res.redirect('/customer/' + id);
     });
   }).catch(err => {
     console.log(err);
     req.flash('flash_message', 'Cannot editing customer. DB Error');
     req.flash('flash_color', 'danger');
-    res.redirect('/customer/'+id);
-    res.end();
+    res.redirect('/customer/' + id);
   });
 });
 
@@ -482,7 +464,7 @@ router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
     },
   ];
   var data = {
-    dependency: '/customer/customers.js',
+    dependency: 'customer/customers.js',
     breadcrumbs
   };
   var flash_message = req.flash('flash_message');
@@ -523,7 +505,6 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
     req.flash('flash_message', 'Cannot create new customer make sure your inputs are correct');
     req.flash('flash_color', 'danger');
     res.redirect('/customer');
-    res.end();
   }
   utility.inventory.fetchAllInventory().then(inventories => {
     let rates = [];
@@ -540,21 +521,18 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
     utility.customer.createFull(customer_data, address, customer_type, rates).then((new_id) => {
       req.flash('flash_message', 'Customer added successfully');
       req.flash('flash_color', 'success');
-      res.redirect('/customer/'+new_id);
-      res.end();
+      res.redirect('/customer/' + new_id);
     }).catch(err => {
       console.log(err);
       req.flash('flash_message', 'Cannot create new customer. DB Error');
       req.flash('flash_color', 'danger');
       res.redirect('/customer');
-      res.end();
     });
   }).catch(err => {
     console.log(err);
     req.flash('flash_message', 'Cannot create new customer. DB Error');
     req.flash('flash_color', 'danger');
     res.redirect('/customer');
-    res.end();
   });
 
 });

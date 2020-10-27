@@ -66,7 +66,7 @@ $(document).ready(function () {
                 let inventory_default_rate = 0;
                 let inv = null;
                 for(let j = 0; j < customer_type.inventories.length; j++) {
-                    const temp = customer_type.inventories[i];
+                    const temp = customer_type.inventories[j];
                     if (temp.id == inventory.id) {
                         inventory_default_rate = temp.customer_type_rate.rate;
                         inv = temp;
@@ -74,7 +74,7 @@ $(document).ready(function () {
                     }
                 }
                 for(let j = 0; j < data.customer.inventories.length; j++) {
-                    const temp = data.customer.inventories[i];
+                    const temp = data.customer.inventories[j];
                     if (temp.id == inventory.id) {
                         inventory_default_rate = temp.customer_rate.rate;
                         break;
@@ -150,7 +150,7 @@ $(document).ready(function () {
                 let inventory_default_rate = 0;
                 let found = false;
                 for(let j = 0; j < customer_type.inventories.length; j++) {
-                    const inv = customer_type.inventories[i];
+                    const inv = customer_type.inventories[j];
                     if (inv.id == inventory.id) {
                         inventory_default_rate = inv.customer_type_rate.rate;
                         found = true;

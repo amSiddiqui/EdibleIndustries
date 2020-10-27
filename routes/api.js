@@ -10,6 +10,7 @@ const utility = require('../modules/utility');
 
 router.get('/image', middleware.auth.loggedIn(), function (req, res, next) {
     var load = req.query.load;
+    console.log(load);
     if (load === '/images/warehouse.svg') {
         res.setHeader('content-disposition', 'inline');
         res.setHeader('filename', path.basename('public' + load));
@@ -17,6 +18,9 @@ router.get('/image', middleware.auth.loggedIn(), function (req, res, next) {
     } else {
         res.setHeader('content-disposition', 'inline');
         res.setHeader('filename', path.basename(load));
+        if (load[0] == '/') {
+            load = load.substring(1);
+        }
         res.sendFile(path.resolve(load));
     }
 });

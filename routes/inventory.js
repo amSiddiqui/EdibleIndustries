@@ -55,7 +55,6 @@ router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
 
       });
     }
-    res.end();
   });
 });
 
@@ -73,7 +72,6 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
     req.flash('flash_color', 'danger');
     console.log("Data name is empty", data);
     res.redirect('/inventory');
-    res.end();
     return;
   }
   if (data.type !== 'purchased' && data.type !== 'manufactured') {
@@ -81,7 +79,6 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
     req.flash('flash_message', 'Error Creating Inventory Item. Make sure the data entered is correct');
     req.flash('flash_color', 'danger');
     res.redirect('/inventory');
-    res.end();
     return;
   }
   if (isNaN(data.cost)) {
@@ -89,7 +86,6 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
     req.flash('flash_message', 'Error Creating Inventory Item. Make sure the data entered is correct');
     req.flash('flash_color', 'danger');
     res.redirect('/inventory');
-    res.end();
     return;
   } else {
     data.cost = data.cost === 0 ? 0 : parseFloat(data.cost);
@@ -116,7 +112,6 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
     req.flash('flash_message', 'Inventory ' + data.name + ' Successfully Added');
     req.flash('flash_color', 'success');
     res.redirect('/inventory');
-    res.end();
   });
 });
 
@@ -142,12 +137,10 @@ router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
       data.flash_color = flash_color;
     }
     res.render('inventory/edit', data);
-    res.end();
   }).catch(err => {
     req.flash('flash_message', 'Error editing inventory, try agina later');
     req.flash('flash_color', 'danger');
     res.redirect('/inventory');
-    res.end();
   });
 });
 
@@ -184,13 +177,11 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
       data.flash_color = flash_color;
     }
     res.render('inventory/item', data);
-    res.end();
   }).catch(err => {
     console.log(err);
     req.flash('flash_message', 'Error opening inventory, try agina later');
     req.flash('flash_color', 'danger');
     res.redirect('/inventory');
-    res.end();
   });
 });
 
@@ -211,7 +202,6 @@ router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     req.flash('flash_color', 'danger');
     console.log("Data name is empty", data);
     res.redirect('/inventory/edit/'+id);
-    res.end();
     return;
   }
   if (data.type !== 'purchased' && data.type !== 'manufactured') {
@@ -219,7 +209,6 @@ router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     req.flash('flash_message', 'Error Updating Inventory Item. Make sure the data entered is correct');
     req.flash('flash_color', 'danger');
     res.redirect('/inventory/edit/'+id);
-    res.end();
     return;
   }
   if (isNaN(data.cost)) {
@@ -227,7 +216,6 @@ router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     req.flash('flash_message', 'Error Updating Inventory Item. Make sure the data entered is correct');
     req.flash('flash_color', 'danger');
     res.redirect('/inventory/edit/'+id);
-    res.end();
     return;
   } else {
     data.cost = data.cost === 0 ? 0 : parseFloat(data.cost);
@@ -254,13 +242,11 @@ router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     req.flash('flash_message', 'Inventory Item Successfully Updated');
     req.flash('flash_color', 'success');
     res.redirect('/inventory/'+id);
-    res.end();  
   }).catch(err => {
     console.log(err);
     req.flash('flash_message', 'Error Updating Inventory Item. Database error');
     req.flash('flash_color', 'danger');
     res.redirect('/inventory/'+id);
-    res.end();
   });
   
 });
@@ -272,7 +258,6 @@ router.delete('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     req.flash('flash_message', 'Inventory Item Successfully Deleted');
     req.flash('flash_color', 'success');
     res.redirect('/inventory');
-    res.end(); 
   });
 });
 

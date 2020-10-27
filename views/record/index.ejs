@@ -1,0 +1,61 @@
+<%include ../partials/header %>
+
+<div class="container">
+    <div class="columns">
+        <div class="column">
+            <h1 class="title">Records</h1>
+        </div>
+        <div class="column is-3">
+            <div class="field is-grouped is-grouped-right">
+                <div class="control">
+                    <button class="button is-success is-rounded" onclick="window.location.href = '/records/add'" id="add-customer">
+                        <span class="icon">
+                            <i class="fas fa-plus fa-xs"></i>
+                        </span>
+                        <span>
+                            New Record
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="columns">
+        <div class="column">
+            <table id="records-table" class="table is-striped is-hoverable" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Track ID</th>
+                        <th>Date</th>
+                        <th>Customer</th>
+                        <th>Customer Type</th>
+                        <th>Amount</th>
+                        <th>Due</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for(let i=0; i < records.length; i++) { const record = records[i]; %>
+                        <tr>
+                            <td><%=record.track_id;%></td>
+                            <td><%=record.nepali_date;%></td>
+                            <td><%=record.customer.first_name+' '+record.customer.last_name;%></td>
+                            <td><%=record.customer.customer_type.name;%></td>
+                            <td>Re. <%=record.total; %></td>
+                            <% if(record.paid) { %>
+                            <td> <span class="has-text-success">Paid</span> </td>
+                            <% }else{ %>
+                                <% if(record.danger) { %>    
+                            <td> <span><%=record.nepali_due;%></span> </td>
+                                <% }else{ %>
+                            <td> <span class="has-text-danger"><%=record.nepali_due;%></span> </td>
+                                <% } %>
+                            <% } %>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<%include ../partials/footer %>

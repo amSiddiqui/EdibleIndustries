@@ -36,8 +36,8 @@
                 <tbody>
                     <% for(let i = 0; i < customer_types.length; i++) { const customer_type = customer_types[i]; %>
                     <tr>
-                        <td><%=(i+1)%></td>
-                        <td><%=customer_type.name;%></td>
+                        <td><%= customer_type.id; %></td>
+                        <td><%= customer_type.name; %></td>
                         <% for(let j = 0; j < inventories.length; j++) { const inventory = inventories[j]; %>
                         <% const customer_rate = get_customer_rate(customer_type, inventory.id); %>
                         <td><%= customer_rate === -1?'':customer_rate %></td>

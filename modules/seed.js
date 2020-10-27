@@ -2,6 +2,7 @@
 
 const utility = require("./utility");
 const models = require("../models/Models");
+const fs = require('fs');
 
 
 function getMethods(obj) {
@@ -18,13 +19,6 @@ function getMethods(obj) {
     return result;
 }
 
-const fs = require('fs');
-const {
-    District, PostOffice
-} = require("../models/Models");
-const {
-    sequelize
-} = require("./database");
 var rawdata = fs.readFileSync('modules/data/first-names.json');
 const first_names = JSON.parse(rawdata);
 
