@@ -214,12 +214,13 @@ module.exports = function (fillAdd) {
                     var user_id = 1;
                     const customer = await models.Customer.findByPk(customer_id);
                     const user = await models.User.findByPk(user_id);
-                    let record = await models.Record.create({
+                    let record = await models.Bill.create({
                         discount: 0,
                         taxRate: 0,
                         tax: 0,
                         description: 'Some Description',
-                        paid: true
+                        paid: true,
+                        payment_method: 'Cash'
                     });
                     record.setCustomer(customer);
                     record.setUser(user);
@@ -257,12 +258,12 @@ module.exports = function (fillAdd) {
                             rate = Math.floor(Math.random() * 15) + 5;
                         }
                     }
-                    const trans = await models.RecordTransaction.create({
+                    const trans = await models.BillTransaction.create({
                         inventory_transaction: true,
                         quantity: 3,
                         cost: 3 * rate
                     });
-                    await trans.setRecord(record);
+                    await trans.setBill(record);
                     await trans.setInventory_record(record_trans);
                     await record.save();
                     await trans.save();

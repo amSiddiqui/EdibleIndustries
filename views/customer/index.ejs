@@ -35,7 +35,7 @@
                         <th>Added On</th>
                         <th>Address</th>
                         <th>City/Jilla</th>
-                        <th>Zone</th>
+                        <th>Anchal</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -47,8 +47,8 @@
                         <td><%= customer.customer_type.name %></td>
                         <td><%= customer.nepali_date %></td>
                         <td><%= customer.address1 %></td>
-                        <td><%= customer.post_office.name;%><br><%= customer.district.value %></td>
-                        <td><%= customer.zone.value %></td>
+                        <td><%= customer.post_office == null ? '' : customer.post_office.name;%><br><%= customer.district == null ? '': customer.district.value %></td>
+                        <td><%= customer.zone == null ? '': customer.zone.value %></td>
                     </tr>
                     <% } %>
                 </tbody>

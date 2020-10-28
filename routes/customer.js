@@ -379,8 +379,18 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
 
         return 'Not Set';
       };
-      if (phone.split(' ').length == 1) {
-        customer.phone = '';
+      var temp_phone = phone.split(' ');
+      var total_phone = 0;
+      for (let i = 0; i < temp_phone.length; i++) {
+        const tp = temp_phone[i];
+        if (tp.length > 0) {
+          total_phone++;
+        }
+      }
+      if (total_phone == 1) {
+        customer.new_phone = '';
+      }else{
+        customer.new_phone = customer.phone;
       }
       customer.nepali_date = new NepaliDate(customer.createdAt).format('ddd, DD MMMM YYYY', 'np');
       data.customer = customer;
@@ -410,10 +420,22 @@ router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     phone: req.body.phone_code.trim() + ' ' + req.body.phone.trim(),
     address1: req.body.address.trim()
   };
+  let zone = '';
+  let district = '';
+  let post_office = '';
+  if (typeof req.body.zone !== 'undefined') {
+    zone = req.body.zone.trim();
+  }
+  if (typeof req.body.district !== 'undefined') {
+    district = req.body.district.trim();
+  }
+  if (typeof req.body.post_office !== 'undefined') {
+    post_office = req.body.post_office.trim();
+  }
   let address = {
-    zone: req.body.zone.trim(),
-    district: req.body.district.trim(),
-    post_office: req.body.post_office.trim(),
+    zone,
+    district,
+    post_office,
   };
   let customer_type = req.body.customer_type.trim();
   if (customer_data.first_name.length === 0 || customer_type === 0) {
@@ -487,6 +509,7 @@ router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
 });
 
 router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
+  console.log(req.body);
   let customer_data = {
     first_name: req.body.first_name.trim(),
     last_name: req.body.last_name.trim(),
@@ -495,10 +518,22 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
     phone: req.body.phone_code.trim() + ' ' + req.body.phone.trim(),
     address1: req.body.address.trim()
   };
+  let zone = '';
+  let district = '';
+  let post_office = '';
+  if (typeof req.body.zone !== 'undefined') {
+    zone = req.body.zone.trim();
+  }
+  if (typeof req.body.district !== 'undefined') {
+    district = req.body.district.trim();
+  }
+  if (typeof req.body.post_office !== 'undefined') {
+    post_office = req.body.post_office.trim();
+  }
   let address = {
-    zone: req.body.zone.trim(),
-    district: req.body.district.trim(),
-    post_office: req.body.post_office.trim(),
+    zone,
+    district,
+    post_office,
   };
   let customer_type = req.body.customer_type.trim();
   if (customer_data.first_name.length === 0 || customer_type === 0) {

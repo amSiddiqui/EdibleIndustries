@@ -180,5 +180,20 @@ router.get('/customer/:id', middleware.auth.loggedIn(), function(req, res, next)
     });
 });
 
+router.get('/inventories', middleware.auth.loggedIn(), function(req, res, next)  {
+    utility.inventory.fetchAllInventoryID().then(inventories => {
+        res.json({
+            status: 'success',
+            inventories
+        });
+    }).catch(err => {
+        console.log(err);
+        res.json({
+            status: 'fail',
+            message: 'DB error'
+        });
+    });
+});
+
 
 module.exports = router;

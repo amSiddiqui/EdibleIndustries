@@ -175,12 +175,15 @@ $(document).ready(function () {
     $("#add-new-customer-form").submit(function (e) {
         e.preventDefault();
         var first_name = $("#first_name").val();
+        var organization = $("#organization").val();
         var customer_type = $("#customer_type").val();
         let valid = true;
 
-        if (first_name == null || first_name.trim().length == 0) {
+        if ( (first_name == null || first_name.trim().length == 0) && ( organization == null || organization.trim().length == 0 ) ) {
             $("#first_name").addClass('is-danger');
             $("#first_name").siblings(".help").show();
+            $("#organization").addClass('is-danger');
+            $("#organization").siblings(".help").show();
             valid = false;
         }
         if (customer_type == null || customer_type.trim().length == 0) {

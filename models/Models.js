@@ -382,8 +382,8 @@ Inventory.belongsToMany(CustomerType, {
 });
 
 
-// Record Model
-const Record = db.sequelize.define("record", {
+// Bill Model
+const Bill = db.sequelize.define("bill", {
     id: {
         type: db.Sequelize.INTEGER.UNSIGNED,
         primaryKey: true,
@@ -413,14 +413,20 @@ const Record = db.sequelize.define("record", {
     },
     dueDate: {
         type: db.Sequelize.DATE
+    },
+    payment_method: {
+        type: db.Sequelize.STRING
+    },
+    image: {
+        type: db.Sequelize.STRING,
     }
 });
 
-Record.beforeCreate(async (rec, options) => {
+Bill.beforeCreate(async (rec, options) => {
     var nepali_today = new NepaliDate(new Date());
     var rec_id = nepali_today.format('YYYY')+nepali_today.format('MM');
     var month_id = 1;
-    var last_month = await Record.findOne({
+    var last_month = await Bill.findOne({
         where: {
             track_id: {
                 [Op.like]: rec_id+'%'
@@ -442,7 +448,7 @@ Record.beforeCreate(async (rec, options) => {
     rec.track_id = rec_id;
 });
 
-const RecordTransaction = db.sequelize.define("record_transaction", {
+const BillTransaction = db.sequelize.define("bill_transaction", {
     id: {
         type: db.Sequelize.INTEGER.UNSIGNED,
         primaryKey: true,
@@ -467,17 +473,17 @@ const RecordTransaction = db.sequelize.define("record_transaction", {
     }
 });
 
-Record.hasMany(RecordTransaction);
-RecordTransaction.belongsTo(Record);
+Bill.hasMany(BillTransaction);
+BillTransaction.belongsTo(Bill);
 
-Customer.hasMany(Record);
-Record.belongsTo(Customer);
+Customer.hasMany(Bill);
+Bill.belongsTo(Customer);
 
-User.hasMany(Record);
-Record.belongsTo(User);
+User.hasMany(Bill);
+Bill.belongsTo(User);
 
-InventoryRecord.hasOne(RecordTransaction);
-RecordTransaction.belongsTo(InventoryRecord);
+InventoryRecord.hasOne(BillTransaction);
+BillTransaction.belongsTo(InventoryRecord);
 
 
 module.exports = {
@@ -491,6 +497,6 @@ module.exports = {
     Zone,
     District,
     PostOffice,
-    Record,
-    RecordTransaction
+    Bill,
+    BillTransaction
 };

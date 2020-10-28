@@ -187,12 +187,18 @@ module.exports = {
         },
         createFull: async (customerData, addressData, customerType, rates) => {
             var customer = await models.Customer.create({...customerData});
-            var zone = await models.Zone.findByPk(addressData.zone);
-            var district = await models.District.findByPk(addressData.district);
-            var post_office = await models.PostOffice.findByPk(addressData.post_office);
-            customer.setZone(zone);
-            customer.setDistrict(district);
-            customer.setPost_office(post_office);
+            if (!isNaN(addressData.zone)) {
+                var zone = await models.Zone.findByPk(addressData.zone);
+                customer.setZone(zone);
+            }
+            if (!isNaN(addressData.district)) {
+                var district = await models.District.findByPk(addressData.district);
+                customer.setDistrict(district);
+            }
+            if (!isNaN(addressData.post_office)) {
+                var post_office = await models.PostOffice.findByPk(addressData.post_office);
+                customer.setPost_office(post_office);
+            }
             var customer_type = await models.CustomerType.findByPk(customerType);
             customer.setCustomer_type(customer_type);
             await customer.save();
@@ -210,12 +216,18 @@ module.exports = {
             customer.email = customerData.email;
             customer.phone = customerData.phone;
             customer.address1 = customerData.address1;
-            var zone = await models.Zone.findByPk(addressData.zone);
-            var district = await models.District.findByPk(addressData.district);
-            var post_office = await models.PostOffice.findByPk(addressData.post_office);
-            customer.setZone(zone);
-            customer.setDistrict(district);
-            customer.setPost_office(post_office);
+            if (!isNaN(addressData.zone)) {
+                var zone = await models.Zone.findByPk(addressData.zone);
+                customer.setZone(zone);
+            }
+            if (!isNaN(addressData.district)) {
+                var district = await models.District.findByPk(addressData.district);
+                customer.setDistrict(district);
+            }
+            if (!isNaN(addressData.post_office)) {
+                var post_office = await models.PostOffice.findByPk(addressData.post_office);
+                customer.setPost_office(post_office);
+            }
             var customer_type = await models.CustomerType.findByPk(customerType);
             customer.setCustomer_type(customer_type);
             await customer.save();
@@ -255,6 +267,9 @@ module.exports = {
                 ]
             });
         },
+        fetchAllCustomerID: () => {
+            return models.Customer.findAll();
+        },
         fetchCustomer: (id) => {
             return models.Customer.findByPk(id, {
                 include: [
@@ -277,12 +292,12 @@ module.exports = {
             });
         }
     },
-    records: {
+    billing: {
         fetchAll: () => {
-            return models.Record.findAll({
+            return models.Bill.findAll({
                 include: [
                     {
-                        model: models.RecordTransaction
+                        model: models.BillTransaction
                     },
                     {
                         model: models.Customer,

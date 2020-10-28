@@ -8,36 +8,60 @@
                 <div class="column is-4">
                     <button onclick="window.location.href = '/customer/edit/<%=customer.id%>'"
                         class="button is-rounded is-success" id="edit-cutomer-button">Edit</button>
+                    <% if (customer.organization.length == 0) {  %>
                     <h1 class="title is-4"><%=customer.first_name%> <%=customer.last_name%></h1>
-                    <h5 class="subtitle is-6"><%=customer.organization%></h5>
+                    <% }else{ %>
+                    <h5 class="title is-4"><%=customer.organization%></h5>
+                    <h1 class="subtitle is-6"><%=customer.first_name%> <%=customer.last_name%></h1>
+                    <% } %>
                     <div class="columns">
-                        <div class="column is-4">
-                            <p>Customer Type:</p>
-                            <p>Added On:</p>
-                        </div>
                         <div class="column">
-                            <p><strong><%=customer.customer_type.name%></strong></p>
-                            <p><strong><%=customer.nepali_date%></strong></p>
+                            <table class="details-table">
+                                <tbody>
+                                    <tr>
+                                        <th style="width: 150px;">Customer Type: </th>
+                                        <td><%=customer.customer_type.name%></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Added On:</th>
+                                        <td><%=customer.nepali_date%></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
                 <div class="column">
                     <div class="columns">
-                        <div class="column is-2">
-                            <p>Email: </p>
-                            <p>Phone: </p>
-                            <p>Address: </p>
-                            <p>Anchal: </p>
-                            <p>Jilla: </p>
-                            <p>City/Postal Code: </p>
-                        </div>
                         <div class="column">
-                            <p><strong><%=customer.email%></strong></p>
-                            <p><strong><%=customer.phone%></strong></p>
-                            <p><strong><%=customer.address1%></strong></p>
-                            <p><strong><%=customer.zone.value%></strong></p>
-                            <p><strong><%=customer.district.value%></strong></p>
-                            <p><strong><%=customer.post_office.name%> (<%=customer.post_office.value%>) </strong></p>
+                            <table class="details-table">
+                                <tbody>
+                                    <tr>
+                                        <th style="width: 170px;">Email: </th>
+                                        <td><%=customer.email%></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Phone: </th>
+                                        <td><%=customer.new_phone%></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Address: </th>
+                                        <td><%=customer.address1%></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Anchal: </th>
+                                        <td><%=customer.zone == null ? '': customer.zone.value%></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Jilla: </th>
+                                        <td><%=customer.district == null ? '': customer.district.value%></td>
+                                    </tr>
+                                    <tr>
+                                        <th>City/Postal Code: </th>
+                                        <td><%=customer.post_office == null ? '': customer.post_office.name%> <%=customer.post_office == null ? '' : '('+customer.post_office.value+')' %></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
