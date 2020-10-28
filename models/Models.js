@@ -396,6 +396,10 @@ const Bill = db.sequelize.define("bill", {
         type: db.Sequelize.DOUBLE,
         defaultValue: 0.0
     },
+    discountPercent: {
+        type: db.Sequelize.DOUBLE,
+        defaultValue: 0.0
+    },
     taxRate: {
         type: db.Sequelize.DOUBLE,
         defaultValue: 0.0
@@ -419,6 +423,11 @@ const Bill = db.sequelize.define("bill", {
     },
     image: {
         type: db.Sequelize.STRING,
+        defaultValue: '/images/placeholder-vertical.jpg'
+    },
+    total: {
+        type: db.Sequelize.DOUBLE,
+        defaultValue: 0.0
     }
 });
 
@@ -454,21 +463,11 @@ const BillTransaction = db.sequelize.define("bill_transaction", {
         primaryKey: true,
         autoIncrement: true
     },
-    inventory_transaction: {
-        type: db.Sequelize.BOOLEAN,
-        defaultValue: true
-    },
     quantity: {
         type: db.Sequelize.DOUBLE,
         defaultValue: 0.0
     },
-    item_name: {
-        type: db.Sequelize.STRING
-    },
-    item_description: {
-        type: db.Sequelize.TEXT
-    },
-    cost: {
+    rate: {
         type: db.Sequelize.DOUBLE
     }
 });

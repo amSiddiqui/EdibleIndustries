@@ -15,7 +15,11 @@ router.get('/image', middleware.auth.loggedIn(), function (req, res, next) {
         res.setHeader('content-disposition', 'inline');
         res.setHeader('filename', path.basename('public' + load));
         res.sendFile(path.resolve('public' + load));
-    } else {
+    } else if (load === '/images/placeholder-vertical.jpg') {
+        res.setHeader('content-disposition', 'inline');
+        res.setHeader('filename', path.basename('public' + load));
+        res.sendFile(path.resolve('public' + load));
+    }else{
         res.setHeader('content-disposition', 'inline');
         res.setHeader('filename', path.basename(load));
         if (load[0] == '/') {
@@ -181,7 +185,7 @@ router.get('/customer/:id', middleware.auth.loggedIn(), function(req, res, next)
 });
 
 router.get('/inventories', middleware.auth.loggedIn(), function(req, res, next)  {
-    utility.inventory.fetchAllInventoryID().then(inventories => {
+    utility.inventory.fetchAllInventoryIdWithRecord().then(inventories => {
         res.json({
             status: 'success',
             inventories

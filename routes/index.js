@@ -1,6 +1,7 @@
 var express = require('express');
 const middleware = require('../modules/middleware');
 var router = express.Router();
+const utility = require('../modules/utility');
 
 /* GET home page. */
 router.get('/', middleware.auth.loggedIn(), function(req, res, next) {  
@@ -13,7 +14,6 @@ router.get('/', middleware.auth.loggedIn(), function(req, res, next) {
     data.flash_message = flash_message;
     data.flash_color = flash_color;
   }
-
   res.render('dashboard', data);
 });
 

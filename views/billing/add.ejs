@@ -13,7 +13,7 @@
                 <div class="field">
                     <div class="control">
                         <label for="track_id" class="label">Bill No</label>
-                        <input type="text" disabled readonly value="1231092" class="input">
+                        <input type="text" disabled readonly value="<%=billno%>" class="input">
                     </div>
                 </div>
             </div>
@@ -35,6 +35,7 @@
                             <% } %>
                             <% } %>
                         </select>
+                        <p class="help is-danger" style="display: none;">Please Select A Customer</p>
                     </div>
                 </div>
             </div>
@@ -88,8 +89,56 @@
 
         <div class="columns">
             <div class="column">
-                <h1 class="title is-5">Image</h1>
-
+                <div class="columns">
+                    <div class="column">
+                        <div class="field">
+                            <div class="control">
+                                <label for="payment_method" class="label">Payment Method</label>
+                                <div class="select is-fullwidth">
+                                    <select name="payment_method" id="payment_method">
+                                        <option value="Cash">Cash</option>
+                                        <option value="Credit">Credit</option>
+                                        <option value="Bank">Bank</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column is-2">
+                        <div class="field">
+                            <div class="control">
+                                <label for="paid" class="label">Paid</label>
+                                <div class="checkbox-container">
+                                    <input class="tgl tgl-flip" name="paid" value="1" id="cb5" type="checkbox" />
+                                    <label class="tgl-btn" data-tg-off="No" data-tg-on="Yes" for="cb5"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="column">
+                        <div class="field">
+                            <div class="control">
+                                <label for="description" class="label">Description</label>
+                                <textarea class="textarea" placeholder="Description" name="description"
+                                    id="description"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="column">
+                        <label for="image" class="label">Receipt Image</label>
+                        <div class="image-placeholder">
+                            <img src="/images/placeholder-vertical.jpg" alt="">
+                        </div>
+                        <div class="filepond-container">
+                            <input type="file" class="filepond" name="inventory"
+                                accept="image/png, image/jpeg, image/gif" />
+                        </div>
+                    </div>
+                </div>
 
             </div>
             <div class="column">
@@ -107,8 +156,8 @@
                             <div style="width: 190px; text-align: right;"> <strong>Discount</strong></div>
                             <div style="width: 150px; margin-left: 10px;" id="discount-percent">
                                 <div class="control has-icons-right">
-                                    <input value="0" type="number" min="0" max="100" name="discount-percent" placeholder="Percent"
-                                        class="input">
+                                    <input value="0" type="number" step="any" min="0" max="100" name="discount_percent"
+                                        placeholder="Percent" class="input">
                                     <span class="icon is-right">
                                         %
                                     </span>
@@ -116,7 +165,7 @@
                             </div>
                             <div style="width: 150px; margin-left: 10px;" id="discount-value">
                                 <span class="control has-icons-left">
-                                    <input type="number" min="0" name="discount-value" class="input">
+                                    <input type="number" step="any" min="0" name="discount_value" class="input">
                                     <span class="icon is-left">
                                         Re.
                                     </span>
@@ -140,7 +189,8 @@
                             <div style="width: 190px; text-align: right;"> <strong>Tax</strong></div>
                             <div style="width: 150px; margin-left: 10px;" id="tax-percent">
                                 <div class="control has-icons-right">
-                                    <input type="number" value="0" min="0" max="100" name="tax-percent" placeholder="Percent" class="input">
+                                    <input type="number" step="any" value="0" min="0" max="100" name="tax_percent"
+                                        placeholder="Percent" class="input">
                                     <span class="icon is-right">
                                         %
                                     </span>
@@ -148,7 +198,7 @@
                             </div>
                             <div style="width: 150px; margin-left: 10px;" id="tax-value">
                                 <span class="control has-icons-left">
-                                    <input type="number" min="0" name="tax-value" class="input">
+                                    <input type="number" step="any" min="0" name="tax_value" class="input">
                                     <span class="icon is-left">
                                         Re.
                                     </span>
@@ -157,7 +207,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="columns" style="margin-right: 60px;">
+                <div class="columns" style="margin-right: 60px; border-bottom: 3px solid hsl(141, 71%, 48%);">
                     <div class="column">
                         <div class="field is-grouped is-grouped-right">
                             <div style="width: 190px; text-align: right;"> <strong>Grand Total</strong></div>
@@ -165,10 +215,17 @@
                         </div>
                     </div>
                 </div>
+                <div class="columns" style="margin-top: 100px;">
+                    <div class="column">
+                        <div class="field is-grouped is-grouped-right">
+                            <div class="control">
+                                <button class="button is-large is-success is-rounded">Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-
-
 
     </form>
 </div>
@@ -178,7 +235,7 @@
         <td class="inv-id">1</td>
         <td class="inv-name">Jar 4 ltr</td>
         <td style="width: 190px;">
-            <input min="0" type="number" value="0" class="input quantity">
+            <input min="0" type="number" step="1" value="0" class="input quantity">
         </td>
         <td style="width: 190px;">
             <div class="select is-fullwidth">
@@ -191,7 +248,7 @@
         <td style="width: 190px;">
             <div class="field">
                 <div class="control has-icons-left">
-                    <input min="0" type="number" class="input rate">
+                    <input min="0" type="number" step="any" class="input rate">
                     <span class="icon is-left">
                         Re.
                     </span>
@@ -218,8 +275,14 @@
                         <hr>
                         <div class="panel list-group">
                             <% for(let i = 0; i < inventories.length; i++) { const inventory = inventories[i]; %>
+                            <% if (inventory.type == 'purchased') { var in_stock = 0;  %>
+                            <% if (inventory.inventory_records.length > 0) in_stock = inventory.inventory_records[0].in_stock; %>
                             <a href="#" data-value="<%=inventory.id%>"
-                                class="panel-block list-group-item"><%=inventory.name;%></a>
+                                class="panel-block list-group-item"><%=inventory.name;%> (In Stock: <%=in_stock%>)</a>
+                            <% }else{ %>
+                            <a href="#" data-value="<%=inventory.id%>"
+                                class="panel-block list-group-item"><%=inventory.name;%> (Manufactured)</a>
+                            <% } %>
                             <% } %>
                         </div>
                     </div>

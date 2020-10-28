@@ -3,6 +3,7 @@ const middleware = require('../modules/middleware');
 const utility = require('../modules/utility');
 const NepaliDate = require('nepali-date-converter');
 var router = express.Router();
+const fs = require('fs');
 
 
 router.get('/add', middleware.auth.loggedIn(), function (req, res, next) {
@@ -33,10 +34,14 @@ router.get('/add', middleware.auth.loggedIn(), function (req, res, next) {
   utility.customer.fetchAllCustomerID().
   then(customers => {
     data.customers = customers;
-    return utility.inventory.fetchAllInventoryID();
+    return utility.inventory.fetchAllInventoryIdWithRecord();
   }).
   then(inventories => {
     data.inventories = inventories;
+    return utility.billing.getBillNo();
+  }).
+  then(billno => {
+    data.billno = billno;
     res.render('billing/add', data);
   }).
   catch(err => {
@@ -73,12 +78,6 @@ router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
   utility.billing.fetchAll().then(bills => {
     for (let i = 0; i < bills.length; i++) {
       const bill = bills[i];
-      var total = 0;
-      bill.bill_transactions.forEach(tr => {
-        total += tr.cost;
-      });
-
-      bills[i].total = total;
       bills[i].nepali_date = new NepaliDate(bill.createdAt).format("DD/MM/YYYY");
       if (!bill.paid) {
         bills[i].nepali_due = new NepaliDate(bill.dueDate).format("DD/MM/YYYY");
@@ -90,6 +89,77 @@ router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
     }
     data.bills = bills;
     res.render('billing/index', data);
+  });
+});
+
+router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
+  var customer = req.body.customer;
+  var payment_method = req.body.payment_method;
+  var description = req.body.description;
+  var discount_percent = req.body.discount_percent;
+  var discount_value = req.body.discount_value;
+  var tax_percent = req.body.tax_percent;
+  var tax_value = req.body.tax_value;
+  var paid = false;
+  var temp = req.body.paid;
+  if (typeof temp !== 'undefined') paid = true;
+  utility.inventory.fetchAllInventoryID().then(inventories => {
+    var transactions = [];
+    for (let i = 0; i < inventories.length; i++) {
+      const inventory = inventories[i];
+      var quant = req.body['quantity_' + inventory.id + '[]'];
+      if (typeof quant === 'undefined') continue;
+      var type = req.body['inv_type_' + inventory.id + '[]'];
+      var rate = req.body['rate_' + inventory.id + '[]'];
+      transactions.push({
+        id: inventory.id,
+        quantity: quant,
+        type,
+        rate
+      });
+      var image_id = req.session.image_id;
+      var image_loc = '';
+      req.session.image_id = null;
+      if (typeof image_id !== 'undefined' && image_id !== null) {
+        if (fs.existsSync('uploads/tmp/' + image_id)) {
+          var folder = 'uploads/tmp/' + image_id;
+          var files = fs.readdirSync(folder);
+          if (files.length > 0) {
+            var image = files[0];
+            fs.copyFileSync(folder + '/' + image, 'uploads/' + image);
+            image_loc = '/uploads/' + image;
+          }
+          fs.rmdirSync(folder, {
+            recursive: true
+          });
+        }
+      }
+    }
+    utility.billing.createFull(customer, {
+      payment_method,
+      description,
+      discount_percent,
+      tax_percent,
+      tax_value,
+      image_loc,
+      discount_value,
+      paid,
+      discount_percent
+    }, transactions).then((id) => {
+      req.flash('flash_message', 'Bill Added Successfully');
+      req.flash('flash_color', 'success');
+      res.redirect('/billing/'+id);
+    }).catch(err => {
+      console.log(err);
+      req.flash('flash_message', 'Some error occurred while adding the bill. Please try again later');
+      req.flash('flash_color', 'danger');
+      res.redirect('/billing');
+    });
+  }).catch(err => {
+    console.log(err);
+    req.flash('flash_message', 'Some error occurred while adding the bill. Please try again later');
+    req.flash('flash_color', 'danger');
+    res.redirect('/billing');
   });
 });
 

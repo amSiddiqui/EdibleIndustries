@@ -27,7 +27,6 @@ $(document).ready(() => {
             var reader = new FileReader();
             reader.readAsDataURL(f.file);
             reader.onload = function() {
-                console.log(reader.result);
                 $("#inventory-edit-container img").attr('src', reader.result);
             };
         },
