@@ -53,6 +53,51 @@ router.get('/add', middleware.auth.loggedIn(), function (req, res, next) {
 
 });
 
+
+router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  let id = parseInt(req.params.id);
+  var breadcrumbs = [{
+      link: '/',
+      name: 'Home'
+    },
+    {
+      link: '/billing',
+      name: 'Billing'
+    },
+    {
+      link: '/billing/'+id,
+      name: 'Bill'
+    }
+  ];
+  var data = {
+    dependency: '/billing/billing.js',
+    breadcrumbs
+  };
+  var flash_message = req.flash('flash_message');
+  var flash_color = req.flash('flash_color');
+
+  if (flash_message.length !== 0 && flash_color.length !== 0) {
+    data.flash_message = flash_message;
+    data.flash_color = flash_color;
+  }
+
+  utility.billing.fetchAll().then(bills => {
+    for (let i = 0; i < bills.length; i++) {
+      const bill = bills[i];
+      bills[i].nepali_date = new NepaliDate(bill.createdAt).format("DD/MM/YYYY");
+      if (!bill.paid) {
+        bills[i].nepali_due = new NepaliDate(bill.dueDate).format("DD/MM/YYYY");
+        if (record.dueDate < new Date()) {
+          bills[i].danger = true;
+        }
+        bills[i].danger = false;
+      }
+    }
+    data.bills = bills;
+    res.render('billing/show', data);
+  });
+});
+
 router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
   var breadcrumbs = [{
       link: '/',
@@ -111,6 +156,11 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
       if (typeof quant === 'undefined') continue;
       var type = req.body['inv_type_' + inventory.id + '[]'];
       var rate = req.body['rate_' + inventory.id + '[]'];
+      if (typeof quant === 'string') {
+        quant = [quant];
+        rate = [rate];
+        type = [type];
+      }
       transactions.push({
         id: inventory.id,
         quantity: quant,
@@ -135,6 +185,10 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
         }
       }
     }
+    var user_email = req.session.email;
+    if (typeof user_email === 'undefined') {
+      user_email = 'gt_ams@yahoo.in';
+    }
     utility.billing.createFull(customer, {
       payment_method,
       description,
@@ -145,7 +199,7 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
       discount_value,
       paid,
       discount_percent
-    }, transactions).then((id) => {
+    }, transactions, user_email).then((id) => {
       req.flash('flash_message', 'Bill Added Successfully');
       req.flash('flash_color', 'success');
       res.redirect('/billing/'+id);

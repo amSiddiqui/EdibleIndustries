@@ -112,6 +112,20 @@ module.exports = {
                     }
                 ]
             });
+        },
+        addRecord: async (id, data, user_email) => {
+            var user = await models.User.findOne({
+                where: {
+                    email: user_email
+                }
+            });
+            if (isNaN(data.value)) {data.value = 0}
+            else {data.value = parseInt(data.value);}
+            var inventory = await models.Inventory.findByPk(id);
+            var inventory_record = await models.InventoryRecord.create({type: data.type, value: data.value});
+            inventory_record.setInventory(inventory);
+            inventory_record.setUser(user);
+            await inventory_record.save();
         }
     },
     customer_type: {
@@ -348,15 +362,31 @@ module.exports = {
             }
             return rec_id;
         },
-        createFull: async (customer_id, data, transactions) => {
+        createFull: async (customer_id, data, transactions, userEmail) => {
             var customer = await models.Customer.findByPk(customer_id);
-            var grand_total = 0;
-            transactions.forEach(transaction => {
+            var grand_total = 0.0;
+            for (let k = 0; k < transactions.length; k++) { const transaction = transactions[k];
                 for (let i = 0; i < transaction.rate.length; i++) {
-                    grand_total +=  parseFloat(transaction.rate[i]) * parseFloat(transaction.quantity[i]); 
+                    if ( isNaN(transactions[k].rate[i])) transactions[k].rate[i] = 0;
+                    else transactions[k].rate[i] = parseFloat(transactions[k].rate[i]);
+                    if ( isNaN(transactions[k].quantity[i])) transactions[k].quantity[i] = 0;
+                    else transactions[k].quantity[i] = parseFloat(transactions[k].quantity[i]);
+                    grand_total +=  transactions[k].rate[i] * transactions[k].quantity[i]; 
                 }
-            });
-            var cost = grand_total - parseFloat(data.discount_value) + parseFloat(data.tax_value);
+            }
+            if (isNaN(data.discount_value)) data.discount_value = 0;
+            else data.discount_value = parseFloat(data.discount_value);
+            
+            if (isNaN(data.tax_value)) data.tax_value = 0;
+            else data.tax_value = parseFloat(data.tax_value);
+            
+            if (isNaN(data.discount_percent)) data.discount_percent = 0;
+            else data.discount_percent = parseFloat(data.discount_percent);
+            
+            if (isNaN(data.tax_percent)) data.tax_percent = 0;
+            else data.tax_percent = parseFloat(data.tax_percent);
+            
+            var cost = grand_total - data.discount_value + data.tax_value;
             var bill = await models.Bill.create({
                 discount: data.discount_value,
                 discountPercent: data.discount_percent,
@@ -366,11 +396,11 @@ module.exports = {
                 paid: data.paid,
                 payment_method: data.payment_method,
                 image: data.image_loc,
-                total: cost
+                total: cost+''
             });
             for (let i = 0; i < transactions.length; i++) {
                 const transaction = transactions[i];
-                const inventory = models.Inventory.findByPk(transaction.id);
+                const inventory = await models.Inventory.findByPk(transaction.id);
                 for (let j = 0; j < transaction.rate.length; j++) {
                     var type = 'sold';
                     if (transaction.type[j] == 'Rented') type = 'rented';
@@ -392,7 +422,7 @@ module.exports = {
             bill.setCustomer(customer);
             var user = await models.User.findOne({
                 where: {
-                    email: req.session.email
+                    email: userEmail
                 }
             });
             if (user != null) {

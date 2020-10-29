@@ -26,8 +26,25 @@
                         <p>Total Asset: <strong>Re. <%= inventory.cost * total%></strong>
                         </p>
                     </div>
-                    <div class="column is-1">
-                        <button class="button is-success is-rounded" onclick="window.location.href = '/inventory/edit/<%=inventory.id%>/'" aria-label="close">Edit</button>
+                    <div class="column is-3">
+                        <div class="field is-grouped is-grouped-right">
+                            <div class="control">
+                                <button class="button is-info is-rounded is-small"
+                                    onclick="window.location.href = '/inventory/edit/<%=inventory.id%>/'"
+                                    aria-label="close">
+                                    <span class="icon"><i class="fas fa-pen"></i></span>
+                                    <span>Edit</span>
+                                </button>
+                            </div>
+                            <div class="control">
+                                <button class="button add-inventory-record is-success is-rounded is-small">
+                                    <span class="icon">
+                                        <i class="fas fa-plus"></i>
+                                    </span>
+                                    <span>New Record</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="columns">
@@ -47,7 +64,59 @@
             </div>
         </div>
     </div>
+    <hr>
+    <div class="tabs is-boxed" style="margin-top: 10px;">
+        <ul>
+            <li class="tab-link is-active" id="records-tabs-link"><a>Records</a></li>
+            <li class="tab-link" id="bill-tabs-link"><a>Bills</a></li>
+            <li class="tab-link" id="rates-tabs-link"><a>Rates</a></li>
+        </ul>
+    </div>
 </div>
+
+<div class="modal" id="add-inventory-record-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">New Inventory Record</p>
+            <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+            <form action="/inventory/<%=inventory.id%>" method="POST">
+                <div class="field">
+                    <div class="control">
+                        <label for="type" class="label">Type</label>
+                        <div class="select is-fullwidth">
+                            <select name="type" id="type">
+                                <% if (inventory.type == 'purchased') { %>
+                                <option value="purchased">Purchased</option>
+                                <% }else{ %>
+                                <option value="manufactured">Manufactured</option>
+                                <% } %>
+                                <option value="discarded">Discarded</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="control">
+                        <label for="quantity" class="label">Quantity</label>
+                        <input type="number" min="0" name="quantity" id="quantity" class="input">
+                    </div>
+                </div>
+                <div class="field is-grouped is-grouped-right">
+                    <div class="control">
+                        <button class="button is-rounded is-success">Add</button>
+                    </div>
+                    <div class="control">
+                        <button type="button" class="button close-modal is-rounded is-light">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+
 
 <script>
     var image_location = "<%=inventory.image%>";

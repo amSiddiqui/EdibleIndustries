@@ -126,27 +126,33 @@ module.exports = function (fillAdd) {
 
         await inv.createInventory_record({
             type: 'purchased',
-            value: 100
+            value: 100,
+            userId: 1
         });
         await inv.createInventory_record({
             type: 'sold',
-            value: 10
+            value: 10,
+            userId: 1
         });
         await inv.createInventory_record({
             type: 'discarded',
-            value: 2
+            value: 2,
+            userId: 1
         });
         await inv.createInventory_record({
             type: 'rented',
-            value: 20
+            value: 20,
+            userId: 1
         });
         await inv.createInventory_record({
             type: 'rented',
-            value: 8
+            value: 8,
+            userId: 1
         });
         await inv.createInventory_record({
             type: 'returned',
-            value: 8
+            value: 8,
+            userId: 1
         });
         await inv.save();
         console.log("All Inventory Record Successfully added");
@@ -204,7 +210,9 @@ module.exports = function (fillAdd) {
                         postal_code: post_office.id, 
                     });
                     var c_type = c_types[Math.floor(Math.random() * c_types.length)]; 
-                    customer.setCustomer_type(c_type);
+                    await customer.setCustomer_type(c_type);
+                    await customer.save();
+                    await utility.customer.addInventoryRate(customer.id, inv.id, Math.floor(Math.random() * 20) + 1);
                 }
                 console.log("All Customers Created");
                 const inven = await models.Inventory.findByPk(1);
@@ -220,7 +228,8 @@ module.exports = function (fillAdd) {
                         tax: 0,
                         description: 'Some Description',
                         paid: true,
-                        payment_method: 'Cash'
+                        payment_method: 'Cash',
+                        total: ((Math.random() * 50) + 1).toFixed(2)
                     });
                     record.setCustomer(customer);
                     record.setUser(user);
@@ -259,9 +268,8 @@ module.exports = function (fillAdd) {
                         }
                     }
                     const trans = await models.BillTransaction.create({
-                        inventory_transaction: true,
                         quantity: 3,
-                        cost: 3 * rate
+                        rate                        
                     });
                     await trans.setBill(record);
                     await trans.setInventory_record(record_trans);

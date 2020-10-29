@@ -6,13 +6,19 @@ const {
   inventory
 } = require('../modules/utility');
 const fs = require('fs');
+const utility = require('../modules/utility');
 
 
 /* GET home page. */
 router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
-  var breadcrumbs = [
-    {link: '/', name: 'Home'},
-    {link: '/inventory', name: 'Inventory'},
+  var breadcrumbs = [{
+      link: '/',
+      name: 'Home'
+    },
+    {
+      link: '/inventory',
+      name: 'Inventory'
+    },
   ];
 
   inventory.fetchAllInventory().then(inventories => {
@@ -118,11 +124,22 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
 
 router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
   let id = parseInt(req.params.id);
-  var breadcrumbs = [
-    {link: '/', name: 'Home'},
-    {link: '/inventory', name: 'Inventory'},
-    {link: '/inventory/'+id, name: 'Item'},
-    {link: '/inventory/edit/'+id, name: 'Edit'},
+  var breadcrumbs = [{
+      link: '/',
+      name: 'Home'
+    },
+    {
+      link: '/inventory',
+      name: 'Inventory'
+    },
+    {
+      link: '/inventory/' + id,
+      name: 'Item'
+    },
+    {
+      link: '/inventory/edit/' + id,
+      name: 'Edit'
+    },
   ];
   inventory.fetchInventory(id).then(inv => {
     var flash_message = req.flash('flash_message');
@@ -146,21 +163,29 @@ router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
 
 router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   let id = parseInt(req.params.id);
-  var breadcrumbs = [
-    {link: '/', name: 'Home'},
-    {link: '/inventory', name: 'Inventory'},
-    {link: '/inventory/'+id, name: 'Item'},
+  var breadcrumbs = [{
+      link: '/',
+      name: 'Home'
+    },
+    {
+      link: '/inventory',
+      name: 'Inventory'
+    },
+    {
+      link: '/inventory/' + id,
+      name: 'Item'
+    },
   ];
   inventory.fetchInventory(id).then(inv => {
     var flash_message = req.flash('flash_message');
     var flash_color = req.flash('flash_color');
-    
+
     var data = {
       inventory: inv,
       dependency: '/inventory/inventory-item.js',
       recordsExists: inv.inventory_records.length !== 0,
-      in_stock: inv.inventory_records.length !== 0? inv.inventory_records[inv.inventory_records.length-1].in_stock: 0,
-      total: inv.inventory_records.length !== 0? inv.inventory_records[inv.inventory_records.length-1].total: 0,
+      in_stock: inv.inventory_records.length !== 0 ? inv.inventory_records[inv.inventory_records.length - 1].in_stock : 0,
+      total: inv.inventory_records.length !== 0 ? inv.inventory_records[inv.inventory_records.length - 1].total : 0,
       color: 'success',
       breadcrumbs
     };
@@ -168,7 +193,8 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     percent = percent * 100;
     if (percent < 20) {
       data.color = 'warning'
-    }if (percent < 10) {
+    }
+    if (percent < 10) {
       data.color = 'danger'
     }
     data.percent = percent;
@@ -183,6 +209,30 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     req.flash('flash_color', 'danger');
     res.redirect('/inventory');
   });
+});
+
+
+router.post('/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  let id = parseInt(req.params.id);
+  var data = {
+    type: req.body.type,
+    value: req.body.quantity
+  };
+  var user_email = req.session.email;
+  if (typeof user_email === 'undefined') user_email = 'gt_ams@yahoo.in';
+  utility.inventory.addRecord(id, data, user_email).then(()=>{
+    req.flash('flash_message', 'Record Added');
+    req.flash('flash_color', 'success');
+    console.log("Data name is empty", data);
+    res.redirect('/inventory/' + id);
+  }).catch(err => {
+    console.log(err);
+    req.flash('flash_message', 'Error Adding Record. Check your inputs.');
+    req.flash('flash_color', 'danger');
+    console.log("Data name is empty", data);
+    res.redirect('/inventory/' + id);
+  });
+
 });
 
 
@@ -201,26 +251,26 @@ router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     req.flash('flash_message', 'Error Updating Inventory Item. Make sure the data entered is correct');
     req.flash('flash_color', 'danger');
     console.log("Data name is empty", data);
-    res.redirect('/inventory/edit/'+id);
+    res.redirect('/inventory/edit/' + id);
     return;
   }
   if (data.type !== 'purchased' && data.type !== 'manufactured') {
     console.log("Data type is empty", data);
     req.flash('flash_message', 'Error Updating Inventory Item. Make sure the data entered is correct');
     req.flash('flash_color', 'danger');
-    res.redirect('/inventory/edit/'+id);
+    res.redirect('/inventory/edit/' + id);
     return;
   }
   if (isNaN(data.cost)) {
     console.log("Cost is nan", data);
     req.flash('flash_message', 'Error Updating Inventory Item. Make sure the data entered is correct');
     req.flash('flash_color', 'danger');
-    res.redirect('/inventory/edit/'+id);
+    res.redirect('/inventory/edit/' + id);
     return;
   } else {
     data.cost = data.cost === 0 ? 0 : parseFloat(data.cost);
   }
-  
+
   var image_id = req.session.image_id;
   req.session.image_id = null;
   if (typeof image_id !== 'undefined' && image_id !== null && data.inventory.length !== 0) {
@@ -241,14 +291,14 @@ router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   inventory.updateInventory(id, data).then(() => {
     req.flash('flash_message', 'Inventory Item Successfully Updated');
     req.flash('flash_color', 'success');
-    res.redirect('/inventory/'+id);
+    res.redirect('/inventory/' + id);
   }).catch(err => {
     console.log(err);
     req.flash('flash_message', 'Error Updating Inventory Item. Database error');
     req.flash('flash_color', 'danger');
-    res.redirect('/inventory/'+id);
+    res.redirect('/inventory/' + id);
   });
-  
+
 });
 
 router.delete('/:id', middleware.auth.loggedIn(), function (req, res, next) {

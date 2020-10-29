@@ -239,6 +239,9 @@ Inventory.hasMany(InventoryRecord, {
 
 InventoryRecord.belongsTo(Inventory);
 
+User.hasMany(InventoryRecord);
+InventoryRecord.belongsTo(User);
+
 const Customer = db.sequelize.define("customer", {
     id: {
         type: db.Sequelize.INTEGER.UNSIGNED,
