@@ -229,7 +229,8 @@ module.exports = function (fillAdd) {
                         description: 'Some Description',
                         paid: true,
                         payment_method: 'Cash',
-                        total: ((Math.random() * 50) + 1).toFixed(2)
+                        total: ((Math.random() * 50) + 1).toFixed(2),
+                        paidOn: new Date()
                     });
                     record.setCustomer(customer);
                     record.setUser(user);
@@ -269,7 +270,8 @@ module.exports = function (fillAdd) {
                     }
                     const trans = await models.BillTransaction.create({
                         quantity: 3,
-                        rate                        
+                        rate,
+                        type: 'sold'     
                     });
                     await trans.setBill(record);
                     await trans.setInventory_record(record_trans);

@@ -421,6 +421,9 @@ const Bill = db.sequelize.define("bill", {
     dueDate: {
         type: db.Sequelize.DATE
     },
+    paidOn: {
+        type: db.Sequelize.DATE
+    },
     payment_method: {
         type: db.Sequelize.STRING
     },
@@ -471,7 +474,11 @@ const BillTransaction = db.sequelize.define("bill_transaction", {
         defaultValue: 0.0
     },
     rate: {
-        type: db.Sequelize.DOUBLE
+        type: db.Sequelize.DOUBLE,
+        defaultValue: 0.0
+    },
+    type: {
+        type: db.Sequelize.STRING
     }
 });
 
@@ -487,6 +494,7 @@ Bill.belongsTo(User);
 InventoryRecord.hasOne(BillTransaction);
 BillTransaction.belongsTo(InventoryRecord);
 
+BillTransaction.hasMany(BillTransaction, {as: 'return', foreignKey: 'returnId'});
 
 module.exports = {
     User,

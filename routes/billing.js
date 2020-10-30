@@ -2,6 +2,7 @@ var express = require('express');
 const middleware = require('../modules/middleware');
 const utility = require('../modules/utility');
 const NepaliDate = require('nepali-date-converter');
+const _ = require('lodash');
 var router = express.Router();
 const fs = require('fs');
 
@@ -53,6 +54,37 @@ router.get('/add', middleware.auth.loggedIn(), function (req, res, next) {
 
 });
 
+router.post('/return/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  let id = parseInt(req.params.id);
+  let inv_id = req.body.inventory_id;
+  let quant = req.body.quantity;
+  let bill_id = req.body.bill_id;
+  utility.billing.addReturn(id, inv_id, quant, bill_id).then(() => {
+    req.flash('flash_message', 'Add return to the items');
+    req.flash('flash_color', 'success');
+    res.redirect('/billing/'+bill_id);
+  }).catch(err => {
+    console.log(err);
+    req.flash('flash_message', 'Something went wrong while adding return. Try again later');
+    req.flash('flash_color', 'danger');
+    res.redirect('/billing/'+bill_id);
+  });
+});
+
+router.post('/pay/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  let id = parseInt(req.params.id);
+  utility.billing.pay(id).then(() => {
+    req.flash('flash_message', 'Paid Successfully');
+    req.flash('flash_color', 'success');
+    res.redirect('/billing/'+id);
+  }).catch(err => {
+    console.log(err);
+    req.flash('flash_message', 'Something went wrong while adding pay. Try again later');
+    req.flash('flash_color', 'danger');
+    res.redirect('/billing/'+id);
+  });
+});
+
 
 router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   let id = parseInt(req.params.id);
@@ -82,16 +114,48 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   }
 
   utility.billing.fetch(id).then(bill => {
-    bill.nepali_date = new NepaliDate(bill.createdAt).format("DD/MM/YYYY");
+    bill.nepali_date = new NepaliDate(bill.createdAt).format("ddd, DD MMMM YYYY", 'np');
     if (!bill.paid) {
-      bill.nepali_due = new NepaliDate(bill.dueDate).format("DD/MM/YYYY");
+      bill.nepali_due = new NepaliDate(bill.dueDate).format("ddd, DD MMMM YYYY", 'np');
+      bill.danger = false;
       if (bill.dueDate < new Date()) {
         bill.danger = true;
       }
-      bill.danger = false;
+    }
+    for(let i = 0; i < bill.bill_transactions.length; i++) {
+      const tr = bill.bill_transactions[i];
+      if (tr.type == 'rented') {
+        var returns = tr.return;
+        var returns_total = _.sumBy(returns, (o) => o.quantity);
+        if (tr.quantity > returns_total) {
+          bill.bill_transactions[i].status = false;
+          bill.bill_transactions[i].remaining = tr.quantity - returns_total;
+        }else{
+          bill.bill_transactions[i].status = true;
+        }
+      }
     }
     data.bill = bill;
+    return utility.billing.areItemsRented(id);
+  }).then(rented => {
+    data.bill.rented = rented;
+    return utility.billing.wereItemsRented(id);
+  }).then(were_rented => {
+    data.bill.were_rented = were_rented;
+    data.toNepaliDate = (d) => {
+      return new NepaliDate(d).format("DD/MM/YYYY", 'np');
+    };
+    data.toNepaliDateFull = (d) => {
+      return new NepaliDate(d).format("ddd, DD MMMM YYYY", 'np');
+    };
+    console.log('Bill Transaction Status: ',data.bill.bill_transactions[0].status);
     res.render('billing/show', data);
+  })
+  .catch(err => {
+    console.log(err);
+    req.flash('flash_message', 'Some error occurred while loading the bill. Please try again later');
+    req.flash('flash_color', 'danger');
+    res.redirect('/billing');
   });
 });
 
@@ -132,6 +196,11 @@ router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
     }
     data.bills = bills;
     res.render('billing/index', data);
+  }).catch(err => {
+    console.log(err);
+    req.flash('flash_message', 'Some error occurred while loading the bills. Please try again later');
+    req.flash('flash_color', 'danger');
+    res.redirect('/');
   });
 });
 
@@ -148,7 +217,6 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
   if (due_date.length !== 0) {
     due_date = utility.misc.toEnglishDate(due_date);
     dd = new NepaliDate(due_date).toJsDate();
-    console.log(dd);
   }
   var paid = false;
   var temp = req.body.paid;

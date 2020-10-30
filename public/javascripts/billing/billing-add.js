@@ -265,8 +265,10 @@ $(function () {
     $(".tgl-flip").on('change', function () {
         if ($(this).is(':checked')) {
             $("#due_date_container").hide();
+            $("#due_date_container").prop('required', false);
         } else {
             $("#due_date_container").show();
+            $("#due_date_container").prop('required', true);
         }
     });
 

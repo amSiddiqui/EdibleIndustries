@@ -36,7 +36,7 @@
                 </thead>
                 <tbody>
                     <% for(let i=0; i < bills.length; i++) { const bill = bills[i]; %>
-                        <tr>
+                        <tr onclick="window.location.href =  '/billing/<%=bill.id%>'">
                             <td><%=bill.track_id;%></td>
                             <td><%=bill.nepali_date;%></td>
                             <td><%=bill.customer.first_name+' '+bill.customer.last_name;%></td>

@@ -1,5 +1,7 @@
 const models = require('../models/Models');
 const NepaliDate = require('nepali-date-converter');
+var _ = require('lodash');
+
 const {
     Op
 } = require('sequelize');
@@ -346,12 +348,36 @@ module.exports = {
             return models.Bill.findByPk(id, {
                 include: [{
                         model: models.BillTransaction,
-                        include: [{
-                            model: models.InventoryRecord
-                        }]
+                        include: [
+                        {
+                            model: models.InventoryRecord,
+                            include: [
+                                {
+                                    model: models.Inventory
+                                }
+                            ]
+                        },
+                        {
+                            model: models.BillTransaction,
+                            as: 'return'
+                        }
+                    ]
                     },
                     {
-                        model: models.Customer
+                        model: models.Customer,
+                        include: 
+                        [{
+                            model: models.Zone
+                        },
+                        {
+                            model: models.District,
+                        },
+                        {
+                            model: models.PostOffice
+                        },
+                        {
+                            model: models.CustomerType
+                        }]
                     },
                     {
                         model: models.User
@@ -419,6 +445,7 @@ module.exports = {
                     tax: data.tax_value,
                     description: data.description,
                     paid: data.paid,
+                    paidOn: data.paid ? new Date() : null,
                     payment_method: data.payment_method,
                     image: data.image_loc,
                     total: cost + ''
@@ -431,6 +458,7 @@ module.exports = {
                     tax: data.tax_value,
                     description: data.description,
                     paid: data.paid,
+                    paidOn: data.paid? new Date : null,
                     payment_method: data.payment_method,
                     image: data.image_loc,
                     total: cost + '',
@@ -442,7 +470,7 @@ module.exports = {
                 const inventory = await models.Inventory.findByPk(transaction.id);
                 for (let j = 0; j < transaction.rate.length; j++) {
                     var type = 'sold';
-                    if (transaction.type[j] == 'Rented') type = 'rented';
+                    if (transaction.type[j] == 'rented') type = 'rented';
                     const inv_record = await models.InventoryRecord.create({
                         type,
                         value: transaction.quantity[j]
@@ -451,7 +479,8 @@ module.exports = {
                     await inv_record.save();
                     const bill_transac = await models.BillTransaction.create({
                         quantity: transaction.quantity[j],
-                        rate: transaction.rate[j]
+                        rate: transaction.rate[j],
+                        type: type
                     });
                     bill_transac.setInventory_record(inv_record);
                     bill_transac.setBill(bill);
@@ -469,6 +498,70 @@ module.exports = {
             }
             await bill.save();
             return bill.id;
+        },
+        areItemsRented: async (id) => {
+            const bill = await models.Bill.findByPk(id, {
+                include: [
+                    {
+                        model: models.BillTransaction
+                    }
+                ]
+            });
+            var rented = false;
+            for(let i = 0; i < bill.bill_transactions.length; i++) {
+                const tr = bill.bill_transactions[i];
+                if (tr.type == 'rented') {
+                    const returns = await tr.getReturn();
+                    var total_return =  _.sumBy(returns, (o) => o.quantity);
+                    if (total_return < tr.quantity) {
+                        rented = true;
+                        break;
+                    }
+                }
+            }
+            return rented;
+        },
+        
+        wereItemsRented: async (id) => {
+            const bill = await models.Bill.findByPk(id, {
+                include: [
+                    {
+                        model: models.BillTransaction
+                    }
+                ]
+            });
+            var rented = false;
+            for(let i = 0; i < bill.bill_transactions.length; i++) {
+                const tr = bill.bill_transactions[i];
+                if (tr.type == 'rented') {
+                    rented = true;
+                }
+            }
+            return rented;
+        },
+        addReturn: async (tr_id, inv_id, q, bill_id) => {
+            const inv = await models.Inventory.findByPk(inv_id);
+            const inv_record =  await inv.createInventory_record({
+                type: 'returned',
+                value: q
+            });
+            const tr = await models.BillTransaction.findByPk(tr_id);
+            const bill_transac = await models.BillTransaction.create({
+                quantity: q,
+                type: 'returned'
+            });
+            const bill = await models.Bill.findByPk(bill_id);
+            bill_transac.setInventory_record(inv_record);
+            tr.addReturn(bill_transac);
+            bill_transac.setBill(bill);
+            await bill_transac.save();
+            await tr.save();
+        },
+        pay: async (id) => {
+            const bill = await models.Bill.findByPk(id);
+            bill.paid = true;
+            bill.paidOn = new Date();
+            await bill.save();
         }
     },
     misc: {
