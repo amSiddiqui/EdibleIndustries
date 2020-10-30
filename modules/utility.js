@@ -1,12 +1,11 @@
-const {
-    Inventory,
-    InventoryRecord,
-    CustomerTypeRate
-} = require('../models/Models');
 const models = require('../models/Models');
 const NepaliDate = require('nepali-date-converter');
-const { Op } = require('sequelize');
-const { sequelize } = require('./database');
+const {
+    Op
+} = require('sequelize');
+const {
+    sequelize
+} = require('./database');
 
 module.exports = {
     user: {
@@ -56,12 +55,12 @@ module.exports = {
                 where: {
                     id
                 },
-                include: [
-                    {
-                        model: models.InventoryRecord,
-                        order: [[sequelize.col('id'), 'DESC']]
-                    }
-                ]
+                include: [{
+                    model: models.InventoryRecord,
+                    order: [
+                        [sequelize.col('id'), 'DESC']
+                    ]
+                }]
             });
             return inv;
         },
@@ -87,9 +86,9 @@ module.exports = {
         fetchAllInventory: () => {
             return new Promise((resolve, reject) => {
                 models.Inventory.findAll({
-                    include: InventoryRecord,
+                    include: models.InventoryRecord,
                     order: [
-                        [InventoryRecord, 'id', 'DESC']
+                        [models.InventoryRecord, 'id', 'DESC']
                     ]
                 }).then(inventories => {
                     resolve(inventories);
@@ -104,13 +103,13 @@ module.exports = {
         },
         fetchAllInventoryIdWithRecord: () => {
             return models.Inventory.findAll({
-                include: [
-                    {
-                        model: models.InventoryRecord,
-                        order: [[sequelize.col('id'), 'DESC']],
-                        limit: 1
-                    }
-                ]
+                include: [{
+                    model: models.InventoryRecord,
+                    order: [
+                        [sequelize.col('id'), 'DESC']
+                    ],
+                    limit: 1
+                }]
             });
         },
         addRecord: async (id, data, user_email) => {
@@ -119,10 +118,16 @@ module.exports = {
                     email: user_email
                 }
             });
-            if (isNaN(data.value)) {data.value = 0}
-            else {data.value = parseInt(data.value);}
+            if (isNaN(data.value)) {
+                data.value = 0
+            } else {
+                data.value = parseInt(data.value);
+            }
             var inventory = await models.Inventory.findByPk(id);
-            var inventory_record = await models.InventoryRecord.create({type: data.type, value: data.value});
+            var inventory_record = await models.InventoryRecord.create({
+                type: data.type,
+                value: data.value
+            });
             inventory_record.setInventory(inventory);
             inventory_record.setUser(user);
             await inventory_record.save();
@@ -186,12 +191,12 @@ module.exports = {
         },
         fetchAllTypes: () => {
             return models.CustomerType.findAll({
-                include: Inventory
+                include: models.Inventory
             });
         },
         fetchCustomerType: (id) => {
             return models.CustomerType.findByPk(id, {
-                include: Inventory
+                include: models.Inventory
             });
         },
         exists: async (name) => {
@@ -337,6 +342,23 @@ module.exports = {
                 ]
             });
         },
+        fetch: (id) => {
+            return models.Bill.findByPk(id, {
+                include: [{
+                        model: models.BillTransaction,
+                        include: [{
+                            model: models.InventoryRecord
+                        }]
+                    },
+                    {
+                        model: models.Customer
+                    },
+                    {
+                        model: models.User
+                    }
+                ]
+            });
+        },
         getBillNo: async () => {
             var nepali_today = new NepaliDate(new Date());
             var rec_id = nepali_today.format('YYYY') + nepali_today.format('MM');
@@ -365,39 +387,56 @@ module.exports = {
         createFull: async (customer_id, data, transactions, userEmail) => {
             var customer = await models.Customer.findByPk(customer_id);
             var grand_total = 0.0;
-            for (let k = 0; k < transactions.length; k++) { const transaction = transactions[k];
+            for (let k = 0; k < transactions.length; k++) {
+                const transaction = transactions[k];
                 for (let i = 0; i < transaction.rate.length; i++) {
-                    if ( isNaN(transactions[k].rate[i])) transactions[k].rate[i] = 0;
+                    if (isNaN(transactions[k].rate[i])) transactions[k].rate[i] = 0;
                     else transactions[k].rate[i] = parseFloat(transactions[k].rate[i]);
-                    if ( isNaN(transactions[k].quantity[i])) transactions[k].quantity[i] = 0;
+                    if (isNaN(transactions[k].quantity[i])) transactions[k].quantity[i] = 0;
                     else transactions[k].quantity[i] = parseFloat(transactions[k].quantity[i]);
-                    grand_total +=  transactions[k].rate[i] * transactions[k].quantity[i]; 
+                    grand_total += transactions[k].rate[i] * transactions[k].quantity[i];
                 }
             }
             if (isNaN(data.discount_value)) data.discount_value = 0;
             else data.discount_value = parseFloat(data.discount_value);
-            
+
             if (isNaN(data.tax_value)) data.tax_value = 0;
             else data.tax_value = parseFloat(data.tax_value);
-            
+
             if (isNaN(data.discount_percent)) data.discount_percent = 0;
             else data.discount_percent = parseFloat(data.discount_percent);
-            
+
             if (isNaN(data.tax_percent)) data.tax_percent = 0;
             else data.tax_percent = parseFloat(data.tax_percent);
-            
+
             var cost = grand_total - data.discount_value + data.tax_value;
-            var bill = await models.Bill.create({
-                discount: data.discount_value,
-                discountPercent: data.discount_percent,
-                taxRate: data.tax_percent,
-                tax: data.tax_value,
-                description: data.description,
-                paid: data.paid,
-                payment_method: data.payment_method,
-                image: data.image_loc,
-                total: cost+''
-            });
+            var bill = null;
+            if (data.dd == null) {
+                bill = await models.Bill.create({
+                    discount: data.discount_value,
+                    discountPercent: data.discount_percent,
+                    taxRate: data.tax_percent,
+                    tax: data.tax_value,
+                    description: data.description,
+                    paid: data.paid,
+                    payment_method: data.payment_method,
+                    image: data.image_loc,
+                    total: cost + ''
+                });
+            }else{
+                bill = await models.Bill.create({
+                    discount: data.discount_value,
+                    discountPercent: data.discount_percent,
+                    taxRate: data.tax_percent,
+                    tax: data.tax_value,
+                    description: data.description,
+                    paid: data.paid,
+                    payment_method: data.payment_method,
+                    image: data.image_loc,
+                    total: cost + '',
+                    dueDate: data.dd
+                });
+            }
             for (let i = 0; i < transactions.length; i++) {
                 const transaction = transactions[i];
                 const inventory = await models.Inventory.findByPk(transaction.id);
@@ -412,7 +451,7 @@ module.exports = {
                     await inv_record.save();
                     const bill_transac = await models.BillTransaction.create({
                         quantity: transaction.quantity[j],
-                        rate: transaction.rate[j] 
+                        rate: transaction.rate[j]
                     });
                     bill_transac.setInventory_record(inv_record);
                     bill_transac.setBill(bill);
@@ -452,6 +491,30 @@ module.exports = {
         fetchAllPostOffice: async (districtID) => {
             const district = await models.District.findByPk(districtID);
             return district.getPost_offices();
+        },
+        toEnglishDate: (date) => {
+            var numbers = {
+                '१': 1,
+                '२': 2,
+                '३': 3,
+                '४': 4,
+                '५': 5,
+                '६': 6,
+                '७': 7,
+                '८': 8,
+                '९': 9,
+                '०': 0,
+            };
+            var engDate = '';
+            for (let i = 0; i < date.length; i++) {
+                const d = date[i];
+                if (d == '/') {
+                    engDate += '/'
+                }else{
+                    engDate += numbers[d];
+                }
+            }
+            return engDate;
         }
     }
 }
