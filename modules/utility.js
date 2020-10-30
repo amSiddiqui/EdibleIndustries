@@ -540,6 +540,8 @@ module.exports = {
             return rented;
         },
         addReturn: async (tr_id, inv_id, q, bill_id) => {
+            if (isNaN(q)) q = 0;
+            else q = parseInt(q);
             const inv = await models.Inventory.findByPk(inv_id);
             const inv_record =  await inv.createInventory_record({
                 type: 'returned',

@@ -241,7 +241,7 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
         rate
       });
       var image_id = req.session.image_id;
-      var image_loc = '';
+      var image_loc = '/images/placeholder-vertical.jpg';
       req.session.image_id = null;
       if (typeof image_id !== 'undefined' && image_id !== null) {
         if (fs.existsSync('uploads/tmp/' + image_id)) {
