@@ -254,6 +254,7 @@ module.exports = function (fillAdd) {
                     });
 
                     record_trans.setInventory(inven);
+                    record_trans.setUser(user);
                     
                     var customer_rate = await customer.getInventories();
                     var rate = 0;

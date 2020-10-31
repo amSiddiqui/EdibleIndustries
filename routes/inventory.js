@@ -71,7 +71,7 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
     type: req.body.type.trim(),
     cost: req.body.cost.trim()
   };
-  data.cost = data.cost === '' ? 0 : data.cost;
+  data.cost = utility.misc.toNumberFloat(data.cost);
 
   if (data.name.length === 0) {
     req.flash('flash_message', 'Error Creating Inventory Item. Make sure the data entered is correct');
@@ -87,15 +87,7 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
     res.redirect('/inventory');
     return;
   }
-  if (isNaN(data.cost)) {
-    console.log("Cost is nan", data);
-    req.flash('flash_message', 'Error Creating Inventory Item. Make sure the data entered is correct');
-    req.flash('flash_color', 'danger');
-    res.redirect('/inventory');
-    return;
-  } else {
-    data.cost = data.cost === 0 ? 0 : parseFloat(data.cost);
-  }
+  data.cost = utility.misc.toNumberFloat(data.cost);
 
   var image_id = req.session.image_id;
   req.session.image_id = null;
@@ -218,6 +210,7 @@ router.post('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     type: req.body.type,
     value: req.body.quantity
   };
+  data.value = utility.misc.toNumber(data.value);
   var user_email = req.session.email;
   if (typeof user_email === 'undefined') user_email = 'gt_ams@yahoo.in';
   utility.inventory.addRecord(id, data, user_email).then(()=>{
@@ -261,15 +254,9 @@ router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     res.redirect('/inventory/edit/' + id);
     return;
   }
-  if (isNaN(data.cost)) {
-    console.log("Cost is nan", data);
-    req.flash('flash_message', 'Error Updating Inventory Item. Make sure the data entered is correct');
-    req.flash('flash_color', 'danger');
-    res.redirect('/inventory/edit/' + id);
-    return;
-  } else {
-    data.cost = data.cost === 0 ? 0 : parseFloat(data.cost);
-  }
+  
+  data.cost = utility.misc.toNumberFloat(data.cost);
+  
 
   var image_id = req.session.image_id;
   req.session.image_id = null;

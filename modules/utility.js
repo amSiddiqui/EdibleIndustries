@@ -8,6 +8,23 @@ const {
 const {
     sequelize
 } = require('./database');
+const { add } = require('lodash');
+
+function toNumberFloat(num) {
+    if (typeof num == 'number') return num;
+    if (num.trim().length == 0 || isNaN(num)) {
+        return 0;
+    }
+    return parseFloat(num);
+}
+function toNumber(num) {
+    if (typeof num == 'number') return num;
+    if (num.trim().length == 0 || isNaN(num)) {
+        return 0;
+    }
+    return parseInt(num);
+}
+
 
 module.exports = {
     user: {
@@ -120,11 +137,8 @@ module.exports = {
                     email: user_email
                 }
             });
-            if (isNaN(data.value)) {
-                data.value = 0
-            } else {
-                data.value = parseInt(data.value);
-            }
+            
+            data.value = this.misc.toNumber(data.value);
             var inventory = await models.Inventory.findByPk(id);
             var inventory_record = await models.InventoryRecord.create({
                 type: data.type,
@@ -147,7 +161,7 @@ module.exports = {
             });
             var rates_data = [];
             data.rates.forEach(rate => {
-                if (rate.rate.length > 0 && !isNaN(rate.rate)) {
+                if (rate.rate.trim().length > 0 && !isNaN(rate.rate)) {
                     rates_data.push({
                         inventoryId: rate.id,
                         customerTypeId: customer_type.id,
@@ -161,9 +175,9 @@ module.exports = {
         editWithRates: async (id, data) => {
             var customer_type = await models.CustomerType.findByPk(id);
             customer_type.name = data.name;
-
             for (let i = 0; i < data.rates.length; i++) {
                 const rate = data.rates[i];
+                
                 var existingRate = await models.CustomerTypeRate.findOne({
                     where: {
                         inventoryId: rate.id,
@@ -171,13 +185,13 @@ module.exports = {
                     }
                 });
                 if (existingRate != null) {
-                    existingRate.rate = rate.rate;
+                    existingRate.rate = toNumberFloat(rate.rate);
                     await existingRate.save();
                 } else {
                     await models.CustomerTypeRate.create({
                         inventoryId: rate.id,
                         customerTypeId: customer_type.id,
-                        rate: rate.rate
+                        rate: toNumberFloat(rate.rate)
                     });
                 }
             }
@@ -225,15 +239,15 @@ module.exports = {
             var customer = await models.Customer.create({
                 ...customerData
             });
-            if (!isNaN(addressData.zone)) {
+            if (addressData.zone.trim().length > 0 && !isNaN(addressData.zone)) {
                 var zone = await models.Zone.findByPk(addressData.zone);
                 customer.setZone(zone);
             }
-            if (!isNaN(addressData.district)) {
+            if ( addressData.zone.trim().length > 0 && !isNaN(addressData.district)) {
                 var district = await models.District.findByPk(addressData.district);
                 customer.setDistrict(district);
             }
-            if (!isNaN(addressData.post_office)) {
+            if (addressData.post_office.trim().length > 0 &&  !isNaN(addressData.post_office)) {
                 var post_office = await models.PostOffice.findByPk(addressData.post_office);
                 customer.setPost_office(post_office);
             }
@@ -254,15 +268,15 @@ module.exports = {
             customer.email = customerData.email;
             customer.phone = customerData.phone;
             customer.address1 = customerData.address1;
-            if (!isNaN(addressData.zone)) {
+            if (addressData.zone.trim().length > 0 && !isNaN(addressData.zone)) {
                 var zone = await models.Zone.findByPk(addressData.zone);
                 customer.setZone(zone);
             }
-            if (!isNaN(addressData.district)) {
+            if (addressData.district.trim().length > 0 && !isNaN(addressData.district)) {
                 var district = await models.District.findByPk(addressData.district);
                 customer.setDistrict(district);
             }
-            if (!isNaN(addressData.post_office)) {
+            if (addressData.post_office.trim().length > 0 && !isNaN(addressData.post_office)) {
                 var post_office = await models.PostOffice.findByPk(addressData.post_office);
                 customer.setPost_office(post_office);
             }
@@ -412,28 +426,29 @@ module.exports = {
         },
         createFull: async (customer_id, data, transactions, userEmail) => {
             var customer = await models.Customer.findByPk(customer_id);
+            var user = await models.User.findOne({
+                where: {
+                    email: userEmail
+                }
+            });
             var grand_total = 0.0;
             for (let k = 0; k < transactions.length; k++) {
                 const transaction = transactions[k];
                 for (let i = 0; i < transaction.rate.length; i++) {
-                    if (isNaN(transactions[k].rate[i])) transactions[k].rate[i] = 0;
-                    else transactions[k].rate[i] = parseFloat(transactions[k].rate[i]);
-                    if (isNaN(transactions[k].quantity[i])) transactions[k].quantity[i] = 0;
-                    else transactions[k].quantity[i] = parseFloat(transactions[k].quantity[i]);
+                    
+                    transactions[k].rate[i] = toNumberFloat(transactions[k].rate[i]);
+                    transactions[k].quantity[i] = toNumberFloat(transactions[k].quantity[i]);
+
                     grand_total += transactions[k].rate[i] * transactions[k].quantity[i];
                 }
             }
-            if (isNaN(data.discount_value)) data.discount_value = 0;
-            else data.discount_value = parseFloat(data.discount_value);
+            data.discount_value = toNumberFloat(data.discount_value);
 
-            if (isNaN(data.tax_value)) data.tax_value = 0;
-            else data.tax_value = parseFloat(data.tax_value);
+            data.tax_value = toNumberFloat(data.tax_value);
 
-            if (isNaN(data.discount_percent)) data.discount_percent = 0;
-            else data.discount_percent = parseFloat(data.discount_percent);
+            data.discount_percent = toNumberFloat(data.discount_percent);
 
-            if (isNaN(data.tax_percent)) data.tax_percent = 0;
-            else data.tax_percent = parseFloat(data.tax_percent);
+            data.tax_percent = toNumberFloat(data.tax_percent);
 
             var cost = grand_total - data.discount_value + data.tax_value;
             var bill = null;
@@ -476,6 +491,9 @@ module.exports = {
                         value: transaction.quantity[j]
                     });
                     inv_record.setInventory(inventory);
+                    if (user != null) {
+                        inv_record.setUser(user);
+                    }
                     await inv_record.save();
                     const bill_transac = await models.BillTransaction.create({
                         quantity: transaction.quantity[j],
@@ -488,11 +506,7 @@ module.exports = {
                 }
             }
             bill.setCustomer(customer);
-            var user = await models.User.findOne({
-                where: {
-                    email: userEmail
-                }
-            });
+            
             if (user != null) {
                 bill.setUser(user);
             }
@@ -540,8 +554,7 @@ module.exports = {
             return rented;
         },
         addReturn: async (tr_id, inv_id, q, bill_id) => {
-            if (isNaN(q)) q = 0;
-            else q = parseInt(q);
+            q = this.misc.toNumber(q);
             const inv = await models.Inventory.findByPk(inv_id);
             const inv_record =  await inv.createInventory_record({
                 type: 'returned',
@@ -587,6 +600,8 @@ module.exports = {
             const district = await models.District.findByPk(districtID);
             return district.getPost_offices();
         },
+        toNumberFloat: toNumberFloat,
+        toNumber: toNumber,
         toEnglishDate: (date) => {
             var numbers = {
                 '१': 1,

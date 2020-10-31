@@ -448,7 +448,7 @@ router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     inventories.forEach(inventory => {
       var rate = req.body['rate-' + inventory.id];
       if (typeof rate != 'undefined') {
-        rate = isNaN(rate) ? 0 : parseFloat(rate);
+        rate = utility.misc.toNumberFloat(rate);
         rates.push({
           inventoryId: inventory.id,
           rate
@@ -546,7 +546,7 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
     inventories.forEach(inventory => {
       var rate = req.body['rate-' + inventory.id];
       if (typeof rate != 'undefined') {
-        rate = isNaN(rate) ? 0 : parseFloat(rate);
+        rate = utility.misc.toNumberFloat(rate);
         rates.push({
           inventoryId: inventory.id,
           rate
