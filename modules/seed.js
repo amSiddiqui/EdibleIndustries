@@ -104,7 +104,7 @@ async function addZones(fillAdd) {
 module.exports = function (fillAdd) {
     var data = [{
         first_name: 'Aamir',
-        last_name: 'Siddiqui',
+        last_name: 'Mushtaq Siddiqui',
         email: 'gt_ams@yahoo.in',
         password: 'Edible1077',
     }]

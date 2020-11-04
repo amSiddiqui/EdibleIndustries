@@ -181,31 +181,18 @@ select {
   }
 }
 
-#customer-table {
+.is-hoverable {
   td:hover {
     cursor: pointer;
   }
 }
 
-#billing-table {
-  td:hover {
-    cursor: pointer;
-  }
-}
 
-#customer-table {
+
+.is-hoverable {
   tbody {
     tr:hover{
-      background-color: $primary;
-    }
-  }
-}
-
-
-#billing-table {
-  tbody {
-    tr:hover{
-      background-color: $primary;
+      background-color: $primary !important;
     }
   }
 }

@@ -7869,17 +7869,11 @@ select {
   text-align: center;
   font-weight: 500; }
 
-#customer-table td:hover {
+.is-hoverable td:hover {
   cursor: pointer; }
 
-#billing-table td:hover {
-  cursor: pointer; }
-
-#customer-table tbody tr:hover {
-  background-color: #00d1b2; }
-
-#billing-table tbody tr:hover {
-  background-color: #00d1b2; }
+.is-hoverable tbody tr:hover {
+  background-color: #00d1b2 !important; }
 
 #add-new-customer-form .title {
   margin-bottom: 0.6rem;

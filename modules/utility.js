@@ -1,6 +1,7 @@
 const models = require('../models/Models');
 const NepaliDate = require('nepali-date-converter');
 var _ = require('lodash');
+var numeral = require('numeral');
 
 const {
     Op
@@ -17,6 +18,7 @@ function toNumberFloat(num) {
     }
     return parseFloat(num);
 }
+
 function toNumber(num) {
     if (typeof num == 'number') return num;
     if (num.trim().length == 0 || isNaN(num)) {
@@ -25,7 +27,7 @@ function toNumber(num) {
     return parseInt(num);
 }
 
-async function insertInventoryRecord (rec, inv_id){
+async function insertInventoryRecord(rec, inv_id) {
     var inventory = await models.Inventory.findByPk(inv_id);
     var inventory_records = await inventory.getInventory_records({
         order: [
@@ -36,8 +38,7 @@ async function insertInventoryRecord (rec, inv_id){
     if (inventory_records.length == 0) {
         rec.in_stock = rec.value;
         rec.total = rec.value;
-    }
-    else{
+    } else {
         var lastRec = inventory_records[0];
         if (rec.type == 'purchased' || rec.type == 'manufactured' || rec.type == 'returned') {
             rec.in_stock = lastRec.in_stock + rec.value;
@@ -109,11 +110,9 @@ module.exports = {
                     order: [
                         [sequelize.col('id'), 'DESC']
                     ],
-                    include: [
-                        {
-                            model: models.User
-                        }
-                    ]
+                    include: [{
+                        model: models.User
+                    }]
                 }]
             });
             return inv;
@@ -172,7 +171,7 @@ module.exports = {
                     email: user_email
                 }
             });
-            
+
             data.value = toNumber(data.value);
             var inventory = await models.Inventory.findByPk(id);
             var inventory_record = await insertInventoryRecord({
@@ -183,34 +182,27 @@ module.exports = {
             inventory_record.setUser(user);
             await inventory_record.save();
         },
-        fetchBills: async(id) => {
+        fetchBills: async (id) => {
             var bills = await models.Bill.findAll({
-                include: [
-                    {
+                include: [{
                         model: models.BillTransaction,
-                        include: [
-                            {
-                                model: models.InventoryRecord,
-                                include: [
-                                    {
-                                        model: models.Inventory
-                                    }
-                                ]
-                            }
-                        ]
+                        include: [{
+                            model: models.InventoryRecord,
+                            include: [{
+                                model: models.Inventory
+                            }]
+                        }]
                     },
                     {
                         model: models.Customer,
-                        include: [
-                            {
-                                model: models.CustomerType
-                            }
-                        ]
+                        include: [{
+                            model: models.CustomerType
+                        }]
                     }
                 ]
             });
             var inv_bills = [];
-            for(let i = 0; i < bills.length; i++) {
+            for (let i = 0; i < bills.length; i++) {
                 const bill = bills[i];
                 const transactions = bill.bill_transactions;
                 for (let j = 0; j < transactions.length; j++) {
@@ -252,7 +244,7 @@ module.exports = {
             customer_type.name = data.name;
             for (let i = 0; i < data.rates.length; i++) {
                 const rate = data.rates[i];
-                
+
                 var existingRate = await models.CustomerTypeRate.findOne({
                     where: {
                         inventoryId: rate.id,
@@ -318,11 +310,11 @@ module.exports = {
                 var zone = await models.Zone.findByPk(addressData.zone);
                 customer.setZone(zone);
             }
-            if ( addressData.zone.trim().length > 0 && !isNaN(addressData.district)) {
+            if (addressData.zone.trim().length > 0 && !isNaN(addressData.district)) {
                 var district = await models.District.findByPk(addressData.district);
                 customer.setDistrict(district);
             }
-            if (addressData.post_office.trim().length > 0 &&  !isNaN(addressData.post_office)) {
+            if (addressData.post_office.trim().length > 0 && !isNaN(addressData.post_office)) {
                 var post_office = await models.PostOffice.findByPk(addressData.post_office);
                 customer.setPost_office(post_office);
             }
@@ -419,21 +411,15 @@ module.exports = {
         fetchBills: async (id) => {
             var customer = await models.Customer.findByPk(id);
             return customer.getBills({
-                include: [
-                    {
-                        model: models.BillTransaction,
-                        include: [
-                            {
-                                model: models.InventoryRecord,
-                                include: [
-                                    {
-                                        model: models.Inventory
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
+                include: [{
+                    model: models.BillTransaction,
+                    include: [{
+                        model: models.InventoryRecord,
+                        include: [{
+                            model: models.Inventory
+                        }]
+                    }]
+                }]
             });
         }
     },
@@ -457,36 +443,33 @@ module.exports = {
             return models.Bill.findByPk(id, {
                 include: [{
                         model: models.BillTransaction,
-                        include: [
-                        {
-                            model: models.InventoryRecord,
-                            include: [
-                                {
+                        include: [{
+                                model: models.InventoryRecord,
+                                include: [{
                                     model: models.Inventory
-                                }
-                            ]
-                        },
-                        {
-                            model: models.BillTransaction,
-                            as: 'return'
-                        }
-                    ]
+                                }]
+                            },
+                            {
+                                model: models.BillTransaction,
+                                as: 'return'
+                            }
+                        ]
                     },
                     {
                         model: models.Customer,
-                        include: 
-                        [{
-                            model: models.Zone
-                        },
-                        {
-                            model: models.District,
-                        },
-                        {
-                            model: models.PostOffice
-                        },
-                        {
-                            model: models.CustomerType
-                        }]
+                        include: [{
+                                model: models.Zone
+                            },
+                            {
+                                model: models.District,
+                            },
+                            {
+                                model: models.PostOffice
+                            },
+                            {
+                                model: models.CustomerType
+                            }
+                        ]
                     },
                     {
                         model: models.User
@@ -530,7 +513,7 @@ module.exports = {
             for (let k = 0; k < transactions.length; k++) {
                 const transaction = transactions[k];
                 for (let i = 0; i < transaction.rate.length; i++) {
-                    
+
                     transactions[k].rate[i] = toNumberFloat(transactions[k].rate[i]);
                     transactions[k].quantity[i] = toNumberFloat(transactions[k].quantity[i]);
 
@@ -560,7 +543,7 @@ module.exports = {
                     image: data.image_loc,
                     total: cost + ''
                 });
-            }else{
+            } else {
                 bill = await models.Bill.create({
                     discount: data.discount_value,
                     discountPercent: data.discount_percent,
@@ -568,7 +551,7 @@ module.exports = {
                     tax: data.tax_value,
                     description: data.description,
                     paid: data.paid,
-                    paidOn: data.paid? new Date() : null,
+                    paidOn: data.paid ? new Date() : null,
                     payment_method: data.payment_method,
                     image: data.image_loc,
                     total: cost + '',
@@ -601,7 +584,7 @@ module.exports = {
                 }
             }
             bill.setCustomer(customer);
-            
+
             if (user != null) {
                 bill.setUser(user);
             }
@@ -610,18 +593,16 @@ module.exports = {
         },
         areItemsRented: async (id) => {
             const bill = await models.Bill.findByPk(id, {
-                include: [
-                    {
-                        model: models.BillTransaction
-                    }
-                ]
+                include: [{
+                    model: models.BillTransaction
+                }]
             });
             var rented = false;
-            for(let i = 0; i < bill.bill_transactions.length; i++) {
+            for (let i = 0; i < bill.bill_transactions.length; i++) {
                 const tr = bill.bill_transactions[i];
                 if (tr.type == 'rented') {
                     const returns = await tr.getReturn();
-                    var total_return =  _.sumBy(returns, (o) => o.quantity);
+                    var total_return = _.sumBy(returns, (o) => o.quantity);
                     if (total_return < tr.quantity) {
                         rented = true;
                         break;
@@ -630,17 +611,15 @@ module.exports = {
             }
             return rented;
         },
-        
+
         wereItemsRented: async (id) => {
             const bill = await models.Bill.findByPk(id, {
-                include: [
-                    {
-                        model: models.BillTransaction
-                    }
-                ]
+                include: [{
+                    model: models.BillTransaction
+                }]
             });
             var rented = false;
-            for(let i = 0; i < bill.bill_transactions.length; i++) {
+            for (let i = 0; i < bill.bill_transactions.length; i++) {
                 const tr = bill.bill_transactions[i];
                 if (tr.type == 'rented') {
                     rented = true;
@@ -656,7 +635,7 @@ module.exports = {
                     email: user_email
                 }
             });
-            const inv_record =  await insertInventoryRecord({
+            const inv_record = await insertInventoryRecord({
                 type: 'returned',
                 value: q
             }, inv_id);
@@ -696,7 +675,7 @@ module.exports = {
                 if (!(record.inventoryId in total)) {
                     total[record.inventoryId] = 0;
                 }
-                
+
                 if (!(record.inventoryId in stock_total)) {
                     stock_total[record.inventoryId] = 0;
                 }
@@ -712,7 +691,7 @@ module.exports = {
                     total[record.inventoryId] += record.value;
                 }
             }
-            
+
             for (const [inv_id, t] of Object.entries(total)) {
                 var inv_record = await models.InventoryRecord.findAll({
                     order: [
@@ -787,12 +766,166 @@ module.exports = {
                 const d = date[i];
                 if (d == '/') {
                     engDate += '/'
-                }else{
+                } else {
                     engDate += numbers[d];
                 }
             }
             return engDate;
         },
         insertInventoryRecord: insertInventoryRecord,
+        getStats: async () => {
+            var data = {}
+            var today = new Date();
+            var monthName = new NepaliDate(today).format('MMMM', 'np');
+            var yearName = new NepaliDate(today).format('YYYY', 'np');
+            var dt = new Date();
+            let i = 0;
+            while (true) {
+                dt.setDate(dt.getDate() - i);
+                var np = new NepaliDate(dt);
+                if (np.getDate() == 1) break;
+                i++;
+            }
+            data.monthName = monthName;
+            var total = await models.Bill.sum('total' ,{
+                where: {
+                    createdAt: {
+                        [Op.gte]: dt
+                    }
+                }
+            });
+            
+            data.total = total;
+            data.formatted_total = numeral(total).format('0,0.00');
+            data.yearName = yearName;
+            console.log("Reached this point");
+            // Total Assets
+            var inventory_ids = await models.Inventory.findAll({
+                attributes: ['id', 'cost'],
+            });
+            var total_asset = 0;
+            for (let j = 0; j < inventory_ids.length; j++) {
+                const inv_id = inventory_ids[j];
+                const record = await models.InventoryRecord.findOne({
+                    order: [
+                        ['id', 'DESC']
+                    ],
+                    where: {
+                        inventory_id: inv_id.id
+                    }
+                });
+                if (record == null) continue;
+                total_asset += inv_id.cost * record.total;
+            }
+
+            data.formatted_asset = numeral(total_asset).format('0,0.00');
+
+            // Outstanding Revenue
+            var outstanding = await models.Bill.sum('total' ,{
+                where: {
+                    paid: false
+                }
+            });
+
+            data.formatted_outstanding = numeral(outstanding).format('0,0.00');
+
+            var total_rented = 0;
+
+            var transactions = await models.BillTransaction.findAll({
+                where: {
+                    type: 'rented'
+                }
+            });
+            
+            var bills = [];
+            var bill_ids = [];
+            for (let j = 0; j < transactions.length; j++) {
+                const tr = transactions[j];
+                total_rented += tr.quantity;
+                var rented = tr.quantity;
+                const returns = tr.getReturn();
+                for (let k = 0; k < returns.length; k++) {
+                    const r = returns[k];
+                    total_rented -= r.quantity;
+                    rented -= r.quantity;
+                }
+                if (rented > 0){
+                    var bill = await tr.getBill({
+                        include: [
+                            {
+                                model: models.BillTransaction,
+                                include: [
+                                    {
+                                        model: models.InventoryRecord,
+                                        include: [
+                                            {
+                                                model: models.Inventory
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                model: models.Customer
+                            }
+                        ]
+                    });
+                    if (!bill_ids.includes(bill.id))  {
+                        bills.push(bill);
+                        bill_ids.push(bill.id);
+                    }
+                }
+            }
+            data.formatted_rented = numeral(total_rented).format('0,0');
+            data.bills = bills;
+
+            // Unpaid Bills
+            var unpaid = await models.Bill.findAll({
+                include: [
+                    {
+                        model: models.BillTransaction,
+                        include: [
+                            {
+                                model: models.InventoryRecord,
+                                include: [
+                                    {
+                                        model: models.Inventory
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        model: models.Customer,
+                        include: [
+                            {
+                                model: models.CustomerType
+                            }
+                        ]
+                    }
+                ],
+                where: {
+                    paid: false
+                }
+            });
+            for (let j = 0; j < unpaid.length; j++) {
+                const bill = unpaid[j];
+                var rented = false;
+                for (let k = 0; k < bill.bill_transactions.length; k++) {
+                    const tr = bill.bill_transactions[k];
+                    if (tr.type == 'rented') {
+                        const returns = await tr.getReturn();
+                        var total_return = _.sumBy(returns, (o) => o.quantity);
+                        if (total_return < tr.quantity) {
+                            rented = true;
+                            break;
+                        }
+                    }
+                }
+                unpaid[j].rented = rented;
+            }
+            data.unpaid = unpaid;
+            return data;
+        }
     }
 }
