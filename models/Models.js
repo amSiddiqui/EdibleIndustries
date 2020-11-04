@@ -1,7 +1,6 @@
 const db = require("../modules/database");
 const crypto = require('crypto');
 const NepaliDate = require('nepali-date-converter');
-const { sequelize } = require("../modules/database");
 const { Op } = require('sequelize');
 
 const Zone = db.sequelize.define("zone", {
@@ -198,35 +197,6 @@ const InventoryRecord = db.sequelize.define("inventory_record", {
     },
     total: {
         type: db.Sequelize.INTEGER
-    }
-}, {
-    underscored: true
-});
-
-InventoryRecord.beforeCreate(async (rec, options) => {
-    var id = await InventoryRecord.max('id');
-    if (isNaN(id)) {
-        rec.in_stock = rec.value;
-        rec.total = rec.value;
-    } else {
-        var lastRec = await InventoryRecord.findByPk(id);
-        if (lastRec == null) {
-            rec.in_stock = rec.value;
-            rec.total = rec.value;
-        } else {
-            if (rec.type == 'purchased' || rec.type == 'manufactured' || rec.type == 'returned') {
-                rec.in_stock = lastRec.in_stock + rec.value;
-            } else if (rec.type == 'rented' || rec.type == 'discarded' || rec.type == 'sold') {
-                rec.in_stock = lastRec.in_stock - rec.value;
-            }
-            if (rec.type == 'purchased' || rec.type == 'manufactured') {
-                rec.total = lastRec.total + rec.value;
-            } else if (rec.type == 'discarded' || rec.type == 'sold') {
-                rec.total = lastRec.total - rec.value;
-            } else if (rec.type == 'rented' || rec.type == 'returned') {
-                rec.total = lastRec.total;
-            }
-        }
     }
 }, {
     underscored: true

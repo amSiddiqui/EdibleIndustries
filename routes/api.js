@@ -199,5 +199,20 @@ router.get('/inventories', middleware.auth.loggedIn(), function(req, res, next) 
     });
 });
 
+router.get('/check-item-rented/:id',  middleware.auth.loggedIn(), function(req, res, next)  {
+    let id = parseInt(req.params.id);
+    utility.billing.areItemsRented(id).then(function(result) {
+        res.json({
+            status: 'success',
+            result
+        });
+    }).catch(function(err) {
+        console.log(err);
+        req.json({
+            status: 'fail',
+            message: 'DB error'
+        });
+    });
+});
 
 module.exports = router;

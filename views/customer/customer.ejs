@@ -58,7 +58,9 @@
                                     </tr>
                                     <tr>
                                         <th>City/Postal Code: </th>
-                                        <td><%=customer.post_office == null ? '': customer.post_office.name%> <%=customer.post_office == null ? '' : '('+customer.post_office.value+')' %></td>
+                                        <td><%=customer.post_office == null ? '': customer.post_office.name%>
+                                            <%=customer.post_office == null ? '' : '('+customer.post_office.value+')' %>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -71,8 +73,8 @@
     <div class="tabs is-boxed" style="margin-top: 10px;">
         <ul>
             <li class="tab-link is-active" id="rates-tabs-link"><a>Rates</a></li>
-            <li class="tab-link" id="records-tabs-link"><a>Records</a></li>
             <li class="tab-link" id="bill-tabs-link"><a>Bills</a></li>
+            <li class="tab-link" id="records-tabs-link"><a>Reports</a></li>
         </ul>
     </div>
 
@@ -102,12 +104,12 @@
         </div>
     </div>
 
-    
+
 
     <div class="tab-content" id="records-tab" style="display: none;">
         <div class="columns">
             <div class="column">
-                <h1 class="title is-3">Records</h1>
+                <h1 class="title is-3">Reports</h1>
             </div>
         </div>
     </div>
@@ -117,6 +119,38 @@
         <div class="columns">
             <div class="column">
                 <h1 class="title is-3">Bills</h1>
+                <table id="billing-table" class="table is-striped is-hoverable" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Bill No</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Payment</th>
+                            <th>Due</th>
+                            <th>Rented</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% for(let i=0; i < bills.length; i++) { const bill = bills[i]; %>
+                        <tr onclick="window.location.href =  '/billing/<%=bill.id%>'">
+                            <td><%=bill.track_id;%></td>
+                            <td><%=bill.nepali_date;%></td>
+                            <td>Re. <%=bill.total; %></td>
+                            <td><%=bill.payment_method; %></td>
+                            <% if(bill.paid) { %>
+                            <td> <span class="has-text-success">Paid</span> </td>
+                            <% }else{ %>
+                            <% if(!bill.danger) { %>
+                            <td> <span><%=bill.nepali_due;%></span> </td>
+                            <% }else{ %>
+                            <td> <span class="has-text-danger"><%=bill.nepali_due;%></span> </td>
+                            <% } %>
+                            <% } %>
+                            <td class="rent-status" data-key="<%=bill.id%>"></td>
+                        </tr>
+                        <% } %>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -124,5 +158,9 @@
 
 
 </div>
+
+<script>
+    var totals_bills = parseInt("<%=bills.length%>");
+</script>
 
 <%include ../partials/footer %>

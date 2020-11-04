@@ -67,12 +67,113 @@
     <hr>
     <div class="tabs is-boxed" style="margin-top: 10px;">
         <ul>
-            <li class="tab-link is-active" id="records-tabs-link"><a>Records</a></li>
-            <li class="tab-link" id="bill-tabs-link"><a>Bills</a></li>
-            <li class="tab-link" id="rates-tabs-link"><a>Rates</a></li>
+            <li class="tab-link is-active" id="bill-tabs-link"><a>Bills</a></li>
+            <li class="tab-link" id="history-tabs-link"><a>History</a></li>
+            <li class="tab-link" id="reports-tabs-link"><a>Records</a></li>
         </ul>
     </div>
+
+    <div class="tab-content" id="history-tab" style="display: none;">
+        <div class="columns">
+            <div class="column">
+                <% var inventory_type = inventory.type == 'manufactured'? 'Manufacture': 'Purchase' %>
+                <h1 class="title is-3 is-capitalized"><%=inventory_type%> History</h1>
+                <table id="history-table" class="table is-striped is-fullwidth">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Type</th>
+                            <th>Quantity</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% for (let i = 0; i < inventory.inventory_records.length; i++) { var record = inventory.inventory_records[i]; %>
+                        <%
+                            var color = 'has-text-success';
+                            if (record.type == 'sold' || record.type == 'discarded' || record.type == 'rented') {
+                                if (record.type == 'sold' || record.type == 'rented') {
+                                    color = '';
+                                }else{
+                                    color = 'has-text-danger';
+                                }
+                            }
+                        %>
+                        <tr>
+                            <td><%=(i+1)%></td>
+                            <td><%=record.user.first_name+' '+record.user.last_name;%></td>
+                            <td class="is-capitalized <%=color%>"><%=record.type%></td>
+                            <td><%=record.value%></td>
+                            <td><%=toNepaliDate(record.createdAt);%></td>
+                        </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="tab-content" id="reports-tab" style="display: none;">
+        <div class="columns">
+            <div class="column">
+                <h1 class="title is-3">Reports</h1>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="tab-content" id="bill-tab">
+        <div class="columns">
+            <div class="column">
+                <h1 class="title is-3">Bills</h1>
+                <table id="billing-table" class="table is-striped is-hoverable" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Bill No</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Customer Type</th>
+                            <th>Amount</th>
+                            <th>Quantity</th>
+                            <th>Due</th>
+                            <th>Rented</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% for(let i=0; i < bills.length; i++) { const bill = bills[i]; %>
+                        <tr onclick="window.location.href =  '/billing/<%=bill.id%>'">
+                            <td><%=bill.track_id;%></td>
+                            <td><%=bill.nepali_date;%></td>
+                            <td><%=bill.customer.first_name+' '+bill.customer.last_name;%></td>
+                            <td><%=bill.customer.customer_type.name;%></td>
+                            <td>Re. <%=bill.total; %></td>
+                            <td><%=bill.total_items; %></td>
+                            <% if(bill.paid) { %>
+                            <td> <span class="has-text-success">Paid</span> </td>
+                            <% }else{ %>
+                            <% if(!bill.danger) { %>
+                            <td> <span><%=bill.nepali_due;%></span> </td>
+                            <% }else{ %>
+                            <td> <span class="has-text-danger"><%=bill.nepali_due;%></span> </td>
+                            <% } %>
+                            <% } %>
+                            <td class="rent-status" data-key="<%=bill.id%>">
+                                
+                            </td>
+                        </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
+
+
+
 
 <div class="modal" id="add-inventory-record-modal">
     <div class="modal-background"></div>
@@ -120,6 +221,7 @@
 
 <script>
     var image_location = "<%=inventory.image%>";
+    var totals_bills = parseInt("<%= bills.length %>");
 </script>
 
 <%include ../partials/footer %>

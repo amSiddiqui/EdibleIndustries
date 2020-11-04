@@ -123,37 +123,43 @@ module.exports = function (fillAdd) {
         cost: '100',
         description: '20 ltr Jar'
     }).then(async inv => {
-
-        await inv.createInventory_record({
+        var r = await utility.misc.insertInventoryRecord({
             type: 'purchased',
             value: 100,
-            userId: 1
-        });
-        await inv.createInventory_record({
+            userId: 1,
+            inventoryId: inv.id
+        }, inv.id);
+
+        await utility.misc.insertInventoryRecord({
             type: 'sold',
             value: 10,
-            userId: 1
-        });
-        await inv.createInventory_record({
+            userId: 1,
+            inventoryId: inv.id
+        }, inv.id);
+        await utility.misc.insertInventoryRecord({
             type: 'discarded',
             value: 2,
-            userId: 1
-        });
-        await inv.createInventory_record({
+            userId: 1,
+            inventoryId: inv.id
+        }, inv.id);
+        await utility.misc.insertInventoryRecord({
             type: 'rented',
             value: 20,
-            userId: 1
-        });
-        await inv.createInventory_record({
+            userId: 1,
+            inventoryId: inv.id
+        }, inv.id);
+        await utility.misc.insertInventoryRecord({
             type: 'rented',
             value: 8,
-            userId: 1
-        });
-        await inv.createInventory_record({
+            userId: 1,
+            inventoryId: inv.id
+        }, inv.id);
+        await utility.misc.insertInventoryRecord({
             type: 'returned',
             value: 8,
-            userId: 1
-        });
+            userId: 1,
+            inventoryId: inv.id
+        }, inv.id);
         await inv.save();
         console.log("All Inventory Record Successfully added");
 
@@ -248,10 +254,10 @@ module.exports = function (fillAdd) {
                         console.log('No inventory items');
                         continue;
                     }
-                    const record_trans = await models.InventoryRecord.create({
+                    const record_trans = await utility.misc.insertInventoryRecord({
                         type: 'sold',
                         value: 3,
-                    });
+                    }, inv.id);
 
                     record_trans.setInventory(inven);
                     record_trans.setUser(user);

@@ -11,6 +11,13 @@ $(() => {
         console.log("mouse leave");
         $(this).siblings('.return-history').hide();
     });
+
+    $("#billing-table").DataTable({
+        "columnDefs": [
+            { "width": "3%", "targets": 0 },
+        ],
+        "order": [[0, 'desc']]
+    });
 });
 
 function returnItem(obj)  {

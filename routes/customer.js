@@ -362,10 +362,8 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     data.flash_message = flash_message;
     data.flash_color = flash_color;
   }
-
   utility.customer.fetchCustomer(id).then(customer => {
     utility.inventory.fetchAllInventoryID().then(inventories => {
-
       var phone = customer.phone;
       data.inventories = inventories;
       data.getInventoryRate = function (inventory_id) {
@@ -394,7 +392,27 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
       }
       customer.nepali_date = new NepaliDate(customer.createdAt).format('ddd, DD MMMM YYYY', 'np');
       data.customer = customer;
-      res.render('customer/customer', data);
+      utility.customer.fetchBills(id).then(function(bills) {
+        for (let i = 0; i < bills.length; i++) {
+          const bill = bills[i];
+          bills[i].nepali_date = new NepaliDate(bill.createdAt).format("DD/MM/YYYY");
+          if (!bill.paid) {
+            bills[i].nepali_due = new NepaliDate(bill.dueDate).format("DD/MM/YYYY");
+            if (bill.dueDate < new Date()) {
+              bills[i].danger = true;
+            }else{
+              bills[i].danger = false;
+            }
+          }
+        }
+        data.bills = bills;
+        res.render('customer/customer', data);
+      }).catch(err => {
+        console.log(err);
+        req.flash('flash_message','Database Error. Please try again later.');
+        req.flash('flash_color', 'danger');
+        res.redirect('/customer');
+      });
     }).catch(err => {
       console.log(err);
       req.flash('flash_message', 'Database Error. Please try again later.');
@@ -473,8 +491,6 @@ router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   });
 });
 
-
-/* GET home page. */
 router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
   var breadcrumbs = [{
       link: '/',

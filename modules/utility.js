@@ -8,7 +8,7 @@ const {
 const {
     sequelize
 } = require('./database');
-const { add } = require('lodash');
+
 
 function toNumberFloat(num) {
     if (typeof num == 'number') return num;
@@ -23,6 +23,36 @@ function toNumber(num) {
         return 0;
     }
     return parseInt(num);
+}
+
+async function insertInventoryRecord (rec, inv_id){
+    var inventory = await models.Inventory.findByPk(inv_id);
+    var inventory_records = await inventory.getInventory_records({
+        order: [
+            ['id', 'DESC']
+        ],
+        limit: 1
+    });
+    if (inventory_records.length == 0) {
+        rec.in_stock = rec.value;
+        rec.total = rec.value;
+    }
+    else{
+        var lastRec = inventory_records[0];
+        if (rec.type == 'purchased' || rec.type == 'manufactured' || rec.type == 'returned') {
+            rec.in_stock = lastRec.in_stock + rec.value;
+        } else if (rec.type == 'rented' || rec.type == 'discarded' || rec.type == 'sold') {
+            rec.in_stock = lastRec.in_stock - rec.value;
+        }
+        if (rec.type == 'purchased' || rec.type == 'manufactured') {
+            rec.total = lastRec.total + rec.value;
+        } else if (rec.type == 'discarded' || rec.type == 'sold') {
+            rec.total = lastRec.total - rec.value;
+        } else if (rec.type == 'rented' || rec.type == 'returned') {
+            rec.total = lastRec.total;
+        }
+    }
+    return models.InventoryRecord.create(rec);
 }
 
 
@@ -78,6 +108,11 @@ module.exports = {
                     model: models.InventoryRecord,
                     order: [
                         [sequelize.col('id'), 'DESC']
+                    ],
+                    include: [
+                        {
+                            model: models.User
+                        }
                     ]
                 }]
             });
@@ -138,15 +173,55 @@ module.exports = {
                 }
             });
             
-            data.value = this.misc.toNumber(data.value);
+            data.value = toNumber(data.value);
             var inventory = await models.Inventory.findByPk(id);
-            var inventory_record = await models.InventoryRecord.create({
+            var inventory_record = await insertInventoryRecord({
                 type: data.type,
                 value: data.value
-            });
+            }, id);
             inventory_record.setInventory(inventory);
             inventory_record.setUser(user);
             await inventory_record.save();
+        },
+        fetchBills: async(id) => {
+            var bills = await models.Bill.findAll({
+                include: [
+                    {
+                        model: models.BillTransaction,
+                        include: [
+                            {
+                                model: models.InventoryRecord,
+                                include: [
+                                    {
+                                        model: models.Inventory
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        model: models.Customer,
+                        include: [
+                            {
+                                model: models.CustomerType
+                            }
+                        ]
+                    }
+                ]
+            });
+            var inv_bills = [];
+            for(let i = 0; i < bills.length; i++) {
+                const bill = bills[i];
+                const transactions = bill.bill_transactions;
+                for (let j = 0; j < transactions.length; j++) {
+                    const tr = transactions[j];
+                    if (tr.inventory_record.inventory.id == id) {
+                        inv_bills.push(bill);
+                        break;
+                    }
+                }
+            }
+            return inv_bills;
         }
     },
     customer_type: {
@@ -337,6 +412,26 @@ module.exports = {
                     },
                     {
                         model: models.Inventory
+                    }
+                ]
+            });
+        },
+        fetchBills: async (id) => {
+            var customer = await models.Customer.findByPk(id);
+            return customer.getBills({
+                include: [
+                    {
+                        model: models.BillTransaction,
+                        include: [
+                            {
+                                model: models.InventoryRecord,
+                                include: [
+                                    {
+                                        model: models.Inventory
+                                    }
+                                ]
+                            }
+                        ]
                     }
                 ]
             });
@@ -554,12 +649,12 @@ module.exports = {
             return rented;
         },
         addReturn: async (tr_id, inv_id, q, bill_id) => {
-            q = this.misc.toNumber(q);
+            q = toNumber(q);
             const inv = await models.Inventory.findByPk(inv_id);
-            const inv_record =  await inv.createInventory_record({
+            const inv_record =  await insertInventoryRecord({
                 type: 'returned',
                 value: q
-            });
+            }, inv_id);
             const tr = await models.BillTransaction.findByPk(tr_id);
             const bill_transac = await models.BillTransaction.create({
                 quantity: q,
@@ -625,6 +720,7 @@ module.exports = {
                 }
             }
             return engDate;
-        }
+        },
+        insertInventoryRecord: insertInventoryRecord,
     }
 }
