@@ -568,11 +568,11 @@ module.exports = {
                     tax: data.tax_value,
                     description: data.description,
                     paid: data.paid,
-                    paidOn: data.paid? new Date : null,
+                    paidOn: data.paid? new Date() : null,
                     payment_method: data.payment_method,
                     image: data.image_loc,
                     total: cost + '',
-                    dueDate: data.dd
+                    dueDate: data.dd == null ? new Date() : data.dd
                 });
             }
             for (let i = 0; i < transactions.length; i++) {
@@ -581,10 +581,10 @@ module.exports = {
                 for (let j = 0; j < transaction.rate.length; j++) {
                     var type = 'sold';
                     if (transaction.type[j] == 'rented') type = 'rented';
-                    const inv_record = await models.InventoryRecord.create({
+                    const inv_record = await insertInventoryRecord({
                         type,
                         value: transaction.quantity[j]
-                    });
+                    }, inventory.id);
                     inv_record.setInventory(inventory);
                     if (user != null) {
                         inv_record.setUser(user);
@@ -648,9 +648,14 @@ module.exports = {
             }
             return rented;
         },
-        addReturn: async (tr_id, inv_id, q, bill_id) => {
+        addReturn: async (tr_id, inv_id, q, bill_id, user_email) => {
             q = toNumber(q);
             const inv = await models.Inventory.findByPk(inv_id);
+            const user = await models.User.findOne({
+                where: {
+                    email: user_email
+                }
+            });
             const inv_record =  await insertInventoryRecord({
                 type: 'returned',
                 value: q
@@ -662,16 +667,83 @@ module.exports = {
             });
             const bill = await models.Bill.findByPk(bill_id);
             bill_transac.setInventory_record(inv_record);
+            inv_record.setInventory(inv);
+            inv_record.setUser(user);
             tr.addReturn(bill_transac);
             bill_transac.setBill(bill);
             await bill_transac.save();
             await tr.save();
+            await inv_record.save();
         },
         pay: async (id) => {
             const bill = await models.Bill.findByPk(id);
             bill.paid = true;
             bill.paidOn = new Date();
             await bill.save();
+        },
+        deleteBill: async (id) => {
+            const bill = await models.Bill.findByPk(id);
+            const transactions = await bill.getBill_transactions();
+            var total = {
+
+            };
+            var stock_total = {
+
+            };
+            for (let i = 0; i < transactions.length; i++) {
+                const tr = transactions[i];
+                var record = await tr.getInventory_record();
+                if (!(record.inventoryId in total)) {
+                    total[record.inventoryId] = 0;
+                }
+                
+                if (!(record.inventoryId in stock_total)) {
+                    stock_total[record.inventoryId] = 0;
+                }
+
+                if (record.type == 'purchased' || record.type == 'manufactured' || record.type == 'returned') {
+                    stock_total[record.inventoryId] -= record.value;
+                } else if (record.type == 'rented' || record.type == 'discarded' || record.type == 'sold') {
+                    stock_total[record.inventoryId] += record.value;
+                }
+                if (record.type == 'purchased' || record.type == 'manufactured') {
+                    total[record.inventoryId] -= record.value;
+                } else if (record.type == 'discarded' || record.type == 'sold') {
+                    total[record.inventoryId] += record.value;
+                }
+            }
+            
+            for (const [inv_id, t] of Object.entries(total)) {
+                var inv_record = await models.InventoryRecord.findAll({
+                    order: [
+                        ['id', 'DESC']
+                    ],
+                    limit: 1,
+                    where: {
+                        inventory_id: inv_id
+                    }
+                });
+                if (inv_record.length == 0) continue;
+                var record = inv_record[0];
+                record.total += t;
+                await record.save();
+            }
+            for (const [inv_id, st] of Object.entries(stock_total)) {
+                var inv_record = await models.InventoryRecord.findAll({
+                    order: [
+                        ['id', 'DESC']
+                    ],
+                    limit: 1,
+                    where: {
+                        inventory_id: inv_id
+                    }
+                });
+                if (inv_record.length == 0) continue;
+                var record = inv_record[0];
+                record.in_stock += st;
+                await record.save();
+            }
+            await bill.destroy();
         }
     },
     misc: {

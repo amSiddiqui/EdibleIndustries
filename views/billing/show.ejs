@@ -130,7 +130,7 @@
                                             onclick="returnItem(this);"
                                             data-name="<%=tr.inventory_record.inventory.name%>"
                                             data-invid="<%=tr.inventory_record.inventory.id%>" data-trid="<%=tr.id%>"
-                                            data-billid="<%=bill.id%>">
+                                            data-billid="<%=bill.id%>" data-remain="<%=tr.remaining%>">
                                             <span class="icon is-left "><i class="fas fa-plus"></i></span>
                                         </button>
                                     </span>
@@ -267,12 +267,51 @@
                     <img style="height: 400px; width: auto;" src="<%=bill.image%>" alt="">
                 </div>
             </div>
+            <div class="columns" style="margin-top: 50px">
+                <div class="column">
+                    <div class="field is-grouped is-grouped-right">
+                        <div class="control">
+                            <div class="button is-danger is-rounded" onclick="confirmDelete()">Delete Bill</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
         </div>
 
     </div>
 </div>
 
+
+
+<div class="modal" id="confirm-delete">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title"></p>
+            <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+            <% if (!bill.rented) { %>
+            <h1 class="title is-4">Confirm delete bill?</h1>
+            <h1 class="subtitle has-text-danger">This action is irreversible</h1>
+            <div class="columns">
+                <div class="column">
+                    <form action="/billing/<%=bill.id%>?_method=DELETE" method="post">
+                        <button class="button is-danger is-rounded">Delete?</button>
+                    </form>
+                </div>
+                <div class="column">
+                    <button type="button" class="button is-link is-light is-rounded close-modal">Cancel</button>
+                </div>
+            </div>
+            <% }else{ %>
+                <h1 class="title is-5 has-text-danger">Item return still pending.</h1>
+                <h1 class="subtitle has-text-danger">Please complete return before deleting the item</h1>
+            <% } %>
+        </section>
+    </div>
+</div>
 
 <div class="modal" id="confirm-pay">
     <div class="modal-background"></div>
@@ -282,10 +321,11 @@
             <button class="delete" aria-label="close"></button>
         </header>
         <section class="modal-card-body">
+            <h1 class="title is-4">Confirm Pay</h1>
             <div class="columns">
                 <div class="column">
                     <form action="/billing/pay/<%=bill.id%>" method="post">
-                        <button class="button is-success is-rounded">Confirm Pay?</button>
+                        <button class="button is-success is-rounded">Pay?</button>
                     </form>
                 </div>
                 <div class="column">
