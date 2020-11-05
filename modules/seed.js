@@ -101,10 +101,10 @@ async function addZones(fillAdd) {
     }
 }
 
-module.exports = function (fillAdd) {
+module.exports = function (fillAdd, fullSync) {
     var data = [{
         first_name: 'Aamir',
-        last_name: 'Siddiqui',
+        last_name: 'Mushtaq Siddiqui',
         email: 'gt_ams@yahoo.in',
         password: 'Edible1077',
     }]
@@ -116,174 +116,189 @@ module.exports = function (fillAdd) {
             console.log("Error Creating User:", err);
         });
     });
-
-    utility.inventory.createInventory({
-        type: 'purchased',
-        name: 'Jar 20L',
-        cost: '100',
-        description: '20 ltr Jar'
-    }).then(async inv => {
-
-        await inv.createInventory_record({
+    if (fullSync) {
+        utility.inventory.createInventory({
             type: 'purchased',
-            value: 100,
-            userId: 1
-        });
-        await inv.createInventory_record({
-            type: 'sold',
-            value: 10,
-            userId: 1
-        });
-        await inv.createInventory_record({
-            type: 'discarded',
-            value: 2,
-            userId: 1
-        });
-        await inv.createInventory_record({
-            type: 'rented',
-            value: 20,
-            userId: 1
-        });
-        await inv.createInventory_record({
-            type: 'rented',
-            value: 8,
-            userId: 1
-        });
-        await inv.createInventory_record({
-            type: 'returned',
-            value: 8,
-            userId: 1
-        });
-        await inv.save();
-        console.log("All Inventory Record Successfully added");
-
-        // Create customer type
-        var c_types = [];
-        var c_type = await utility.customer_type.create({
-            name: 'Promotion'
-        });
-        await utility.customer_type.addInventoryRate(c_type.id, inv.id, 0);
-        c_types.push(c_type);
-
-        c_type = await utility.customer_type.create({
-            name: 'Dealer'
-        });
-        await utility.customer_type.addInventoryRate(c_type.id, inv.id, 10);
-        c_types.push(c_type);
-
-        c_type = await utility.customer_type.create({
-            name: 'Buyer Rental'
-        });
-        await utility.customer_type.addInventoryRate(c_type.id, inv.id, 15);
-        c_types.push(c_type);
-
-        c_type = await utility.customer_type.create({
-            name: 'Buyer Paid'
-        });
-        await utility.customer_type.addInventoryRate(c_type.id, inv.id, 25);
-        c_types.push(c_type);
-        console.log("All Customer Type and rates have been successfully added");
-
-        addZones(fillAdd).then(() => {
-            console.log("All Zones Successfully added");
-            models.Zone.findAll().then(async (all_zones) => {
-                for (let i = 0; i < 10; i++) {
-                    let f_name = getFirstName();
-                    let l_name = getLastName();
-                    let org = getCompany();
-                    let ph = getPhone();
-                    let email = getEmail(f_name, l_name);   
-                    var zone = all_zones[Math.floor(Math.random() * all_zones.length)]; 
-                    var districts = await zone.getDistricts();
-                    var district = districts[Math.floor(Math.random() * districts.length)]; 
-                    var post_offices = await district.getPost_offices();
-                    var post_office = post_offices[Math.floor(Math.random() * post_offices.length)]; 
-                    var customer =  await models.Customer.create({
-                        first_name: f_name,
-                        last_name: l_name,
-                        organization: org,
-                        phone: ph,
-                        email,
-                        anchal: zone.id,
-                        jilla: district.id,
-                        address1: "Some Address",
-                        postal_code: post_office.id, 
-                    });
-                    var c_type = c_types[Math.floor(Math.random() * c_types.length)]; 
-                    await customer.setCustomer_type(c_type);
-                    await customer.save();
-                    await utility.customer.addInventoryRate(customer.id, inv.id, Math.floor(Math.random() * 20) + 1);
-                }
-                console.log("All Customers Created");
-                const inven = await models.Inventory.findByPk(1);
-                // Start Creating 20 records
-                for (let i = 0; i < 20; i++) {
-                    var customer_id = Math.floor(Math.random() * 10) + 1;
-                    var user_id = 1;
-                    const customer = await models.Customer.findByPk(customer_id);
-                    const user = await models.User.findByPk(user_id);
-                    let record = await models.Bill.create({
-                        discount: 0,
-                        taxRate: 0,
-                        tax: 0,
-                        description: 'Some Description',
-                        paid: true,
-                        payment_method: 'Cash',
-                        total: ((Math.random() * 50) + 1).toFixed(2),
-                        paidOn: new Date()
-                    });
-                    record.setCustomer(customer);
-                    record.setUser(user);
-
-                    // 3 Inventory Items sold
-                    const last_record_id = await models.InventoryRecord.max('id');
-                    if (last_record_id == null) {
-                        await record.destroy();
-                        console.log("No inventory Items");
-                        continue;
-                    }
-                    const last_record = await models.InventoryRecord.findByPk(last_record_id);
-                    if (last_record.in_stock < 3){
-                        await record.destroy();
-                        console.log('No inventory items');
-                        continue;
-                    }
-                    const record_trans = await models.InventoryRecord.create({
-                        type: 'sold',
-                        value: 3,
-                    });
-
-                    record_trans.setInventory(inven);
-                    
-                    var customer_rate = await customer.getInventories();
-                    var rate = 0;
-                    if (customer_rate.length > 0) {
-                        rate = customer_rate[0].customer_rate.rate;
-                    }else{
-                        var customer_type = await customer.getCustomer_type();
-                        var inventories_types = await customer_type.getInventories();
-                        if (inventories_types.length > 0) {
-                            rate = inventories_types[0].customer_type_rate.rate;
-                        }else{
-                            rate = Math.floor(Math.random() * 15) + 5;
-                        }
-                    }
-                    const trans = await models.BillTransaction.create({
-                        quantity: 3,
-                        rate,
-                        type: 'sold'     
-                    });
-                    await trans.setBill(record);
-                    await trans.setInventory_record(record_trans);
-                    await record.save();
-                    await trans.save();
-                }
-                console.log("All transactions completed");
+            name: 'Jar 20L',
+            cost: '100',
+            description: '20 ltr Jar'
+        }).then(async inv => {
+            var r = await utility.misc.insertInventoryRecord({
+                type: 'purchased',
+                value: 100,
+                userId: 1,
+                inventoryId: inv.id
+            }, inv.id);
+    
+            await utility.misc.insertInventoryRecord({
+                type: 'sold',
+                value: 10,
+                userId: 1,
+                inventoryId: inv.id
+            }, inv.id);
+            await utility.misc.insertInventoryRecord({
+                type: 'discarded',
+                value: 2,
+                userId: 1,
+                inventoryId: inv.id
+            }, inv.id);
+            await utility.misc.insertInventoryRecord({
+                type: 'rented',
+                value: 20,
+                userId: 1,
+                inventoryId: inv.id
+            }, inv.id);
+            await utility.misc.insertInventoryRecord({
+                type: 'rented',
+                value: 8,
+                userId: 1,
+                inventoryId: inv.id
+            }, inv.id);
+            await utility.misc.insertInventoryRecord({
+                type: 'returned',
+                value: 8,
+                userId: 1,
+                inventoryId: inv.id
+            }, inv.id);
+            await inv.save();
+            console.log("All Inventory Record Successfully added");
+    
+            // Create customer type
+            var c_types = [];
+            var c_type = await utility.customer_type.create({
+                name: 'Promotion'
             });
+            await utility.customer_type.addInventoryRate(c_type.id, inv.id, 0);
+            c_types.push(c_type);
+    
+            c_type = await utility.customer_type.create({
+                name: 'Dealer'
+            });
+            await utility.customer_type.addInventoryRate(c_type.id, inv.id, 10);
+            c_types.push(c_type);
+    
+            c_type = await utility.customer_type.create({
+                name: 'Buyer Rental'
+            });
+            await utility.customer_type.addInventoryRate(c_type.id, inv.id, 15);
+            c_types.push(c_type);
+    
+            c_type = await utility.customer_type.create({
+                name: 'Buyer Paid'
+            });
+            await utility.customer_type.addInventoryRate(c_type.id, inv.id, 25);
+            c_types.push(c_type);
+            console.log("All Customer Type and rates have been successfully added");
+    
+            addZones(fillAdd).then(() => {
+                console.log("All Zones Successfully added");
+                models.Zone.findAll().then(async (all_zones) => {
+                    for (let i = 0; i < 10; i++) {
+                        let f_name = getFirstName();
+                        let l_name = getLastName();
+                        let org = getCompany();
+                        let ph = getPhone();
+                        let email = getEmail(f_name, l_name);   
+                        var zone = all_zones[Math.floor(Math.random() * all_zones.length)]; 
+                        var districts = await zone.getDistricts();
+                        var district = districts[Math.floor(Math.random() * districts.length)]; 
+                        var post_offices = await district.getPost_offices();
+                        var post_office = post_offices[Math.floor(Math.random() * post_offices.length)]; 
+                        var customer =  await models.Customer.create({
+                            first_name: f_name,
+                            last_name: l_name,
+                            organization: org,
+                            phone: ph,
+                            email,
+                            anchal: zone.id,
+                            jilla: district.id,
+                            address1: "Some Address",
+                            postal_code: post_office.id, 
+                        });
+                        var c_type = c_types[Math.floor(Math.random() * c_types.length)]; 
+                        await customer.setCustomer_type(c_type);
+                        await customer.save();
+                        await utility.customer.addInventoryRate(customer.id, inv.id, Math.floor(Math.random() * 20) + 1);
+                    }
+                    console.log("All Customers Created");
+                    const inven = await models.Inventory.findByPk(1);
+                    // Start Creating 20 records
+                    for (let i = 0; i < 20; i++) {
+                        var customer_id = Math.floor(Math.random() * 10) + 1;
+                        var user_id = 1;
+                        const customer = await models.Customer.findByPk(customer_id);
+                        const user = await models.User.findByPk(user_id);
+                        let record = await models.Bill.create({
+                            discount: 0,
+                            taxRate: 0,
+                            tax: 0,
+                            description: 'Some Description',
+                            paid: true,
+                            payment_method: 'Cash',
+                            total: ((Math.random() * 50) + 1).toFixed(2),
+                            paidOn: new Date()
+                        });
+                        record.setCustomer(customer);
+                        record.setUser(user);
+    
+                        // 3 Inventory Items sold
+                        const last_record_id = await models.InventoryRecord.max('id');
+                        if (last_record_id == null) {
+                            await record.destroy();
+                            console.log("No inventory Items");
+                            continue;
+                        }
+                        const last_record = await models.InventoryRecord.findByPk(last_record_id);
+                        if (last_record.in_stock < 3){
+                            await record.destroy();
+                            console.log('No inventory items');
+                            continue;
+                        }
+                        const record_trans = await utility.misc.insertInventoryRecord({
+                            type: 'sold',
+                            value: 3,
+                        }, inv.id);
+    
+                        record_trans.setInventory(inven);
+                        record_trans.setUser(user);
+                        
+                        var customer_rate = await customer.getInventories();
+                        var rate = 0;
+                        if (customer_rate.length > 0) {
+                            rate = customer_rate[0].customer_rate.rate;
+                        }else{
+                            var customer_type = await customer.getCustomer_type();
+                            var inventories_types = await customer_type.getInventories();
+                            if (inventories_types.length > 0) {
+                                rate = inventories_types[0].customer_type_rate.rate;
+                            }else{
+                                rate = Math.floor(Math.random() * 15) + 5;
+                            }
+                        }
+                        const trans = await models.BillTransaction.create({
+                            quantity: 3,
+                            rate,
+                            type: 'sold'     
+                        });
+                        await trans.setBill(record);
+                        await trans.setInventory_record(record_trans);
+                        await record.save();
+                        await trans.save();
+                    }
+                    console.log("All transactions completed");
+                });
+            });
+            
+            
+        }).catch(err => {
+            console.log(err);
         });
-        
-        
-    }).catch(err => {
-        console.log(err);
-    });
+    }else{
+        addZones(fillAdd).then(function() {
+            console.log("All zones added");
+        }).catch(function(err) {
+            console.log("Error While adding zones");
+            console.log(err);
+        });
+    }
 }

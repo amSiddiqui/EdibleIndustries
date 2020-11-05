@@ -1,8 +1,9 @@
 const db = require("../modules/database");
 const crypto = require('crypto');
 const NepaliDate = require('nepali-date-converter');
-const { sequelize } = require("../modules/database");
-const { Op } = require('sequelize');
+const {
+    Op
+} = require('sequelize');
 
 const Zone = db.sequelize.define("zone", {
     id: {
@@ -198,35 +199,6 @@ const InventoryRecord = db.sequelize.define("inventory_record", {
     },
     total: {
         type: db.Sequelize.INTEGER
-    }
-}, {
-    underscored: true
-});
-
-InventoryRecord.beforeCreate(async (rec, options) => {
-    var id = await InventoryRecord.max('id');
-    if (isNaN(id)) {
-        rec.in_stock = rec.value;
-        rec.total = rec.value;
-    } else {
-        var lastRec = await InventoryRecord.findByPk(id);
-        if (lastRec == null) {
-            rec.in_stock = rec.value;
-            rec.total = rec.value;
-        } else {
-            if (rec.type == 'purchased' || rec.type == 'manufactured' || rec.type == 'returned') {
-                rec.in_stock = lastRec.in_stock + rec.value;
-            } else if (rec.type == 'rented' || rec.type == 'discarded' || rec.type == 'sold') {
-                rec.in_stock = lastRec.in_stock - rec.value;
-            }
-            if (rec.type == 'purchased' || rec.type == 'manufactured') {
-                rec.total = lastRec.total + rec.value;
-            } else if (rec.type == 'discarded' || rec.type == 'sold') {
-                rec.total = lastRec.total - rec.value;
-            } else if (rec.type == 'rented' || rec.type == 'returned') {
-                rec.total = lastRec.total;
-            }
-        }
     }
 }, {
     underscored: true
@@ -439,12 +411,12 @@ const Bill = db.sequelize.define("bill", {
 
 Bill.beforeCreate(async (rec, options) => {
     var nepali_today = new NepaliDate(new Date());
-    var rec_id = nepali_today.format('YYYY')+nepali_today.format('MM');
+    var rec_id = nepali_today.format('YYYY') + nepali_today.format('MM');
     var month_id = 1;
     var last_month = await Bill.findOne({
         where: {
             track_id: {
-                [Op.like]: rec_id+'%'
+                [Op.like]: rec_id + '%'
             }
         },
         order: [
@@ -452,13 +424,13 @@ Bill.beforeCreate(async (rec, options) => {
         ]
     });
     if (last_month == null) {
-        month_id = (month_id+'').padStart(4, '0');
-        rec_id = rec_id+month_id;
-    }else{
-        var last_id =  parseInt(last_month.track_id.substring(6));
+        month_id = (month_id + '').padStart(4, '0');
+        rec_id = rec_id + month_id;
+    } else {
+        var last_id = parseInt(last_month.track_id.substring(6));
         last_id++;
-        last_id = (last_id+'').padStart(4, '0');
-        rec_id = rec_id+last_id;
+        last_id = (last_id + '').padStart(4, '0');
+        rec_id = rec_id + last_id;
     }
     rec.track_id = rec_id;
 });
@@ -482,7 +454,10 @@ const BillTransaction = db.sequelize.define("bill_transaction", {
     }
 });
 
-Bill.hasMany(BillTransaction);
+Bill.hasMany(BillTransaction, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+});
 BillTransaction.belongsTo(Bill);
 
 Customer.hasMany(Bill);
@@ -494,7 +469,12 @@ Bill.belongsTo(User);
 InventoryRecord.hasOne(BillTransaction);
 BillTransaction.belongsTo(InventoryRecord);
 
-BillTransaction.hasMany(BillTransaction, {as: 'return', foreignKey: 'returnId'});
+BillTransaction.hasMany(BillTransaction, {
+    as: 'return',
+    foreignKey: 'returnId',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+});
 
 module.exports = {
     User,

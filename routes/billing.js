@@ -59,7 +59,11 @@ router.post('/return/:id', middleware.auth.loggedIn(), function (req, res, next)
   let inv_id = req.body.inventory_id;
   let quant = req.body.quantity;
   let bill_id = req.body.bill_id;
-  utility.billing.addReturn(id, inv_id, quant, bill_id).then(() => {
+  let user_email = req.session.email;
+  if (typeof user_email == 'undefined' || user_email == null) {
+    user_email = 'gt_ams@yahoo.in';
+  }
+  utility.billing.addReturn(id, inv_id, quant, bill_id, user_email).then(() => {
     req.flash('flash_message', 'Add return to the items');
     req.flash('flash_color', 'success');
     res.redirect('/billing/'+bill_id);
@@ -159,6 +163,21 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   });
 });
 
+router.delete('/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  let id = parseInt(req.params.id);
+  utility.billing.deleteBill(id).then(function() {
+    console.log(`Bill with id ${id} was deleted`);
+    req.flash('flash_message', 'Bill successfully deleted');
+    req.flash('flash_color', 'success');
+    res.redirect('/billing');
+  }).catch(err => {
+    console.log(err);
+    req.flash('flash_message', 'Some error occurred while deleting the bill. Please try again later');
+    req.flash('flash_color', 'danger');
+    res.redirect('/billing');
+  });
+});
+
 router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
   var breadcrumbs = [{
       link: '/',
@@ -185,7 +204,7 @@ router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
     for (let i = 0; i < bills.length; i++) {
       const bill = bills[i];
       bills[i].nepali_date = new NepaliDate(bill.createdAt).format("DD/MM/YYYY");
-      if (!bill.paid) {
+      if (!bill.paid && bill.dueDate != null) {
         bills[i].nepali_due = new NepaliDate(bill.dueDate).format("DD/MM/YYYY");
         if (bill.dueDate < new Date()) {
           bills[i].danger = true;

@@ -6,6 +6,7 @@ const path = require('path');
 const fs = require('fs');
 const helpers = require('../modules/helpers');
 const utility = require('../modules/utility');
+const NepaliDate = require('nepali-date-converter');
 
 
 router.get('/image', middleware.auth.loggedIn(), function (req, res, next) {
@@ -197,6 +198,89 @@ router.get('/inventories', middleware.auth.loggedIn(), function(req, res, next) 
             message: 'DB error'
         });
     });
+});
+
+router.get('/check-item-rented/:id',  middleware.auth.loggedIn(), function(req, res, next)  {
+    let id = parseInt(req.params.id);
+    utility.billing.areItemsRented(id).then(function(result) {
+        res.json({
+            status: 'success',
+            result
+        });
+    }).catch(function(err) {
+        console.log(err);
+        req.json({
+            status: 'fail',
+            message: 'DB error'
+        });
+    });
+});
+
+router.get('/all-bills', middleware.auth.loggedIn(), function(req, res, next) {
+    utility.billing.fetchAll().then(function(bills) {
+        var bill_query = [];
+        bills.forEach(bill => {
+            if (bill.customer.organization.length == 0) {
+                var detail = bill.track_id+' - '+bill.customer.first_name+' '+bill.customer.last_name+' - '+(new NepaliDate(bill.createdAt).format('DD/MM/YYYY')); 
+                detail = detail.toLowerCase();
+                bill_query.push({
+                    id: bill.id,
+                    detail
+                });
+            }else{
+                var detail = bill.track_id+' - '+bill.customer.organization+' - '+(new NepaliDate(bill.createdAt).format('DD/MM/YYYY')); 
+                detail = detail.toLowerCase();
+                bill_query.push({
+                    id: bill.id,
+                    detail
+                });
+            }
+        });
+        res.json({
+            status: 'success',
+            bills: bill_query
+        });
+    }).catch(err => {
+        console.log(err);
+        req.json({
+            status: 'fail',
+            message: 'DB error'
+        });
+    })
+});
+
+
+router.get('/all-customers', middleware.auth.loggedIn(), function(req, res, next) {
+    utility.customer.fetchAllCustomerID().then(function(customers) {
+        var customer_query = [];
+        customers.forEach(customer => {
+            if (customer.organization.length == 0) {
+                var detail = customer.first_name+' '+customer.last_name; 
+                detail = detail.toLowerCase();
+                customer_query.push({
+                    id: customer.id,
+                    detail
+                });
+            }else{
+                var detail = customer.organization+' - '+customer.first_name+' '+customer.last_name; 
+                detail = detail.toLowerCase();
+                customer_query.push({
+                    id: customer.id,
+                    detail
+                });
+            }
+        });
+        res.json({
+            status: 'success',
+            customers: customer_query
+        });
+    }).catch(err => {
+        console.log(err);
+        req.json({
+            status: 'fail',
+            message: 'DB error'
+        });
+    })
 });
 
 

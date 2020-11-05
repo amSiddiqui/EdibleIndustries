@@ -1,5 +1,6 @@
 var express = require('express');
 const middleware = require('../modules/middleware');
+const NepaliDate = require('nepali-date-converter');
 var router = express.Router();
 
 const {
@@ -71,7 +72,7 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
     type: req.body.type.trim(),
     cost: req.body.cost.trim()
   };
-  data.cost = data.cost === '' ? 0 : data.cost;
+  data.cost = utility.misc.toNumberFloat(data.cost);
 
   if (data.name.length === 0) {
     req.flash('flash_message', 'Error Creating Inventory Item. Make sure the data entered is correct');
@@ -87,15 +88,7 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
     res.redirect('/inventory');
     return;
   }
-  if (isNaN(data.cost)) {
-    console.log("Cost is nan", data);
-    req.flash('flash_message', 'Error Creating Inventory Item. Make sure the data entered is correct');
-    req.flash('flash_color', 'danger');
-    res.redirect('/inventory');
-    return;
-  } else {
-    data.cost = data.cost === 0 ? 0 : parseFloat(data.cost);
-  }
+  data.cost = utility.misc.toNumberFloat(data.cost);
 
   var image_id = req.session.image_id;
   req.session.image_id = null;
@@ -176,11 +169,13 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
       name: 'Item'
     },
   ];
-  inventory.fetchInventory(id).then(inv => {
+  var data = {};
+  inventory.fetchInventory(id).
+  then(inv => {
     var flash_message = req.flash('flash_message');
     var flash_color = req.flash('flash_color');
 
-    var data = {
+    data = {
       inventory: inv,
       dependency: '/inventory/inventory-item.js',
       recordsExists: inv.inventory_records.length !== 0,
@@ -188,6 +183,12 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
       total: inv.inventory_records.length !== 0 ? inv.inventory_records[inv.inventory_records.length - 1].total : 0,
       color: 'success',
       breadcrumbs
+    };
+    data.toNepaliDate = (d) => {
+      return new NepaliDate(d).format("DD/MM/YYYY", 'np');
+    };
+    data.toNepaliDateFull = (d) => {
+      return new NepaliDate(d).format("ddd, DD MMMM YYYY", 'np');
     };
     var percent = data.in_stock / data.total;
     percent = percent * 100;
@@ -202,8 +203,37 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
       data.flash_message = flash_message;
       data.flash_color = flash_color;
     }
+    return utility.inventory.fetchBills(id);
+  }).
+  then(bills => {
+    for (let i = 0; i < bills.length; i++) {
+      const bill = bills[i];
+      var total_items = 0;
+      const transactions = bill.bill_transactions;
+      for(let j = 0; j < transactions.length; j++)
+      {
+        const tr = transactions[j];
+        if (tr.inventory_record.inventory.id == id && tr.type != 'returned') {
+          total_items += tr.quantity;
+        }
+      }
+      bills[i].total_items = total_items;
+      
+
+      bills[i].nepali_date = new NepaliDate(bill.createdAt).format("DD/MM/YYYY");
+      if (!bill.paid) {
+        bills[i].nepali_due = new NepaliDate(bill.dueDate).format("DD/MM/YYYY");
+        if (bill.dueDate < new Date()) {
+          bills[i].danger = true;
+        }else{
+          bills[i].danger = false;
+        }
+      }
+    }
+    data.bills = bills;
     res.render('inventory/item', data);
-  }).catch(err => {
+  }).
+  catch(err => {
     console.log(err);
     req.flash('flash_message', 'Error opening inventory, try agina later');
     req.flash('flash_color', 'danger');
@@ -218,6 +248,7 @@ router.post('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     type: req.body.type,
     value: req.body.quantity
   };
+  data.value = utility.misc.toNumber(data.value);
   var user_email = req.session.email;
   if (typeof user_email === 'undefined') user_email = 'gt_ams@yahoo.in';
   utility.inventory.addRecord(id, data, user_email).then(()=>{
@@ -261,15 +292,9 @@ router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     res.redirect('/inventory/edit/' + id);
     return;
   }
-  if (isNaN(data.cost)) {
-    console.log("Cost is nan", data);
-    req.flash('flash_message', 'Error Updating Inventory Item. Make sure the data entered is correct');
-    req.flash('flash_color', 'danger');
-    res.redirect('/inventory/edit/' + id);
-    return;
-  } else {
-    data.cost = data.cost === 0 ? 0 : parseFloat(data.cost);
-  }
+  
+  data.cost = utility.misc.toNumberFloat(data.cost);
+  
 
   var image_id = req.session.image_id;
   req.session.image_id = null;

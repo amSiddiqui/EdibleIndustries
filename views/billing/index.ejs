@@ -25,7 +25,7 @@
             <table id="billing-table" class="table is-striped is-hoverable" style="width: 100%;">
                 <thead>
                     <tr>
-                        <th>Track ID</th>
+                        <th>Bill No</th>
                         <th>Date</th>
                         <th>Customer</th>
                         <th>Customer Type</th>
@@ -39,7 +39,11 @@
                         <tr onclick="window.location.href =  '/billing/<%=bill.id%>'">
                             <td><%=bill.track_id;%></td>
                             <td><%=bill.nepali_date;%></td>
+                            <% if (bill.customer.organization.length == 0) { %>
                             <td><%=bill.customer.first_name+' '+bill.customer.last_name;%></td>
+                            <% } else { %>
+                            <td><%=bill.customer.organization;%></td>
+                            <% } %>
                             <td><%=bill.customer.customer_type.name;%></td>
                             <td>Re. <%=bill.total; %></td>
                             <td><%=bill.payment_method; %></td>

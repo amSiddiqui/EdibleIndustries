@@ -11,6 +11,13 @@ $(() => {
         console.log("mouse leave");
         $(this).siblings('.return-history').hide();
     });
+
+    $("#billing-table").DataTable({
+        "columnDefs": [
+            { "width": "3%", "targets": 0 },
+        ],
+        "order": [[0, 'desc']]
+    });
 });
 
 function returnItem(obj)  {
@@ -18,13 +25,22 @@ function returnItem(obj)  {
     var inv_id = $(obj).attr('data-invid');
     var bill_id = $(obj).attr('data-billid');
     var tr_id = $(obj).attr('data-trid');
+    var remaining = $(obj).attr('data-remain');
     $("#return-item-modal").find('form').attr('action', '/billing/return/'+tr_id);
     $("#return-item-modal").find('.title').html('Add Return '+inv_name);
     $("#return-item-modal").find('#return-inventory').val(inv_id);
     $("#return-item-modal").find('#return-bill').val(bill_id);
+    $("#return-item-modal").find('#return_quantity').val(remaining);
+    $("#return-item-modal").find('#return_quantity').attr('max', remaining);
+
     $("#return-item-modal").addClass('is-active');
 }
 
 function confirmPay() {
     $("#confirm-pay").addClass('is-active');
 }
+
+function confirmDelete() {
+    $("#confirm-delete").addClass('is-active');
+}
+

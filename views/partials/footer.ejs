@@ -4,6 +4,9 @@
 <script type="text/javascript" src="https://cdn.datatables.net/1.10.22/js/dataTables.bulma.min.js"></script>
 <script src="/javascripts/lib/select2.min.js"></script>
 <script src="/javascripts/lib/nepaliDatePicker.min.js"></script>
+<% if (typeof autocomplete !== 'undefined' && autocomplete) { %>
+    
+<% } %>
 <script src="/javascripts/script.js"></script>
 <% if (typeof dependency !== 'undefined') { %>
     <script src="/javascripts/<%=dependency %>"></script>
