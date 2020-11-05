@@ -8,7 +8,10 @@ const session = require('express-session');
 const flash = require('connect-flash');
 const methodOverride = require('method-override');
 const errors = require('./modules/errors');
+const compression = require('compression');
+const helmet = require('helmet');
 const fs = require('fs');
+const environment = process.env.NODE_ENV || 'development';
 
 
 const indexRouter = require('./routes/index');
@@ -45,6 +48,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 app.use(flash());
 
+if (environment === 'production') {
+  app.use(helmet());
+  app.use(compression());
+}
 //for PUT and DELETE requests
 app.use(methodOverride("_method"));
 
