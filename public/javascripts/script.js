@@ -1,9 +1,9 @@
-$(document).ready(() => {
-    $(".delete").click(e => {
+$(() => {
+    $(".delete").on('click', e => {
         $(e.target).parents('.modal').toggleClass('is-active');
         $(e.target).parents('.notification').hide();
     });
-    $(".close-modal").click(e => {
+    $(".close-modal").on('click', e => {
         $(e.target).parents('.modal').toggleClass('is-active');
     });
 
@@ -21,7 +21,7 @@ $(document).ready(() => {
         }
     });
     var nabarShow = false;
-    $(".navbar-burger").click(function() {
+    $(".navbar-burger").on('click', function() {
         if (!nabarShow) {
             $("#navMenu").show();
         }else{

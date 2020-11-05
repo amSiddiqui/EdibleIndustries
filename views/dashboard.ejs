@@ -1,11 +1,11 @@
 <%include ./partials/header %>
 
-<div class="container">
+<div class="container" style="margin-bottom: 200px;">
     <section class="hero is-info welcome is-small" style="margin-bottom: 20px;">
         <div class="hero-body">
             <div class="container">
                 <h1 class="title">
-                    Hello, Aamir Mushtaq Siddiqui.
+                    Hello, <%=name%>.
                 </h1>
                 <h2 class="subtitle">
                     Here is your daily report!
@@ -59,14 +59,29 @@
                         </div>
                     </div>
                 </div>
-                <div class="control has-icons-left has-icons-right">
-                    <input class="input" type="text" placeholder="Bill No">
-                    <span class="icon is-medium is-left">
-                        <i class="fa fa-search"></i>
-                    </span>
-                    <span class="icon is-medium is-right">
-                        <i class="fa fa-check"></i>
-                    </span>
+                <div class="dropdown is-active" style="width: 100%;">
+                    <div class="dropdown-trigger" style="width: 100%;">
+                        <div class="field">
+                            <div class="control has-icons-left has-icons-right">
+                                <input class="input" type="text" id="bill-search" placeholder="Bill No">
+                                <span class="icon is-medium is-left">
+                                    <i class="fa fa-search"></i>
+                                </span>
+                                <span class="icon is-medium is-right">
+                                    <i class="fa fa-check"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown-menu" id="bill-dropdown-menu" role="menu" style="width: 100%;">
+                        <div class="dropdown-content">
+                            <a href="#" class="dropdown-item">Dropdown item</a>
+                            <hr class="dropdown-divider">
+                            <a href="#" class="dropdown-item">Other dropdown item</a>
+                            <hr class="dropdown-divider">
+                            <a href="#" class="dropdown-item">With a divider</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -89,14 +104,30 @@
                         </div>
                     </div>
                 </div>
-                <div class="control has-icons-left has-icons-right">
-                    <input class="input" type="text" placeholder="Name or Organization">
-                    <span class="icon is-medium is-left">
-                        <i class="fa fa-search"></i>
-                    </span>
-                    <span class="icon is-medium is-right">
-                        <i class="fa fa-check"></i>
-                    </span>
+                <div class="dropdown is-active" style="width: 100%;">
+                    <div class="dropdown-trigger" style="width: 100%;">
+                        <div class="field">
+                            <div class="control has-icons-left has-icons-right">
+                                <input class="input" type="text" id="customer-search" placeholder="Name or Organization">
+                                <span class="icon is-medium is-left">
+                                    <i class="fa fa-search"></i>
+                                </span>
+                                <span class="icon is-medium is-right">
+                                    <i class="fa fa-check"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown-menu" id="customer-dropdown-menu" role="menu" style="width: 100%;">
+                        <div class="dropdown-content">
+                            <a href="#" class="dropdown-item">Dropdown item</a>
+                            <hr class="dropdown-divider">
+                            <a href="#" class="dropdown-item">Other dropdown item</a>
+                            <hr class="dropdown-divider">
+                            <a href="#" class="dropdown-item">With a divider</a>
+                            <hr class="dropdown-divider">
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -167,7 +198,7 @@
                 <div class="card-content">
                     <div class="content">
                         <%if (unpaid.length > 0) { %>
-                        <table class="table is-striped is-fullwidth">
+                        <table class="table is-striped is-fullwidth is-hoverable">
                             <thead>
                                 <tr>
                                     <th>Bill No</th>

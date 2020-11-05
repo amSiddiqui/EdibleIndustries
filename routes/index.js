@@ -8,6 +8,7 @@ const NepaliDate = require('nepali-date-converter');
 router.get('/', middleware.auth.loggedIn(), function(req, res, next) {  
   var data = {
     dependency: 'dashboard.js',
+    autocomplete: true
   };
   var flash_message = req.flash('flash_message');
   var flash_color = req.flash('flash_color');  
@@ -29,6 +30,10 @@ router.get('/', middleware.auth.loggedIn(), function(req, res, next) {
       ...data,
       ...result
     }
+
+    return utility.misc.getUserName(req.session.email);
+  }).then(name => {
+    data.name = name;
     res.render('dashboard', data);
   }).catch(err => {
     console.log(err);

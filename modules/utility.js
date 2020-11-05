@@ -746,6 +746,14 @@ module.exports = {
             const district = await models.District.findByPk(districtID);
             return district.getPost_offices();
         },
+        getUserName: async (email) => {
+            if (typeof email == 'undefined' || email == null) return 'Admin';
+            var user = await models.User.findOne({
+                where: {email}
+            });
+            if (user == null) return 'Admin';
+            return user.first_name+' '+user.last_name;
+        },
         toNumberFloat: toNumberFloat,
         toNumber: toNumber,
         toEnglishDate: (date) => {
