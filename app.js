@@ -49,7 +49,7 @@ app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 app.use(flash());
 
 if (environment === 'production') {
-  app.use(helmet());
+  
   app.use(compression());
 }
 //for PUT and DELETE requests
