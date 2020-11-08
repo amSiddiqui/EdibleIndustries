@@ -51,11 +51,21 @@
                             <% if (bill.customer.address1.length != 0) { %>
                             <p><%=bill.customer.address1%></p>
                             <% } %>
+                            <% if (bill.customer.district != null && bill.customer.zone != null) { %>
                             <p><%= (bill.customer.district == null ? '' : bill.customer.district.value)+', '+(bill.customer.zone == null ? '' : bill.customer.zone.value) %>
+                            <% }else if (bill.customer.district != null) { %>
+                            <p><%= (bill.customer.district == null ? '' : bill.customer.district.value) %>
+                            <% } else if (bill.customer.zone != null) { %>
+                            <p><%= (bill.customer.zone == null ? '' : bill.customer.zone.value) %>
+                            <% } %>
                             </p>
+                            <% if (bill.customer.post_office != null) { %>
                             <p><%= bill.customer.post_office == null ? '' : bill.customer.post_office.name+' ('+bill.customer.post_office.value+')' %>
+                            <% } %>
                             </p>
+                            <% if (bill.customer.phone.trim().split(' ').length > 1) { %>
                             <p><%=bill.customer.phone%></p>
+                            <% } %>
                         </td>
                     </tr>
                     <tr>
