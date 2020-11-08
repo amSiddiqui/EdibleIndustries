@@ -188,6 +188,15 @@ $(function () {
         row.find('.inv-name').html(inventory.name);
         row.find('.inv-type').attr('name', 'inv_type_' + inventory.id + '[]');
         row.find('.rate').val(inventory_rate.toFixed(2));
+        row.find('.inv-type').on('change', function() {
+            var val = $(this).val();
+            if (val == 'sold') {
+                row.find('.rate').val(inventory_rate.toFixed(2));
+            }else if (val == 'rented') {
+                row.find('.rate').val(0.00);
+            }
+            row.find('.rate').trigger('change');
+        });
         row.find('.rate').on('change', function () {
             var rate = $(this).val();
             var q = row.find('.quantity').val();
@@ -219,6 +228,7 @@ $(function () {
         });
         row.find('.remove-item').on('click', function () {
             row.remove();
+            updateTotal();
         });
         $("#inventory-table-body").append(row);
         updateTotal();
