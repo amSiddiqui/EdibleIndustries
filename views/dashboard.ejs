@@ -167,7 +167,9 @@
                                     <% } %>
                                     <td>
                                         <% for (let j = 0; j < bill.bill_transactions.length; j++) { const tr = bill.bill_transactions[j]; %>
+                                            <% if (tr.type == 'rented') { %>
                                             <p><%=tr.inventory_record.inventory.name;%></p>
+                                            <% } %>
                                         <% } %>
                                     </td>
                                     <% if (bill.paid) { %>
