@@ -8,12 +8,24 @@
 
     <form id="new-bill-form" action="/billing" method="post">
 
-        <div class="columns">
-            <div class="column is-3">
-                <div class="field">
-                    <div class="control">
-                        <label for="track_id" class="label">Bill No</label>
-                        <input type="text" disabled readonly value="<%=billno%>" class="input">
+        <div class="level">
+            <div class="level-left is-3">
+                <div class="level-item">
+                    <div class="field">
+                        <div class="control">
+                            <label for="track_id" class="label">Bill No</label>
+                            <input type="text" disabled readonly value="<%=billno%>" class="input">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="level-right">
+                <div class="level-item">
+                    <div class="field">
+                        <div class="control">
+                            <label for="Bill_date" class="label">Bill Date</label>
+                            <input type="text" class="input" id="bill_date" name="bill_date">
+                        </div>
                     </div>
                 </div>
             </div>

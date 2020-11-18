@@ -122,10 +122,11 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     if (!bill.paid) {
       bill.nepali_due = new NepaliDate(bill.dueDate).format("ddd, DD MMMM YYYY", 'np');
       bill.danger = false;
-      if (bill.dueDate < new Date()) {
+      if (bill.dueDate < bill.createdAt) {
         bill.danger = true;
       }
     }
+    
     for(let i = 0; i < bill.bill_transactions.length; i++) {
       const tr = bill.bill_transactions[i];
       if (tr.type == 'rented') {
@@ -206,7 +207,8 @@ router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
       bills[i].nepali_date = new NepaliDate(bill.createdAt).format("DD/MM/YYYY");
       if (!bill.paid && bill.dueDate != null) {
         bills[i].nepali_due = new NepaliDate(bill.dueDate).format("DD/MM/YYYY");
-        if (bill.dueDate < new Date()) {
+        
+        if (bill.dueDate < bill.createdAt) {
           bills[i].danger = true;
         }else{
           bills[i].danger = false;
@@ -232,6 +234,14 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
   var tax_percent = req.body.tax_percent;
   var tax_value = req.body.tax_value;
   var due_date = req.body.due_date.trim();
+  var bill_date = req.body.bill_date.trim();
+
+  var bd = null;
+  if (bill_date.length !== 0) {
+    bill_date = utility.misc.toEnglishDate(bill_date);
+    bd = new NepaliDate(bill_date).toJsDate();
+  }
+
   var dd = null;
   if (due_date.length !== 0) {
     due_date = utility.misc.toEnglishDate(due_date);
@@ -291,7 +301,8 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
       discount_value,
       paid,
       discount_percent,
-      dd
+      dd,
+      bd
     }, transactions, user_email).then((id) => {
       req.flash('flash_message', 'Bill Added Successfully');
       req.flash('flash_color', 'success');

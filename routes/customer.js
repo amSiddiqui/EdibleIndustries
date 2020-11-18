@@ -398,7 +398,7 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
           bills[i].nepali_date = new NepaliDate(bill.createdAt).format("DD/MM/YYYY");
           if (!bill.paid) {
             bills[i].nepali_due = new NepaliDate(bill.dueDate).format("DD/MM/YYYY");
-            if (bill.dueDate < new Date()) {
+            if (bill.dueDate < bill.createdAt) {
               bills[i].danger = true;
             }else{
               bills[i].danger = false;

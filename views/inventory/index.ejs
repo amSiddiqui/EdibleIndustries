@@ -16,7 +16,7 @@
             </button>
         </div>
     </div>
-    <div class="columns" id="inventory-item-container">
+    <div class="columns is-multiline" id="inventory-item-container">
         <% inventories.forEach(inventory => { %>
         <div class="column is-4">
             <div class="card inventory-card" data-value="<%=inventory.id%>">
@@ -39,16 +39,16 @@
                                 <strong><%=inventory.type.replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));%></strong>
                             </p>
                         </div>
-                        <% if(inventory.type == 'purchased') { %>
+
                         <div class="column">
                             <p>Cost: <strong>Re. <%=inventory.cost%></strong> </p>
                         </div>
                         <div class="column">
                             <p>Total Asset: <strong>Re. <%=inventory.cost*inventory.total%></strong> </p>
                         </div>
-                        <% } %>
+                        
                     </div>
-                    <% if(inventory.type == 'purchased') { %>
+                    
                     <div class="columns inventory-description">
                         <div class="column is-4">
                             In Stock: <strong><%= inventory.in_stock %></strong>
@@ -63,11 +63,14 @@
                                 max="<%=inventory.total%>"></progress>
                         </div>
                     </div>
-                    <% } %>
+                    
                 </div>
             </div>
         </div>
         <% }); %>
+
+
+        
     </div>
 </div>
 

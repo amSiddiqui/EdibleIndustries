@@ -286,6 +286,10 @@ $(function () {
         dateFormat: '%d/%m/%y',
         closeOnDateSelect: true,
     });
+    $('#bill_date').nepaliDatePicker({
+        dateFormat: '%d/%m/%y',
+        closeOnDateSelect: true
+    });
 });
 
 

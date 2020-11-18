@@ -530,34 +530,25 @@ module.exports = {
 
             var cost = grand_total - data.discount_value + data.tax_value;
             var bill = null;
-            if (data.dd == null) {
-                bill = await models.Bill.create({
-                    discount: data.discount_value,
-                    discountPercent: data.discount_percent,
-                    taxRate: data.tax_percent,
-                    tax: data.tax_value,
-                    description: data.description,
-                    paid: data.paid,
-                    paidOn: data.paid ? new Date() : null,
-                    payment_method: data.payment_method,
-                    image: data.image_loc,
-                    total: cost + ''
-                });
-            } else {
-                bill = await models.Bill.create({
-                    discount: data.discount_value,
-                    discountPercent: data.discount_percent,
-                    taxRate: data.tax_percent,
-                    tax: data.tax_value,
-                    description: data.description,
-                    paid: data.paid,
-                    paidOn: data.paid ? new Date() : null,
-                    payment_method: data.payment_method,
-                    image: data.image_loc,
-                    total: cost + '',
-                    dueDate: data.dd == null ? new Date() : data.dd
-                });
+            var bill_date = new Date();
+            if (data.bd != null)  {
+                bill_date = data.bd;
             }
+            bill = await models.Bill.create({
+                discount: data.discount_value,
+                discountPercent: data.discount_percent,
+                taxRate: data.tax_percent,
+                tax: data.tax_value,
+                description: data.description,
+                paid: data.paid,
+                paidOn: data.paid ? new Date() : null,
+                payment_method: data.payment_method,
+                image: data.image_loc,
+                total: cost + '',
+                dueDate: data.dd == null ? new Date() : data.dd,
+                createdAt: bill_date
+            });
+        
             for (let i = 0; i < transactions.length; i++) {
                 const transaction = transactions[i];
                 const inventory = await models.Inventory.findByPk(transaction.id);
