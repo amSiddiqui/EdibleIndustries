@@ -7872,6 +7872,13 @@ select {
 .is-hoverable td:hover {
   cursor: pointer; }
 
+.company-logo {
+  height: 250px;
+  width: auto;
+  margin: auto;
+  display: block;
+  max-height: 2.55rem !important; }
+
 .is-hoverable tbody tr:hover {
   background-color: #00d1b2 !important; }
 
