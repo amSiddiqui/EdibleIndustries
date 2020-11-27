@@ -66,12 +66,12 @@ router.post('/return/:id', middleware.auth.loggedIn(), function (req, res, next)
   utility.billing.addReturn(id, inv_id, quant, bill_id, user_email).then(() => {
     req.flash('flash_message', 'Add return to the items');
     req.flash('flash_color', 'success');
-    res.redirect('/billing/'+bill_id);
+    res.redirect('/billing/' + bill_id);
   }).catch(err => {
     console.log(err);
     req.flash('flash_message', 'Something went wrong while adding return. Try again later');
     req.flash('flash_color', 'danger');
-    res.redirect('/billing/'+bill_id);
+    res.redirect('/billing/' + bill_id);
   });
 });
 
@@ -80,12 +80,12 @@ router.post('/pay/:id', middleware.auth.loggedIn(), function (req, res, next) {
   utility.billing.pay(id).then(() => {
     req.flash('flash_message', 'Paid Successfully');
     req.flash('flash_color', 'success');
-    res.redirect('/billing/'+id);
+    res.redirect('/billing/' + id);
   }).catch(err => {
     console.log(err);
     req.flash('flash_message', 'Something went wrong while adding pay. Try again later');
     req.flash('flash_color', 'danger');
-    res.redirect('/billing/'+id);
+    res.redirect('/billing/' + id);
   });
 });
 
@@ -118,55 +118,55 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   }
 
   utility.billing.fetch(id).then(bill => {
-    bill.nepali_date = new NepaliDate(bill.createdAt).format("ddd, DD MMMM YYYY", 'np');
-    if (!bill.paid) {
-      bill.nepali_due = new NepaliDate(bill.dueDate).format("ddd, DD MMMM YYYY", 'np');
-      bill.danger = false;
-      if (bill.dueDate < bill.createdAt) {
-        bill.danger = true;
-      }
-    }
-    
-    for(let i = 0; i < bill.bill_transactions.length; i++) {
-      const tr = bill.bill_transactions[i];
-      if (tr.type == 'rented') {
-        var returns = tr.return;
-        var returns_total = _.sumBy(returns, (o) => o.quantity);
-        if (tr.quantity > returns_total) {
-          bill.bill_transactions[i].status = false;
-          bill.bill_transactions[i].remaining = tr.quantity - returns_total;
-        }else{
-          bill.bill_transactions[i].status = true;
+      bill.nepali_date = new NepaliDate(bill.createdAt).format("ddd, DD MMMM YYYY", 'np');
+      if (!bill.paid) {
+        bill.nepali_due = new NepaliDate(bill.dueDate).format("ddd, DD MMMM YYYY", 'np');
+        bill.danger = false;
+        if (bill.dueDate < bill.createdAt) {
+          bill.danger = true;
         }
       }
-    }
-    data.bill = bill;
-    return utility.billing.areItemsRented(id);
-  }).then(rented => {
-    data.bill.rented = rented;
-    return utility.billing.wereItemsRented(id);
-  }).then(were_rented => {
-    data.bill.were_rented = were_rented;
-    data.toNepaliDate = (d) => {
-      return new NepaliDate(d).format("DD/MM/YYYY", 'np');
-    };
-    data.toNepaliDateFull = (d) => {
-      return new NepaliDate(d).format("ddd, DD MMMM YYYY", 'np');
-    };
-    console.log('Bill Transaction Status: ',data.bill.bill_transactions[0].status);
-    res.render('billing/show', data);
-  })
-  .catch(err => {
-    console.log(err);
-    req.flash('flash_message', 'Some error occurred while loading the bill. Please try again later');
-    req.flash('flash_color', 'danger');
-    res.redirect('/billing');
-  });
+
+      for (let i = 0; i < bill.bill_transactions.length; i++) {
+        const tr = bill.bill_transactions[i];
+        if (tr.type == 'rented') {
+          var returns = tr.return;
+          var returns_total = _.sumBy(returns, (o) => o.quantity);
+          if (tr.quantity > returns_total) {
+            bill.bill_transactions[i].status = false;
+            bill.bill_transactions[i].remaining = tr.quantity - returns_total;
+          } else {
+            bill.bill_transactions[i].status = true;
+          }
+        }
+      }
+      data.bill = bill;
+      return utility.billing.areItemsRented(id);
+    }).then(rented => {
+      data.bill.rented = rented;
+      return utility.billing.wereItemsRented(id);
+    }).then(were_rented => {
+      data.bill.were_rented = were_rented;
+      data.toNepaliDate = (d) => {
+        return new NepaliDate(d).format("DD/MM/YYYY", 'np');
+      };
+      data.toNepaliDateFull = (d) => {
+        return new NepaliDate(d).format("ddd, DD MMMM YYYY", 'np');
+      };
+      console.log('Bill Transaction Status: ', data.bill.bill_transactions[0].status);
+      res.render('billing/show', data);
+    })
+    .catch(err => {
+      console.log(err);
+      req.flash('flash_message', 'Some error occurred while loading the bill. Please try again later');
+      req.flash('flash_color', 'danger');
+      res.redirect('/billing');
+    });
 });
 
 router.delete('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   let id = parseInt(req.params.id);
-  utility.billing.deleteBill(id).then(function() {
+  utility.billing.deleteBill(id).then(function () {
     console.log(`Bill with id ${id} was deleted`);
     req.flash('flash_message', 'Bill successfully deleted');
     req.flash('flash_color', 'success');
@@ -207,10 +207,10 @@ router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
       bills[i].nepali_date = new NepaliDate(bill.createdAt).format("DD/MM/YYYY");
       if (!bill.paid && bill.dueDate != null) {
         bills[i].nepali_due = new NepaliDate(bill.dueDate).format("DD/MM/YYYY");
-        
+
         if (bill.dueDate < bill.createdAt) {
           bills[i].danger = true;
-        }else{
+        } else {
           bills[i].danger = false;
         }
       }
@@ -254,37 +254,40 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
     var transactions = [];
     for (let i = 0; i < inventories.length; i++) {
       const inventory = inventories[i];
-      var quant = req.body['quantity_' + inventory.id + '[]'];
-      if (typeof quant === 'undefined') continue;
-      var type = req.body['inv_type_' + inventory.id + '[]'];
-      var rate = req.body['rate_' + inventory.id + '[]'];
-      if (typeof quant === 'string') {
-        quant = [quant];
-        rate = [rate];
-        type = [type];
-      }
-      transactions.push({
-        id: inventory.id,
-        quantity: quant,
-        type,
-        rate
-      });
-      var image_id = req.session.image_id;
-      var image_loc = '/images/placeholder-vertical.jpg';
-      req.session.image_id = null;
-      if (typeof image_id !== 'undefined' && image_id !== null) {
-        if (fs.existsSync('uploads/tmp/' + image_id)) {
-          var folder = 'uploads/tmp/' + image_id;
-          var files = fs.readdirSync(folder);
-          if (files.length > 0) {
-            var image = files[0];
-            fs.copyFileSync(folder + '/' + image, 'uploads/' + image);
-            image_loc = '/uploads/' + image;
-          }
-          fs.rmdirSync(folder, {
-            recursive: true
-          });
+      for (let j = 0; j < inventory.inventory_batches.length; j++) {
+        const batch = inventory.inventory_batches[j];
+        var quant = req.body['quantity_' + batch.id + '[]'];
+        if (typeof quant === 'undefined') continue;
+        var type = req.body['inv_type_' + batch.id + '[]'];
+        var rate = req.body['rate_' + batch.id + '[]'];
+        if (typeof quant === 'string') {
+          quant = [quant];
+          rate = [rate];
+          type = [type];
         }
+        transactions.push({
+          id: batch.id,
+          quantity: quant,
+          type,
+          rate
+        });
+      }
+    }
+    var image_id = req.session.image_id;
+    var image_loc = '/images/placeholder-vertical.jpg';
+    req.session.image_id = null;
+    if (typeof image_id !== 'undefined' && image_id !== null) {
+      if (fs.existsSync('uploads/tmp/' + image_id)) {
+        var folder = 'uploads/tmp/' + image_id;
+        var files = fs.readdirSync(folder);
+        if (files.length > 0) {
+          var image = files[0];
+          fs.copyFileSync(folder + '/' + image, 'uploads/' + image);
+          image_loc = '/uploads/' + image;
+        }
+        fs.rmdirSync(folder, {
+          recursive: true
+        });
       }
     }
     var user_email = req.session.email;

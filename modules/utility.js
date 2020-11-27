@@ -3,6 +3,22 @@ const NepaliDate = require('nepali-date-converter');
 var _ = require('lodash');
 var numeral = require('numeral');
 
+
+function getMethods(obj) {
+    var result = [];
+    for (var id in obj) {
+        try {
+            if (typeof (obj[id]) == "function") {
+                result.push(id + ": " + obj[id].toString());
+            }
+        } catch (err) {
+            result.push(id + ": inaccessible");
+        }
+    }
+    return result;
+}
+
+
 const {
     Op
 } = require('sequelize');
@@ -39,7 +55,7 @@ async function insertInventoryRecord(rec, inv_id, batch_id='') {
     var batch_value = rec.value;
     if (batch_id !== '') {
         batch = await models.InventoryBatch.findByPk(batch_id);
-        rec.value = batch_value * batch.quantity
+        rec.value = batch_value * batch.quantity;
     }
 
     if (inventory_records.length == 0) {
@@ -61,9 +77,8 @@ async function insertInventoryRecord(rec, inv_id, batch_id='') {
         }
     }
     var inventory_record = await models.InventoryRecord.create(rec);
-
     if (batch_id !== '') {
-        var inventory_batch_record = batch.createInventory_batch_record({
+        var inventory_batch_record = await batch.createInventory_batch_record({
             type: rec.type,
             value: batch_value
         });
@@ -145,7 +160,7 @@ module.exports = {
                     },{
                         model: models.InventoryBatchRecord,
                         include: [{
-                            model: model.InventoryBatch
+                            model: models.InventoryBatch
                         }]
                     }]
                 },{
@@ -251,9 +266,8 @@ module.exports = {
             var inventory = await models.Inventory.findByPk(id);
             var inventory_record = await insertInventoryRecord({
                 type: data.type,
-                value: data.value,
-                batch_id: data.batch_id
-            }, id);
+                value: data.value
+            }, id, data.batch_id);
             inventory_record.setInventory(inventory);
             inventory_record.setUser(user);
             await inventory_record.save();
@@ -543,6 +557,11 @@ module.exports = {
                                 model: models.InventoryRecord,
                                 include: [{
                                     model: models.Inventory
+                                }, {
+                                    model: models.InventoryBatchRecord,
+                                    include: [{
+                                        model: models.InventoryBatch,
+                                    }]
                                 }]
                             },
                             {
@@ -608,12 +627,12 @@ module.exports = {
             var grand_total = 0.0;
             for (let k = 0; k < transactions.length; k++) {
                 const transaction = transactions[k];
+                var btch = await models.InventoryBatch.findByPk(transaction.id);
                 for (let i = 0; i < transaction.rate.length; i++) {
-
                     transactions[k].rate[i] = toNumberFloat(transactions[k].rate[i]);
                     transactions[k].quantity[i] = toNumberFloat(transactions[k].quantity[i]);
 
-                    grand_total += transactions[k].rate[i] * transactions[k].quantity[i];
+                    grand_total += transactions[k].rate[i] * transactions[k].quantity[i] * btch.quantity;
                 }
             }
             data.discount_value = toNumberFloat(data.discount_value);
@@ -647,21 +666,22 @@ module.exports = {
         
             for (let i = 0; i < transactions.length; i++) {
                 const transaction = transactions[i];
-                const inventory = await models.Inventory.findByPk(transaction.id);
+                const batch = await models.InventoryBatch.findByPk(transaction.id);
+                const inventory = await batch.getInventory();
                 for (let j = 0; j < transaction.rate.length; j++) {
                     var type = 'sold';
                     if (transaction.type[j] == 'rented') type = 'rented';
                     const inv_record = await insertInventoryRecord({
                         type,
                         value: transaction.quantity[j]
-                    }, inventory.id);
+                    }, inventory.id, transaction.id);
                     inv_record.setInventory(inventory);
                     if (user != null) {
                         inv_record.setUser(user);
                     }
                     await inv_record.save();
                     const bill_transac = await models.BillTransaction.create({
-                        quantity: transaction.quantity[j],
+                        quantity: transaction.quantity[j] * batch.quantity,
                         rate: transaction.rate[j],
                         type: type
                     });

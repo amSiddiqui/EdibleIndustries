@@ -272,6 +272,9 @@ $(function () {
             
             row.find('.rate').val(defaultRate.toFixed(2));
             row.find('.inv-id').html(defaultBatch.id);
+            row.find('.inv-type').attr('name', 'inv_type_' + defaultBatch.id + '[]');
+            row.find('.quantity').attr('name', 'quantity_' + defaultBatch.id + '[]');
+            row.find('.rate').attr('name', 'rate_' + defaultBatch.id + '[]');
             inventory_rate = defaultRate;
             row.find('.total').html('Re. ' + sub_total.toFixed(2));
             var max = Math.floor(in_stock / defaultBatch.quantity);
