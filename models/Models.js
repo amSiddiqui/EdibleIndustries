@@ -181,6 +181,27 @@ const Inventory = db.sequelize.define("inventory", {
     underscored: true
 });
 
+
+const InventoryBatch = db.sequelize.define("inventory_batch", {
+    id: {
+        type: db.Sequelize.INTEGER.UNSIGNED,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    quantity: {
+        type: db.Sequelize.INTEGER,
+        defaultValue: 1,
+    },
+    name: {
+        type: db.Sequelize.STRING,
+        defaultValue: ''
+    }
+    
+}, {
+    underscored: true
+});
+
+
 const InventoryRecord = db.sequelize.define("inventory_record", {
     id: {
         type: db.Sequelize.INTEGER.UNSIGNED,
@@ -204,12 +225,47 @@ const InventoryRecord = db.sequelize.define("inventory_record", {
     underscored: true
 });
 
+const InventoryBatchRecord = db.sequelize.define("inventory_batch_record", {
+    id: {
+        type: db.Sequelize.INTEGER.UNSIGNED,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    type: {
+        type: db.Sequelize.ENUM,
+        values: ['purchased', 'manufactured', 'rented', 'returned', 'discarded', 'sold'],
+    },
+    value: {
+        type: db.Sequelize.INTEGER
+    }
+}, {
+    underscored: true
+});
+
+InventoryBatch.hasMany(InventoryBatchRecord, {
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE'
+});
+
+InventoryBatchRecord.belongsTo(InventoryBatch);
+
+InventoryRecord.hasOne(InventoryBatchRecord);
+InventoryBatchRecord.belongsTo(InventoryRecord);
+
 Inventory.hasMany(InventoryRecord, {
     onDelete: 'SET NULL',
     onUpdate: 'CASCADE'
 });
 
+
 InventoryRecord.belongsTo(Inventory);
+
+Inventory.hasMany(InventoryBatch, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+});
+
+InventoryBatch.belongsTo(Inventory);
 
 User.hasMany(InventoryRecord);
 InventoryRecord.belongsTo(User);
@@ -342,17 +398,19 @@ const CustomerRate = db.sequelize.define("customer_rate", {
 CustomerType.hasMany(Customer);
 Customer.belongsTo(CustomerType);
 
-Customer.belongsToMany(Inventory, {
-    through: CustomerRate
-});
-Inventory.belongsToMany(Customer, {
+Customer.belongsToMany(InventoryBatch, {
     through: CustomerRate
 });
 
-CustomerType.belongsToMany(Inventory, {
+InventoryBatch.belongsToMany(Customer, {
+    through: CustomerRate
+});
+
+CustomerType.belongsToMany(InventoryBatch, {
     through: CustomerTypeRate
 });
-Inventory.belongsToMany(CustomerType, {
+
+InventoryBatch.belongsToMany(CustomerType, {
     through: CustomerTypeRate
 });
 
@@ -480,6 +538,8 @@ module.exports = {
     User,
     Inventory,
     InventoryRecord,
+    InventoryBatch,
+    InventoryBatchRecord,
     Customer,
     CustomerType,
     CustomerTypeRate,

@@ -10,7 +10,52 @@ const fs = require('fs');
 const utility = require('../modules/utility');
 
 
-/* GET home page. */
+router.post('/batch/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  let id = parseInt(req.params.id);
+  utility.inventory.addBatch(id, {
+    name: req.body['batch-name'],
+    quantity: utility.misc.toNumber(req.body['batch-quantity'])
+  }).then(function() {
+    res.redirect('/inventory/'+id);
+  }).catch(err => {
+    console.log(err);
+    req.flash('flash_message', 'Error adding batch, try agina later');
+    req.flash('flash_color', 'danger');
+    res.redirect('/inventory/'+id);
+  });
+});
+
+router.delete('/batch/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  let id = parseInt(req.params.id);  
+  var batch_id = utility.misc.toNumber(req.body['batch-id']);
+  utility.inventory.deleteBatch(batch_id).then(() => {
+    res.redirect('/inventory/'+id);
+  }).catch(err => {
+    console.log(err);
+    req.flash('flash_message', 'Error deleting batch, try agina later');
+    req.flash('flash_color', 'danger');
+    res.redirect('/inventory/'+id);
+  });
+});
+
+router.put('/batch/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  var data = {
+    name: req.body['batch-name'],
+    quantity: utility.misc.toNumber(req.body['batch-quantity'])
+  };
+  let id = parseInt(req.params.id);  
+  var batch_id = utility.misc.toNumber(req.body['batch-id']);
+  utility.inventory.editBatch(batch_id, data).then(() => {
+    res.redirect('/inventory/'+id);
+  }).catch(err => {
+    console.log(err);
+    req.flash('flash_message', 'Error editing batch, try agina later');
+    req.flash('flash_color', 'danger');
+    res.redirect('/inventory/'+id);
+  });
+});
+
+
 router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
   var breadcrumbs = [{
       link: '/',
@@ -70,10 +115,25 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
     name: req.body.name.trim(),
     description: req.body.description.trim(),
     type: req.body.type.trim(),
-    cost: req.body.cost.trim()
+    cost: req.body.cost.trim(),
+    batch_names: req.body['batch_name[]'],
+    batch_quantity: req.body['batch_quantity[]']
   };
-  data.cost = utility.misc.toNumberFloat(data.cost);
 
+  if (typeof data.batch_names == 'string') {
+    data.batch_names = [data.batch_names];
+  }
+
+  if (typeof data.batch_quantity == 'string') {
+    data.batch_quantity = [data.batch_quantity];
+  }  
+  
+  for (let index = 0; index < data.batch_quantity.length; index++) {
+    data.batch_quantity[index] = utility.misc.toNumber(data.batch_quantity[index]);
+  }
+  
+  data.cost = utility.misc.toNumberFloat(data.cost);
+  
   if (data.name.length === 0) {
     req.flash('flash_message', 'Error Creating Inventory Item. Make sure the data entered is correct');
     req.flash('flash_color', 'danger');
@@ -231,6 +291,10 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
       }
     }
     data.bills = bills;
+    return utility.inventory.fetchBatches(id);
+  }).
+  then(batches => {
+    data.batches = batches;
     res.render('inventory/item', data);
   }).
   catch(err => {
@@ -246,21 +310,22 @@ router.post('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   let id = parseInt(req.params.id);
   var data = {
     type: req.body.type,
-    value: req.body.quantity
+    value: req.body.quantity,
+    batch_id: req.body.batch
   };
   data.value = utility.misc.toNumber(data.value);
+  data.batch_id = utility.misc.toNumber(data.batch_id);
   var user_email = req.session.email;
   if (typeof user_email === 'undefined') user_email = 'gt_ams@yahoo.in';
   utility.inventory.addRecord(id, data, user_email).then(()=>{
     req.flash('flash_message', 'Record Added');
     req.flash('flash_color', 'success');
-    console.log("Data name is empty", data);
     res.redirect('/inventory/' + id);
   }).catch(err => {
     console.log(err);
     req.flash('flash_message', 'Error Adding Record. Check your inputs.');
     req.flash('flash_color', 'danger');
-    console.log("Data name is empty", data);
+    console.log("Data name is empty: ", data);
     res.redirect('/inventory/' + id);
   });
 

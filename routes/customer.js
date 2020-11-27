@@ -17,10 +17,13 @@ router.put('/customer-type/:id', middleware.auth.loggedIn(), function (req, res,
   } else {
     utility.inventory.fetchAllInventoryID().then((inventories) => {
       inventories.forEach(inventory => {
-        data.rates.push({
-          id: inventory.id,
-          rate: req.body['inv-' + inventory.id].trim()
-        });
+        for (let i = 0; i < inventory.inventory_batches.length; i++) {
+          const b = inventory.inventory_batches[i];
+          data.rates.push({
+            id: b.id,
+            rate: utility.misc.toNumberFloat(req.body['batch-'+b.id])
+          });
+        }
       });
       utility.customer_type.editWithRates(id, data).then(() => {
         req.flash('flash_message', 'Customer type successfully edited');
@@ -55,15 +58,16 @@ router.delete('/customer-type/:id', middleware.auth.loggedIn(), function (req, r
 router.get('/customer-type/:id', middleware.auth.loggedIn(), function (req, res, next) {
   let id = parseInt(req.params.id);
   utility.customer_type.fetchCustomerType(id).then((customer_type) => {
+    console.log(customer_type);
     customer_data = {
       name: customer_type.name,
-      inventories: []
+      inventorie_batches: []
     }
-    customer_type.inventories.forEach(inventory => {
-      customer_data.inventories.push({
-        id: inventory.id,
+    customer_type.inventory_batches.forEach(batch => {
+      customer_data.inventorie_batches.push({
+        id: batch.id,
         customer_type_rate: {
-          rate: inventory.customer_type_rate.rate
+          rate: batch.customer_type_rate.rate
         }
       });
     });
@@ -79,8 +83,6 @@ router.get('/customer-type/:id', middleware.auth.loggedIn(), function (req, res,
     })
   });
 });
-
-
 
 
 router.post('/customer-type-exists', middleware.auth.loggedIn(), function (req, res, next) {
@@ -135,16 +137,6 @@ router.get('/customer-type', middleware.auth.loggedIn(), function (req, res, nex
         breadcrumbs,
         customer_types: types,
         inventories,
-        get_customer_rate: (customer_type, inventory_id) => {
-          let rate = -1;
-          for (let i = 0; i < customer_type.inventories.length; i++) {
-            const inventory = customer_type.inventories[i];
-            if (inventory.id == inventory_id) {
-              return inventory.customer_type_rate.rate;
-            }
-          }
-          return rate;
-        }
       };
 
       var flash_message = req.flash('flash_message');
@@ -181,12 +173,18 @@ router.post('/customer-type', middleware.auth.loggedIn(), function (req, res, ne
     res.redirect('/customer/customer-type');
   } else {
     utility.inventory.fetchAllInventoryID().then((inventories) => {
+      
       inventories.forEach(inventory => {
-        data.rates.push({
-          id: inventory.id,
-          rate: req.body['inv-' + inventory.id].trim()
-        });
+        for (let i = 0; i < inventory.inventory_batches.length; i++) {
+          const b = inventory.inventory_batches[i];
+          
+          data.rates.push({
+            id: b.id,
+            rate: utility.misc.toNumberFloat(req.body['batch-'+b.id])
+          });
+        }
       });
+      
       utility.customer_type.createWithRate(data).then(() => {
         req.flash('flash_message', 'Customer type successfully added');
         req.flash('flash_color', 'success');
@@ -246,7 +244,6 @@ router.get('/add', middleware.auth.loggedIn(), function (req, res, next) {
     req.flash('flash_color', 'danger');
     res.redirect('/customer');
   });
-
 });
 
 
@@ -288,13 +285,17 @@ router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
       utility.customer.fetchCustomer(id).then(customer => {
         utility.inventory.fetchAllInventoryID().then(inventories => {
           data.inventories = inventories;
-          data.getInventoryRate = function (inventory_id) {
+          data.getInventoryRate = function (batch_id) {
             let rate = 0;
-            customer.inventories.forEach(inventory => {
-              if (inventory.id == inventory_id) {
-                return inventory.customer_rate.rate;
+            for (let i = 0; i < customer.inventories.length; i++) {
+              const inventory = customer.inventories[i];
+              for (let j = 0; j < inventory.inventorie_batches.length; j++) {
+                const batch = inventory.inventorie_batches[j];
+                if (batch.id == batch_id) {
+                  return batch.customer_rate.rate;
+                }    
               }
-            });
+            }
             return rate;
           };
           var phone = customer.phone;
@@ -366,12 +367,13 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     utility.inventory.fetchAllInventoryID().then(inventories => {
       var phone = customer.phone;
       data.inventories = inventories;
-      data.getInventoryRate = function (inventory_id) {
-        let rate = 0;
-        for (let i = 0; i < customer.inventories.length; i++) {
-          const inventory = customer.inventories[i];
-          if (inventory.id == inventory_id) {
-            return 'Re. ' + inventory.customer_rate.rate;
+      data.getInventoryRate = function (b_id) {
+        console.log("Finding Rate for b_id: ", b_id);
+        for (let i = 0; i < customer.inventory_batches.length; i++) {
+          const b = customer.inventory_batches[i];
+          if (b.id == b_id) {
+            console.log("Found: ", b.customer_rate);
+            return 'Re. ' + b.customer_rate.rate;
           }
         }
 
@@ -464,13 +466,16 @@ router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   utility.inventory.fetchAllInventory().then(inventories => {
     let rates = [];
     inventories.forEach(inventory => {
-      var rate = req.body['rate-' + inventory.id];
-      if (typeof rate != 'undefined') {
-        rate = utility.misc.toNumberFloat(rate);
-        rates.push({
-          inventoryId: inventory.id,
-          rate
-        })
+      for (let i = 0; i < inventory.inventory_batches.length; i++) {
+        const b = inventory.inventory_batches[i];
+        var rate = req.body['rate-' + b.id];
+        if (typeof rate != 'undefined') {
+          rate = utility.misc.toNumberFloat(rate);
+          rates.push({
+            inventoryBatchId: b.id,
+            rate
+          });
+        }
       }
     });
     utility.customer.editFull(id, customer_data, address, customer_type, rates).then(() => {
@@ -514,7 +519,6 @@ router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
   }
 
   utility.customer.fetchAllCustomer().then(customers => {
-
     for (let i = 0; i < customers.length; i++) {
       customers[i].nepali_date = new NepaliDate(customers[i].createdAt).format("DD/MM/YYYY");
     }
@@ -560,13 +564,16 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
   utility.inventory.fetchAllInventory().then(inventories => {
     let rates = [];
     inventories.forEach(inventory => {
-      var rate = req.body['rate-' + inventory.id];
-      if (typeof rate != 'undefined') {
-        rate = utility.misc.toNumberFloat(rate);
-        rates.push({
-          inventoryId: inventory.id,
-          rate
-        })
+      for (let i = 0; i < inventory.inventory_batches.length; i++) {
+        const b = inventory.inventory_batches[i];
+        var rate = req.body['rate-' + b.id];
+        if (typeof rate != 'undefined') {
+          rate = utility.misc.toNumberFloat(rate);
+          rates.push({
+            inventoryBatchId: b.id,
+            rate
+          });
+        }
       }
     });
     utility.customer.createFull(customer_data, address, customer_type, rates).then((new_id) => {

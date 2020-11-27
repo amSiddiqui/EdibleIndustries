@@ -27,9 +27,7 @@
                     <tr>
                         <th>Index</th>
                         <th>Customer Type</th>
-                        <% for(let i = 0; i < inventories.length; i++) { const inventory = inventories[i] %>
-                        <th><%=inventory.name%> (Re.)</th>
-                        <% } %>
+                        
                         <th>Edit/Delete</th>
                     </tr>
                 </thead>
@@ -38,10 +36,6 @@
                     <tr>
                         <td><%= customer_type.id; %></td>
                         <td><%= customer_type.name; %></td>
-                        <% for(let j = 0; j < inventories.length; j++) { const inventory = inventories[j]; %>
-                        <% const customer_rate = get_customer_rate(customer_type, inventory.id); %>
-                        <td><%= customer_rate === -1?'':customer_rate %></td>
-                        <% } %>
                         <td>
                             <div class="field is-grouped">
                                 <div class="control">
@@ -104,14 +98,16 @@
                 </div>
                 <h1 class="title is-4">Rates</h1>
                 <% for(let i = 0; i < inventories.length; i++) { const inventory = inventories[i]; %>
+                <h1 class="title is-5"><%=inventory.name%></h1>
+                <% for(let j = 0; j < inventory.inventory_batches.length; j++) { const batch = inventory.inventory_batches[j]; %>
                 <div class="field is-horizontal">
                     <div class="field-label">
-                        <label class="label"><%=inventory.name%></label>
+                        <label class="label"><%=batch.name%> (<%=batch.quantity%>)</label>
                     </div>
                     <div class="field-body">
                         <div class="field is-narrow">
                             <div class="control has-icons-left">
-                                <input type="number" min="0" step="any" name="inv-<%=inventory.id%>" placeholder="Rate" class="input">
+                                <input type="number" min="0" step="any" name="batch-<%=batch.id%>" placeholder="Rate" class="input">
                                 <span class="icon is-left">
                                     Re.
                                 </span>
@@ -119,6 +115,7 @@
                         </div>
                     </div>
                 </div>
+                <% } %>
                 <% } %>
                 <div class="field is-grouped is-grouped-right">
                     <div class="control">
@@ -153,14 +150,16 @@
                 </div>
                 <h1 class="title is-4">Rates</h1>
                 <% for(let i = 0; i < inventories.length; i++) { const inventory = inventories[i]; %>
+                <h1 class="title is-5"><%= inventory.name %></h1>
+                <% for(let j = 0; j < inventory.inventory_batches.length; j++ ){ const batch = inventory.inventory_batches[j]; %>
                 <div class="field is-horizontal">
                     <div class="field-label">
-                        <label class="label"><%=inventory.name%></label>
+                        <label class="label"><%= batch.name %> (<%= batch.quantity %>)</label>
                     </div>
                     <div class="field-body">
                         <div class="field is-narrow">
                             <div class="control has-icons-left">
-                                <input type="number" min="0" step="any" name="inv-<%=inventory.id%>" placeholder="Rate" class="input">
+                                <input type="number" min="0" step="any" name="batch-<%=batch.id%>" placeholder="Rate" class="input">
                                 <span class="icon is-left">
                                     Re.
                                 </span>
@@ -168,6 +167,7 @@
                         </div>
                     </div>
                 </div>
+                <% } %>
                 <% } %>
                 <div class="field is-grouped is-grouped-right">
                     <div class="control">

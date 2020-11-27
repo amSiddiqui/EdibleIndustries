@@ -21,7 +21,8 @@
         <div class="column is-4">
             <div class="card inventory-card" data-value="<%=inventory.id%>">
                 <div class="card-content">
-                    <button class="edit" onclick="window.location.href = '/inventory/edit/<%=inventory.id%>/'" aria-label="close"><i class="fas fa-pen"></i></button>
+                    <button class="edit" onclick="window.location.href = '/inventory/edit/<%=inventory.id%>/'"
+                        aria-label="close"><i class="fas fa-pen"></i></button>
                     <div class="columns">
                         <div class="column is-3">
                             <img src="<%=inventory.image%>" alt="">
@@ -46,9 +47,9 @@
                         <div class="column">
                             <p>Total Asset: <strong>Re. <%=inventory.cost*inventory.total%></strong> </p>
                         </div>
-                        
+
                     </div>
-                    
+
                     <div class="columns inventory-description">
                         <div class="column is-4">
                             In Stock: <strong><%= inventory.in_stock %></strong>
@@ -63,14 +64,14 @@
                                 max="<%=inventory.total%>"></progress>
                         </div>
                     </div>
-                    
+
                 </div>
             </div>
         </div>
         <% }); %>
 
 
-        
+
     </div>
 </div>
 
@@ -85,7 +86,8 @@
             <form method="post">
                 <div class="columns">
                     <div class="column is-3">
-                        <input type="file" class="filepond" name="inventory" accept="image/png, image/jpeg, image/gif" />
+                        <input type="file" class="filepond" name="inventory"
+                            accept="image/png, image/jpeg, image/gif" />
                     </div>
                     <div class="column">
                         <div class="field">
@@ -121,7 +123,7 @@
                     <div class="column">
                         <div class="field">
                             <label class="label cost-label">Cost</label>
-                            
+
                             <div class="control has-icons-left">
                                 <input class="input" min=".1" step="any" name="cost" type="number" placeholder="Cost">
                                 <span class="icon is-small is-left">
@@ -130,6 +132,42 @@
                                 <p class="help is-danger" style="display: none;">Enter Valid Cost</p>
                             </div>
                         </div>
+                    </div>
+                </div>
+                <div class="batch-container" style="margin-bottom: 20px;">
+                    <div class="columns">
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Packing</label>
+                                <div class="control">
+                                    <input required type="text" class="input" placeholder="Packing" name="batch_name[]" value="Single" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Quantity</label>
+                                <div class="control">
+                                    <input required type="number" min="0" step="1" class="input" placeholder="Quantity"
+                                        name="batch_quantity[]" readonly value="1">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column is-1">
+                            
+                        </div>
+                    </div>
+                </div>
+                <div class="field is-grouped is-grouped-right">
+                    <div class="control">
+                        <button class="button is-success is-rounded is-small" type="button" id="add-batch-button">
+                            <span class="icon is-small">
+                                <i class="fas fa-plus fa-xs"></i>
+                            </span>
+                            <span>
+                                Packing
+                            </span>
+                        </button>
                     </div>
                 </div>
                 <div class="field is-grouped">

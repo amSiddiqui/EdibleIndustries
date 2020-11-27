@@ -3,43 +3,51 @@ function resetTabs() {
     $(".tab-content").hide();
 }
 
-$(function() {
-    $(".add-inventory-record").on('click', function() {
+$(function () {
+    $(".add-inventory-record").on('click', function () {
         $('#add-inventory-record-modal').addClass('is-active');
     });
-    $("#history-tabs-link").on('click', function() {
+    $("#history-tabs-link").on('click', function () {
         resetTabs();
         $(this).addClass('is-active');
         $("#history-tab").show();
     });
 
-    $("#reports-tabs-link").on('click', function() {
+    $("#reports-tabs-link").on('click', function () {
         resetTabs();
         $(this).addClass('is-active');
         $("#reports-tab").show();
     });
 
-    $("#bill-tabs-link").on('click', function() {
+    $("#batches-tabs-link").on('click', function () {
+        resetTabs();
+        $(this).addClass('is-active');
+        $("#batches-tab").show();
+    });
+
+    $("#bill-tabs-link").on('click', function () {
         resetTabs();
         $(this).addClass('is-active');
         $("#bill-tab").show();
     });
+
+
     var total = 0;
     var table_loaded = new Promise((resolve, reject) => {
-        $('.rent-status').each(function() {
+        $('.rent-status').each(function () {
             let id = $(this).attr('data-key');
             var container = $(this);
-            $.get('/api/check-item-rented/'+id, function(data) {
+            $.get('/api/check-item-rented/' + id, function (data) {
                 if (data.status == 'success') {
                     if (data.result) {
                         container.append('<span class="has-text-danger">Rented</span>');
-                    }else{
+                    } else {
                         container.append('<span class="has-text-success">No</span>');
                     }
                 }
-            }).fail(function(err) {
+            }).fail(function (err) {
                 console.log(err);
-            }).always(function() {
+            }).always(function () {
                 total++;
                 if (total == totals_bills) {
                     resolve();
@@ -47,17 +55,73 @@ $(function() {
             });
         });
     });
-    table_loaded.then(function() {
+    table_loaded.then(function () {
         $("#billing-table").DataTable({
-            "columnDefs": [
-                { "width": "3%", "targets": 0 },
-            ],
-            "order": [[0, 'desc']]
+            "columnDefs": [{
+                "width": "3%",
+                "targets": 0
+            }, ],
+            "order": [
+                [0, 'desc']
+            ]
         });
     });
 
-    $("#history-table").DataTable({        
+    $("#history-table").DataTable({});
+
+
+    $("#add-batch-button").on('click', function () {
+        $("#add-batch-modal").addClass('is-active');
+    });
+
+    $(".type-edit-button").on('click', function () {
+        var id = $(this).val();
+        var name = $(this).attr('data-name');
+        var quantity = $(this).attr('data-quantity');        
+        $("#edit-batch-name").val(name);
+        $("#edit-batch-quantity").val(quantity);
+        $("#edit-batch-id").val(id);
+        $("#edit-batch-modal").addClass('is-active');
+    });
+
+    $(".type-delete-button").on('click', function() {
+        var id = $(this).val();
+        $("#confirm-delete").find("#delete-batch-id").val(id);
+        $("#confirm-delete").addClass('is-active');
+    });
+
+    $("#inv-batch").on('change', function() {
+        var quant = $("#inv-batch").find(':selected').attr('data-quant');
+        quant = parseInt(quant);
+        var quantity = $("#quantity").val();
+        if (typeof quantity == 'string') {
+            if (quantity.length == 0 || isNaN(quantity)) {
+                quantity = 0;
+            }else{
+                quantity = parseInt(quantity);
+            }
+        }
+
+        var total = quant * quantity;
+
+        $("#total-quant").val(total);
+    });
+
+    $("#quantity").on('change', function() {
+        var quant = $("#inv-batch").find(':selected').attr('data-quant');
+        quant = parseInt(quant);
+        var quantity = $("#quantity").val();
+        if (typeof quantity == 'string') {
+            if (quantity.length == 0 || isNaN(quantity)) {
+                quantity = 0;
+            }else{
+                quantity = parseInt(quantity);
+            }
+        }
+
+        var total = quant * quantity;
+
+        $("#total-quant").val(total);
     });
 
 });
-

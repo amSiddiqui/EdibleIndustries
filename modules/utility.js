@@ -27,7 +27,7 @@ function toNumber(num) {
     return parseInt(num);
 }
 
-async function insertInventoryRecord(rec, inv_id) {
+async function insertInventoryRecord(rec, inv_id, batch_id='') {
     var inventory = await models.Inventory.findByPk(inv_id);
     var inventory_records = await inventory.getInventory_records({
         order: [
@@ -35,6 +35,13 @@ async function insertInventoryRecord(rec, inv_id) {
         ],
         limit: 1
     });
+    var batch = null;
+    var batch_value = rec.value;
+    if (batch_id !== '') {
+        batch = await models.InventoryBatch.findByPk(batch_id);
+        rec.value = batch_value * batch.quantity
+    }
+
     if (inventory_records.length == 0) {
         rec.in_stock = rec.value;
         rec.total = rec.value;
@@ -53,7 +60,16 @@ async function insertInventoryRecord(rec, inv_id) {
             rec.total = lastRec.total;
         }
     }
-    return models.InventoryRecord.create(rec);
+    var inventory_record = await models.InventoryRecord.create(rec);
+
+    if (batch_id !== '') {
+        var inventory_batch_record = batch.createInventory_batch_record({
+            type: rec.type,
+            value: batch_value
+        });
+        await inventory_record.setInventory_batch_record(inventory_batch_record);
+    }
+    return inventory_record;
 }
 
 
@@ -95,10 +111,24 @@ module.exports = {
     },
 
     inventory: {
-        createInventory: (data) => {
-            return models.Inventory.create({
-                ...data
+        createInventory: async (data) => {
+            var inventory = await models.Inventory.create({
+                name: data.name,
+                description: data.description,
+                type: data.type,
+                cost: data.cost
             });
+
+            for (let index = 0; index < data.batch_names.length; index++) {
+                const name = data.batch_names[index];
+                const q = data.batch_quantity[index];
+
+                await inventory.createInventory_batch({
+                    name: name,
+                    quantity: q
+                });
+            }
+            return inventory;
         },
         fetchInventory: async (id) => {
             var inv = await models.Inventory.findOne({
@@ -112,7 +142,14 @@ module.exports = {
                     ],
                     include: [{
                         model: models.User
+                    },{
+                        model: models.InventoryBatchRecord,
+                        include: [{
+                            model: model.InventoryBatch
+                        }]
                     }]
+                },{
+                    model: models.InventoryBatch
                 }]
             });
             return inv;
@@ -139,10 +176,15 @@ module.exports = {
         fetchAllInventory: () => {
             return new Promise((resolve, reject) => {
                 models.Inventory.findAll({
-                    include: models.InventoryRecord,
-                    order: [
-                        [models.InventoryRecord, 'id', 'DESC']
-                    ]
+                    include: [
+                        {
+                            model: models.InventoryRecord,
+                            order: [
+                                [models.InventoryRecord, 'id', 'DESC']
+                            ]
+                        }, {
+                            model: models.InventoryBatch
+                        }]
                 }).then(inventories => {
                     resolve(inventories);
                 }).catch(err => {
@@ -152,7 +194,13 @@ module.exports = {
             });
         },
         fetchAllInventoryID: () => {
-            return models.Inventory.findAll();
+            return models.Inventory.findAll({
+                include: [
+                    {
+                        model: models.InventoryBatch
+                    }
+                ]
+            });
         },
         fetchAllInventoryIdWithRecord: () => {
             return models.Inventory.findAll({
@@ -162,8 +210,36 @@ module.exports = {
                         [sequelize.col('id'), 'DESC']
                     ],
                     limit: 1
+                }, {
+                    model: models.InventoryBatch
                 }]
             });
+        },
+        fetchBatches: (id) => {
+            return models.InventoryBatch.findAll({
+                where: {
+                    inventory_id: id
+                }
+            });
+        },
+        addBatch: async (id, data) => {
+            var inventory = await models.Inventory.findByPk(id);
+            return inventory.createInventory_batch({
+                name: data.name,
+                quantity: data.quantity
+            });
+        },
+        editBatch: async (id, data) => {
+            var batch = await models.InventoryBatch.findByPk(id);
+            batch.name= data.name;
+            batch.quantity = data.quantity;
+            await batch.save();
+            return true;
+        },
+        deleteBatch: async (id) => {
+            var batch = await models.InventoryBatch.findByPk(id);
+            await batch.destroy();
+            return true;
         },
         addRecord: async (id, data, user_email) => {
             var user = await models.User.findOne({
@@ -172,11 +248,11 @@ module.exports = {
                 }
             });
 
-            data.value = toNumber(data.value);
             var inventory = await models.Inventory.findByPk(id);
             var inventory_record = await insertInventoryRecord({
                 type: data.type,
-                value: data.value
+                value: data.value,
+                batch_id: data.batch_id
             }, id);
             inventory_record.setInventory(inventory);
             inventory_record.setUser(user);
@@ -227,14 +303,13 @@ module.exports = {
                 name: data.name
             });
             var rates_data = [];
+            console.log(data);
             data.rates.forEach(rate => {
-                if (rate.rate.trim().length > 0 && !isNaN(rate.rate)) {
-                    rates_data.push({
-                        inventoryId: rate.id,
-                        customerTypeId: customer_type.id,
-                        rate: parseFloat(rate.rate)
-                    });
-                }
+                rates_data.push({
+                    inventoryBatchId: rate.id,
+                    customerTypeId: customer_type.id,
+                    rate: rate.rate
+                });
             });
             var temp = await models.CustomerTypeRate.bulkCreate(rates_data);
             return true;
@@ -247,7 +322,7 @@ module.exports = {
 
                 var existingRate = await models.CustomerTypeRate.findOne({
                     where: {
-                        inventoryId: rate.id,
+                        inventoryBatchId: rate.id,
                         customerTypeId: customer_type.id
                     }
                 });
@@ -256,7 +331,7 @@ module.exports = {
                     await existingRate.save();
                 } else {
                     await models.CustomerTypeRate.create({
-                        inventoryId: rate.id,
+                        inventoryBatchId: rate.id,
                         customerTypeId: customer_type.id,
                         rate: toNumberFloat(rate.rate)
                     });
@@ -264,9 +339,9 @@ module.exports = {
             }
             await customer_type.save();
         },
-        addInventoryRate: (customer_type_id, inventory_id, rate) => {
+        addInventoryRate: (customer_type_id, inventory_batch_id, rate) => {
             return models.CustomerTypeRate.create({
-                inventoryId: inventory_id,
+                inventoryBatchId: inventory_batch_id,
                 customerTypeId: customer_type_id,
                 rate
             });
@@ -274,12 +349,30 @@ module.exports = {
         },
         fetchAllTypes: () => {
             return models.CustomerType.findAll({
-                include: models.Inventory
+                include: [
+                    {
+                        model: models.InventoryBatch,
+                        include: [
+                            {
+                                model: models.Inventory
+                            }
+                        ]
+                    }
+                ]
             });
         },
         fetchCustomerType: (id) => {
             return models.CustomerType.findByPk(id, {
-                include: models.Inventory
+                include: [
+                    {
+                        model: models.InventoryBatch,
+                        include: [
+                            {
+                                model: models.Inventory
+                            }
+                        ]
+                    }
+                ]
             });
         },
         exists: async (name) => {
@@ -403,7 +496,10 @@ module.exports = {
                         model: models.CustomerType
                     },
                     {
-                        model: models.Inventory
+                        model: models.InventoryBatch,
+                        include: {
+                            model: models.Inventory
+                        }
                     }
                 ]
             });

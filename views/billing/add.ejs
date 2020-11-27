@@ -80,9 +80,11 @@
                         <tr>
                             <th>ID</th>
                             <th>Name</th>
+                            <th>Packing</th>
                             <th>Quantity</th>
+                            <th>Total Quantity</th>
                             <th>Type</th>
-                            <th>Rate (per unit)</th>
+                            <th>Rate</th>
                             <th>Sub Total</th>
                             <th style="width: 40px;">
                                 <button type="button" class="add-item-button has-text-success"
@@ -256,8 +258,18 @@
     <tr>
         <td class="inv-id">1</td>
         <td class="inv-name">Jar 4 ltr</td>
+        <td class="packing-name">
+            <div class="select is-fullwidth">
+                <select name="packing-name" class="packing">
+                    
+                </select>
+            </div>
+        </td>
         <td style="width: 190px;">
             <input min="0" type="number" step="1" value="0" class="input quantity">
+        </td>
+        <td style="width: 170px;">
+            <input min="0" readonly type="number" step="1" value="0" class="input total-quantity">
         </td>
         <td style="width: 190px;">
             <div class="select is-fullwidth">

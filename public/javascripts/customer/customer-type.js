@@ -1,8 +1,7 @@
-$(document).ready(function() {
+$(function() {
     $("#customer-type-table").DataTable({
         "columnDefs": [
             { "width": "8%", "targets": 0 },
-            { "width": "8%", "targets": 2+total_inventories }
         ]
     });
 
@@ -57,7 +56,7 @@ $(document).ready(function() {
         $("#confirm-delete").addClass('is-active');
     });
 
-    $(".type-edit-button").click(function() {
+    $(".type-edit-button").on('click', function() {
         var id = $(this).val();
         $.get("/customer/customer-type/"+id, function(data) {
             if (data.status == 'success') {
@@ -65,8 +64,8 @@ $(document).ready(function() {
                 const form = $("#edit-customer-type-modal form");
                 form.attr('action', '/customer/customer-type/'+id+'?_method=PUT');
                 form.find("input[type='number']").val('');
-                data.customer_type.inventories.forEach(inventory => {
-                    form.find("input[name='inv-"+inventory.id+"']").val(inventory.customer_type_rate.rate);
+                data.customer_type.inventorie_batches.forEach(batch => {
+                    form.find("input[name='batch-"+batch.id+"']").val(batch.customer_type_rate.rate);
                 });
                 $("#edit-customer-type-modal").addClass('is-active');
             }else {

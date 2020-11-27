@@ -119,6 +119,7 @@ $(function () {
         inventories = data.inventories;
     }).fail(function (err) {
         console.log(err);
+        window.history.back();
     });
     var currentCustomerData = null;
     $("#customer").on('change', function (e) {
@@ -129,25 +130,24 @@ $(function () {
             return;
         }
         $.get('/api/customer/' + id, function (data) {
-            currentCustomerData = data.customer;
+            currentCustomerData = data;
             $("#inventory-table-body tr").each(function (i) {
+                // Batch ID
                 var inv_id = $(this).find('.inv_id').html();
 
                 var inv_rate = 0;
-                currentCustomerData.inventories.forEach(inv => {
-                    if (inv.id == inv_id) {
-                        inv_rate = inv.cutomer_rate.rate;
+                currentCustomerData.customer.inventory_batches.forEach(batch => {
+                    if (batch.id == inv_id) {
+                        inv_rate = batch.cutomer_rate.rate;
                     }
                 });
-                var quant = $(this).find('.quantity').val();
+                var quant = $(this).find('.total-quantity').val();
                 quant = isNaN(quant) ? 0 : parseFloat(quant);
                 var total = quant * inv_rate;
                 $(this).find('.total').html('Re. ' + total.toFixed(2));
                 $(this).find('.rate').val(inv_rate.toFixed(2));
             });
             updateTotal();
-
-
         }).fail(function (err) {
             console.log(err);
         });
@@ -161,7 +161,7 @@ $(function () {
     $(".list-group-item").on('click', function () {
         $("#select-inventory-item-modal").removeClass('is-active');
         if (currentCustomerData === null) {
-            console.log('Currentt Customer data not set');
+            console.log('Current Customer data not set');
             return;
         }
         var template = $("#inventory-item-template").html();
@@ -177,16 +177,112 @@ $(function () {
             console.log("Inventory not found");
             return;
         }
-        currentCustomerData.inventories.forEach(inv => {
-            if (inv.id == inventory.id) inventory_rate = inv.customer_rate.rate;
+
+        var customer_b = null;
+
+        currentCustomerData.customer.inventory_batches.forEach(batch => {
+            if (batch.name == 'Single') customer_b = batch;
         });
+
+        if (typeof customer_b !== 'undefined' || customer_b !== null) {
+            inventory_rate = customer_b.customer_rate.rate;
+        }else{
+            let current_customer_type = null;
+            currentCustomerData.customer_type.forEach(ty => {
+                if (ty.id == currentCustomerData.customer.customer_type.id) {
+                    current_customer_type = ty;
+                }
+            });
+
+            current_customer_type.inventory_batches.forEach(b => {
+                if (b.name == 'Single') {
+                    inventory_rate = b.customer_type_rate.rate;
+                }
+            });
+        }
+
         var in_stock = 0;
         if (inventory.inventory_records.length > 0) {
             in_stock = inventory.inventory_records[0].in_stock;
         }
-        row.find('.inv-id').html(inventory.id);
+        var defaultBatch = null;
+        for (let i = 0; i < inventory.inventory_batches.length; i++) {
+            const batch = inventory.inventory_batches[i];
+            var option = $('<option value="'+batch.id+'">'+batch.name+' ('+batch.quantity+')'+'</option>').clone();
+            if (batch.name == 'Single') {
+                option = $('<option selected value="'+batch.id+'">'+batch.name+' ('+batch.quantity+')'+'</option>').clone()
+                defaultBatch = batch;
+            }
+            row.find('.packing').append(option);
+        }
+
+        row.find('.packing').on('change', function() {
+            var id = $(this).val();
+            var batch = null;
+            for (let i = 0; i < inventories.length; i++) {
+                const inventory = inventories[i];
+                for (let j = 0; j < inventory.inventory_batches.length; j++) {
+                    const b = inventory.inventory_batches[j];
+                    if (b.id == id) {
+                        batch = b;
+                    }
+                }
+            }
+
+            defaultBatch = batch;
+
+            var q = row.find('.quantity').val();
+            if (typeof q == 'string') {
+                if (q.length == 0) {
+                    q = 0;
+                }else{
+                    if (isNaN(q)) {
+                        q = 0;
+                    }else{
+                        q = parseInt(q);
+                    }
+                }
+            }
+
+            var total = q * batch.quantity;
+            row.find('.total-quantity').val(total);
+
+            var defaultRate = null;
+
+            currentCustomerData.customer.inventory_batches.forEach(batch => {
+                if (batch.id == id) {
+                    defaultRate = batch.customer_rate.rate;
+                }
+            });
+
+            if (defaultRate == null) {
+                currentCustomerData.customer_type.inventory_batches.forEach(batch => {
+                    if (batch.id == id) {
+                        defaultRate = batch.customer_type_rate.rate;
+                    }
+                });
+            }
+
+            if (defaultRate == null) {
+                defaultRate = 0;
+            }
+
+
+            var sub_total = total * defaultRate;
+            
+            row.find('.rate').val(defaultRate.toFixed(2));
+            row.find('.inv-id').html(defaultBatch.id);
+            inventory_rate = defaultRate;
+            row.find('.total').html('Re. ' + sub_total.toFixed(2));
+            var max = Math.floor(in_stock / defaultBatch.quantity);
+            row.find('.quantity').attr('max', max);
+            updateTotal();
+        });
+
+        row.find('.inv-id').html(defaultBatch.id);
         row.find('.inv-name').html(inventory.name);
-        row.find('.inv-type').attr('name', 'inv_type_' + inventory.id + '[]');
+        
+        row.find('.inv-type').attr('name', 'inv_type_' + defaultBatch.id + '[]');
         row.find('.rate').val(inventory_rate.toFixed(2));
         row.find('.inv-type').on('change', function() {
             var val = $(this).val();
@@ -199,29 +295,34 @@ $(function () {
         });
         row.find('.rate').on('change', function () {
             var rate = $(this).val();
-            var q = row.find('.quantity').val();
+            var q = row.find('.total-quantity').val();
             if (isNaN(q) || isNaN(rate)) {
                 row.find('.total').html('Re. 0.00');
             } else {
-                q = parseFloat(q);
+                q = parseInt(q);
                 rate = parseFloat(rate);
                 var total = q * rate;
                 row.find('.total').html('Re. ' + total.toFixed(2));
             }
             updateTotal();
         });
-        row.find('.quantity').attr('max', in_stock);
-        row.find('.quantity').attr('name', 'quantity_' + inventory.id + '[]');
-        row.find('.rate').attr('name', 'rate_' + inventory.id + '[]');
+
+        var max = Math.floor(in_stock / defaultBatch.quantity);
+        row.find('.quantity').attr('max', max);
+        row.find('.quantity').attr('name', 'quantity_' + defaultBatch.id + '[]');
+        row.find('.rate').attr('name', 'rate_' + defaultBatch.id + '[]');
         row.find('.quantity').on('change', function () {
             var q = $(this).val();
             var rate = row.find('.rate').val();
             if (isNaN(q) || isNaN(rate)) {
                 row.find('.total').html('Re. 0.00');
+                row.find('.totla-quantity').val(0);
             } else {
-                q = parseFloat(q);
+                q = parseInt(q);
+                var total_q = q * defaultBatch.quantity;
                 rate = parseFloat(rate);
-                var total = q * rate;
+                var total = total_q * rate;
+                row.find('.total-quantity').val(total_q);
                 row.find('.total').html('Re. ' + total.toFixed(2));
             }
             updateTotal();
@@ -263,8 +364,8 @@ $(function () {
         var customer = $("#customer").val();
         if (customer === null || customer.length === 0) {
             $("#customer").addClass('is-danger');
-
             $("#customer").siblings('.help').show();
+            $("html, body").animate({ scrollTop: "0" }); 
         } else {
             $(this).off();
             $(this).trigger('submit');

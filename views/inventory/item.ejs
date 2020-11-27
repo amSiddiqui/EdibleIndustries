@@ -69,6 +69,7 @@
         <ul>
             <li class="tab-link is-active" id="bill-tabs-link"><a>Bills</a></li>
             <li class="tab-link" id="history-tabs-link"><a>History</a></li>
+            <li class="tab-link" id="batches-tabs-link"><a>Packing</a></li>
             <li class="tab-link" id="reports-tabs-link"><a>Reports</a></li>
         </ul>
     </div>
@@ -83,6 +84,7 @@
                         <tr>
                             <th>ID</th>
                             <th>User</th>
+                            <th>Packing</th>
                             <th>Type</th>
                             <th>Quantity</th>
                             <th>Date</th>
@@ -99,12 +101,23 @@
                                     color = 'has-text-danger';
                                 }
                             }
+
+                            var hasPacking = typeof record.inventory_batch_record !== 'undefined' || record.inventory_batch_record !== null;
                         %>
                         <tr>
                             <td><%=(i+1)%></td>
                             <td><%=record.user.first_name+' '+record.user.last_name;%></td>
+                            <% if (hasPacking) { %>
+                            <td><%=record.inventory_batch_record.inventory_batch.name%> (<%=record.inventory_batch_record.inventory_batch.quantity%>)</td>
+                            <% }else{ %>
+                            <td>Single</td>
+                            <% } %>
                             <td class="is-capitalized <%=color%>"><%=record.type%></td>
+                            <% if (hasPacking) { %>
+                            <td>(<%=record.inventory_batch_record.inventory_batch.quantity%> x <%=record.inventory_batch_record.value%>) <%=record.value%></td>
+                            <% }else{ %>
                             <td><%=record.value%></td>
+                            <% } %>
                             <td><%=toNepaliDate(record.createdAt);%></td>
                         </tr>
                         <% } %>
@@ -120,6 +133,68 @@
         <div class="columns">
             <div class="column">
                 <h1 class="title is-3">Reports</h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content" id="batches-tab" style="display: none;">
+        <div class="columns">
+            <div class="column">
+                <h1 class="title is-3">Packing</h1>
+                <% if (batches.length == 0) { %>
+                <h1 class="title is-4">No Packing Found</h1>
+                <button class="button is-rounded is-success" id="add-batch-button">
+                    <span class="icon is-small">
+                        <i class="fas fa-plus fa-xs"></i>
+                    </span>
+                    <span>Add Packing</span>
+                </button>
+                <% }else{ %>
+                <table class="table is-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Packing</th>
+                            <th>Quantity</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% for(var i = 0; i < batches.length; i++) { const batch = batches[i]; %>
+                        <tr>
+                            <td><%=(i+1)%></td>
+                            <td><%=batch.name %></td>
+                            <td><%=batch.quantity%></td>
+                            <td>
+                                <% if (batch.name != 'Single') {%>
+                                <div class="field is-grouped">
+                                    <div class="control">
+                                        <button data-name="<%=batch.name%>" data-quantity="<%=batch.quantity%>"
+                                            value="<%=batch.id%>" class="type-edit-button has-text-info"><i
+                                                class="fas fa-pen"></i></button>
+                                    </div>
+                                    <div class="control">
+                                        <button value="<%=batch.id%>" class="type-delete-button has-text-danger"><i
+                                                class="fas fa-trash"></i></button>
+                                    </div>
+                                </div>
+                                <% } %>
+                            </td>
+                        </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+                <div class="columns">
+                    <div class="column">
+                        <button class="button is-rounded is-success" id="add-batch-button">
+                            <span class="icon is-small">
+                                <i class="fas fa-plus fa-xs"></i>
+                            </span>
+                            <span>Add Packing</span>
+                        </button>
+                    </div>
+                </div>
+                <% } %>
             </div>
         </div>
     </div>
@@ -161,7 +236,7 @@
                             <% } %>
                             <% } %>
                             <td class="rent-status" data-key="<%=bill.id%>">
-                                
+
                             </td>
                         </tr>
                         <% } %>
@@ -199,10 +274,36 @@
                         </div>
                     </div>
                 </div>
-                <div class="field">
-                    <div class="control">
-                        <label for="quantity" class="label">Quantity</label>
-                        <input type="number" min="0" name="quantity" id="quantity" class="input">
+                <div class="columns">
+                    <div class="column">
+                        <div class="field">
+                            <label for="inv-batch" class="label">Packing</label>
+                            <div class="control">
+                                <div class="select is-fullwidth">
+                                    <select name="batch" id="inv-batch">
+                                        <% for(let i = 0; i < batches.length; i++) { const batch = batches[i]; %>
+                                            <option data-quant="<%=batch.quantity%>" value="<%=batch.id%>"><%=batch.name%> (<%=batch.quantity%>)</option>
+                                        <% } %>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="field">
+                            <div class="control">
+                                <label for="quantity" class="label">Quantity</label>
+                                <input type="number" min="0" name="quantity" id="quantity" class="input" value="0">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column is-2">
+                        <div class="field">
+                            <label for="total-quant" class="label">Total</label>
+                            <div class="control">
+                                <input type="text" class="input" readonly disabled id="total-quant">
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="field is-grouped is-grouped-right">
@@ -217,6 +318,107 @@
         </section>
     </div>
 </div>
+
+
+
+<div class="modal" id="add-batch-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">New Packing</p>
+            <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+            <form action="/inventory/batch/<%=inventory.id%>" method="POST">
+                <div class="field">
+                    <label for="batch-name" class="label">Packing</label>
+                    <div class="control">
+                        <input type="text" class="input" placeholder="Packing" name="batch-name" id="batch-name"
+                            required>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="control">
+                        <label for="batch-quantity" class="label">Quantity</label>
+                        <input type="number" min="1" name="batch-quantity" id="batch-quantity" class="input"
+                            placeholder="Quantity">
+                    </div>
+                </div>
+                <div class="field is-grouped is-grouped-right">
+                    <div class="control">
+                        <button class="button is-rounded is-success">Add</button>
+                    </div>
+                    <div class="control">
+                        <button type="button" class="button close-modal is-rounded is-light">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+
+
+<div class="modal" id="confirm-delete">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Confirm Delete?</p>
+            <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+            <div class="columns">
+                <div class="column">
+                    <form action="/inventory/batch/<%=inventory.id%>?_method=DELETE" method="POST">
+                        <button class="button is-danger is-rounded">Delete</button>
+                        <input type="hidden" value="" name="batch-id" id="delete-batch-id">
+                    </form>
+                </div>
+                <div class="column">
+                    <button type="button" class="button is-link is-light is-rounded close-modal">Cancel</button>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+
+<div class="modal" id="edit-batch-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Edit Packing</p>
+            <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+            <form action="/inventory/batch/<%=inventory.id%>?_method=PUT" method="POST">
+                <input type="hidden" value="" name="batch-id" id="edit-batch-id">
+                <div class="field">
+                    <label for="batch-name" class="label">Packing</label>
+                    <div class="control">
+                        <input type="text" class="input" placeholder="Packing" name="batch-name" id="edit-batch-name"
+                            required>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="control">
+                        <label for="batch-quantity" class="label">Quantity</label>
+                        <input type="number" min="1" name="batch-quantity" id="edit-batch-quantity" class="input"
+                            placeholder="Quantity">
+                    </div>
+                </div>
+                <div class="field is-grouped is-grouped-right">
+                    <div class="control">
+                        <button class="button is-rounded is-success">Save</button>
+                    </div>
+                    <div class="control">
+                        <button type="button" class="button close-modal is-rounded is-light">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+
 
 
 <script>

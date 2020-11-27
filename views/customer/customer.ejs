@@ -87,16 +87,20 @@
                         <tr>
                             <th>ID</th>
                             <th>Inventory</th>
+                            <th>Packing</th>
                             <th>Rate</th>
                         </tr>
                     </thead>
                     <tbody>
                         <% for(let i = 0; i < inventories.length; i++) { const inventory = inventories[i]; %>
+                        <% for(let j = 0; j < inventory.inventory_batches.length; j++) { const batch = inventory.inventory_batches[j]; %>
                         <tr>
-                            <td><%= inventory.id; %></td>
+                            <td><%= batch.id; %></td>
                             <td><%= inventory.name; %></td>
-                            <td><%= getInventoryRate(inventory.id); %></td>
+                            <td><%= batch.name; %> (<%= batch.quantity; %>)</td>
+                            <td><%= getInventoryRate(batch.id); %></td>
                         </tr>
+                        <% } %>
                         <% } %>
                     </tbody>
                 </table>
