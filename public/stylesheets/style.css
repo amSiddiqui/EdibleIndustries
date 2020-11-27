@@ -7876,7 +7876,11 @@ select {
   height: 250px;
   width: auto;
   margin: auto;
-  display: block;
+  display: block; }
+
+.company-logo-nav {
+  height: auto;
+  width: auto;
   max-height: 2.55rem !important; }
 
 .is-hoverable tbody tr:hover {
