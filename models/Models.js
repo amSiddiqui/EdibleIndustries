@@ -214,12 +214,6 @@ const InventoryRecord = db.sequelize.define("inventory_record", {
     },
     value: {
         type: db.Sequelize.INTEGER
-    },
-    in_stock: {
-        type: db.Sequelize.INTEGER
-    },
-    total: {
-        type: db.Sequelize.INTEGER
     }
 }, {
     underscored: true

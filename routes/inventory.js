@@ -8,6 +8,7 @@ const {
 } = require('../modules/utility');
 const fs = require('fs');
 const utility = require('../modules/utility');
+const { invertBy } = require('lodash');
 
 
 router.post('/batch/:id', middleware.auth.loggedIn(), function (req, res, next) {
@@ -69,25 +70,16 @@ router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
 
   inventory.fetchAllInventory().then(inventories => {
     for (let index = 0; index < inventories.length; index++) {
-      const inventory = inventories[index];
       inventories[index].color = 'primary';
-      inventories[index].in_stock = 0;
-      inventories[index].total = 0;
-      inventories[index].percent = 0;
-      if (inventory.inventory_records.length > 0) {
-        var inventory_record = inventory.inventory_records[0];
-        var percent = inventory_record.in_stock / inventory_record.total;
-        percent = percent * 100;
-        if (percent < 20) {
-          inventories[index].color = 'warning';
-        }
-        if (percent < 10) {
-          inventories[index].color = 'danger';
-        }
-        inventories[index].in_stock = inventory_record.in_stock;
-        inventories[index].total = inventory_record.total;
-        inventories[index].percent = percent;
+      var percent = inventories[index].in_stock / inventories[index].total * 100;
+      inventories[index].percent = percent;
+      if (percent < 20) {
+        inventories[index].color = 'warning';
       }
+      if (percent < 10) {
+        inventories[index].color = 'danger';
+      }
+
     }
     var flash_message = req.flash('flash_message');
     var flash_color = req.flash('flash_color');
@@ -239,8 +231,8 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
       inventory: inv,
       dependency: '/inventory/inventory-item.js',
       recordsExists: inv.inventory_records.length !== 0,
-      in_stock: inv.inventory_records.length !== 0 ? inv.inventory_records[inv.inventory_records.length - 1].in_stock : 0,
-      total: inv.inventory_records.length !== 0 ? inv.inventory_records[inv.inventory_records.length - 1].total : 0,
+      in_stock: inv.in_stock,
+      total: inv.total,
       color: 'success',
       breadcrumbs
     };
@@ -313,6 +305,14 @@ router.post('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     value: req.body.quantity,
     batch_id: req.body.batch
   };
+
+  var record_date = req.body.record_date.trim();
+  data.createdAt = new Date();
+  if (typeof record_date !== 'undefined' && record_date != null && record_date.length !== 0) {
+    record_date = utility.misc.toEnglishDate(record_date);
+    data.createdAt = new NepaliDate(record_date).toJsDate();
+  }
+
   data.value = utility.misc.toNumber(data.value);
   data.batch_id = utility.misc.toNumber(data.batch_id);
   var user_email = req.session.email;

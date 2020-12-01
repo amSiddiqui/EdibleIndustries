@@ -60,10 +60,11 @@ router.post('/return/:id', middleware.auth.loggedIn(), function (req, res, next)
   let quant = req.body.quantity;
   let bill_id = req.body.bill_id;
   let user_email = req.session.email;
+  let date = new Date();
   if (typeof user_email == 'undefined' || user_email == null) {
     user_email = 'gt_ams@yahoo.in';
   }
-  utility.billing.addReturn(id, inv_id, quant, bill_id, user_email).then(() => {
+  utility.billing.addReturn(id, inv_id, quant, bill_id, user_email, date).then(() => {
     req.flash('flash_message', 'Add return to the items');
     req.flash('flash_color', 'success');
     res.redirect('/billing/' + bill_id);

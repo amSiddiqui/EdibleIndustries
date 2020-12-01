@@ -124,4 +124,9 @@ $(function () {
         $("#total-quant").val(total);
     });
 
+
+    $('#record_date').nepaliDatePicker({
+        dateFormat: '%d/%m/%y',
+        closeOnDateSelect: true
+    });
 });

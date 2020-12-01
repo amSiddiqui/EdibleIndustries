@@ -108,13 +108,15 @@
                             <td><%=(i+1)%></td>
                             <td><%=record.user.first_name+' '+record.user.last_name;%></td>
                             <% if (hasPacking) { %>
-                            <td><%=record.inventory_batch_record.inventory_batch.name%> (<%=record.inventory_batch_record.inventory_batch.quantity%>)</td>
+                            <td><%=record.inventory_batch_record.inventory_batch.name%>
+                                (<%=record.inventory_batch_record.inventory_batch.quantity%>)</td>
                             <% }else{ %>
                             <td>Single</td>
                             <% } %>
                             <td class="is-capitalized <%=color%>"><%=record.type%></td>
                             <% if (hasPacking) { %>
-                            <td>(<%=record.inventory_batch_record.inventory_batch.quantity%> x <%=record.inventory_batch_record.value%>) <%=record.value%></td>
+                            <td>(<%=record.inventory_batch_record.inventory_batch.quantity%> x
+                                <%=record.inventory_batch_record.value%>) <%=record.value%></td>
                             <% }else{ %>
                             <td><%=record.value%></td>
                             <% } %>
@@ -259,18 +261,30 @@
         </header>
         <section class="modal-card-body">
             <form action="/inventory/<%=inventory.id%>" method="POST">
-                <div class="field">
-                    <div class="control">
-                        <label for="type" class="label">Type</label>
-                        <div class="select is-fullwidth">
-                            <select name="type" id="type">
-                                <% if (inventory.type == 'purchased') { %>
-                                <option value="purchased">Purchased</option>
-                                <% }else{ %>
-                                <option value="manufactured">Manufactured</option>
-                                <% } %>
-                                <option value="discarded">Discarded</option>
-                            </select>
+                <div class="columns">
+                    <div class="column">
+                        <div class="field">
+                            <div class="control">
+                                <label for="type" class="label">Type</label>
+                                <div class="select is-fullwidth">
+                                    <select name="type" id="type">
+                                        <% if (inventory.type == 'purchased') { %>
+                                        <option value="purchased">Purchased</option>
+                                        <% }else{ %>
+                                        <option value="manufactured">Manufactured</option>
+                                        <% } %>
+                                        <option value="discarded">Discarded</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="field">
+                            <div class="control">
+                                <label for="record_date" class="label">Record Date</label>
+                                <input type="text" class="input" required id="record_date" name="record_date">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -282,7 +296,8 @@
                                 <div class="select is-fullwidth">
                                     <select name="batch" id="inv-batch">
                                         <% for(let i = 0; i < batches.length; i++) { const batch = batches[i]; %>
-                                            <option data-quant="<%=batch.quantity%>" value="<%=batch.id%>"><%=batch.name%> (<%=batch.quantity%>)</option>
+                                        <option data-quant="<%=batch.quantity%>" value="<%=batch.id%>"><%=batch.name%>
+                                            (<%=batch.quantity%>)</option>
                                         <% } %>
                                     </select>
                                 </div>

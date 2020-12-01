@@ -114,6 +114,8 @@ $(function () {
     });
 
     $("#customer").select2();
+
+
     var inventories = null;
     $.get('/api/inventories', function (data) {
         inventories = data.inventories;
@@ -121,6 +123,8 @@ $(function () {
         console.log(err);
         window.history.back();
     });
+
+
     var currentCustomerData = null;
     $("#customer").on('change', function (e) {
         $("#customer").removeClass('is-danger');
@@ -201,10 +205,8 @@ $(function () {
             });
         }
 
-        var in_stock = 0;
-        if (inventory.inventory_records.length > 0) {
-            in_stock = inventory.inventory_records[0].in_stock;
-        }
+        var in_stock = inventory.in_stock;
+        
         var defaultBatch = null;
         for (let i = 0; i < inventory.inventory_batches.length; i++) {
             const batch = inventory.inventory_batches[i];
@@ -390,9 +392,33 @@ $(function () {
         dateFormat: '%d/%m/%y',
         closeOnDateSelect: true,
     });
+
     $('#bill_date').nepaliDatePicker({
         dateFormat: '%d/%m/%y',
-        closeOnDateSelect: true
+        closeOnDateSelect: true,
+    });
+
+    $("#bill_date").on('change', function() {
+        var bill_date = $(this).val();
+        $("#inventory-table-body").empty();
+        updateTotal();
+
+        $.get('/api/inventories?date='+bill_date, function (data) {
+            inventories = data.inventories;
+            $(".list-group").empty();
+            inventories.forEach(function(inv) {
+                var list_group_item = $(`
+                <a href="#" data-value="${inv.id}"
+                                class="panel-block list-group-item">${inv.name} (In Stock: ${inv.in_stock})</a>
+                `);
+                $(".list-group").append(list_group_item); 
+            });
+
+        }).fail(function (err) {
+            console.log(err);
+            window.history.back();
+        });
+
     });
 });
 

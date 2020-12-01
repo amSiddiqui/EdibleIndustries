@@ -43,49 +43,59 @@ function toNumber(num) {
     return parseInt(num);
 }
 
-async function insertInventoryRecord(rec, inv_id, batch_id='') {
-    var inventory = await models.Inventory.findByPk(inv_id);
-    var inventory_records = await inventory.getInventory_records({
-        order: [
-            ['id', 'DESC']
-        ],
-        limit: 1
-    });
+async function insertInventoryRecord(rec, batch_id='') {
     var batch = null;
     var batch_value = rec.value;
     if (batch_id !== '') {
         batch = await models.InventoryBatch.findByPk(batch_id);
         rec.value = batch_value * batch.quantity;
     }
-
-    if (inventory_records.length == 0) {
-        rec.in_stock = rec.value;
-        rec.total = rec.value;
-    } else {
-        var lastRec = inventory_records[0];
-        if (rec.type == 'purchased' || rec.type == 'manufactured' || rec.type == 'returned') {
-            rec.in_stock = lastRec.in_stock + rec.value;
-        } else if (rec.type == 'rented' || rec.type == 'discarded' || rec.type == 'sold') {
-            rec.in_stock = lastRec.in_stock - rec.value;
-        }
-        if (rec.type == 'purchased' || rec.type == 'manufactured') {
-            rec.total = lastRec.total + rec.value;
-        } else if (rec.type == 'discarded' || rec.type == 'sold') {
-            rec.total = lastRec.total - rec.value;
-        } else if (rec.type == 'rented' || rec.type == 'returned') {
-            rec.total = lastRec.total;
-        }
-    }
+    
     var inventory_record = await models.InventoryRecord.create(rec);
     if (batch_id !== '') {
         var inventory_batch_record = await batch.createInventory_batch_record({
             type: rec.type,
-            value: batch_value
+            value: batch_value,
+            createdAt: rec.createdAt
         });
         await inventory_record.setInventory_batch_record(inventory_batch_record);
     }
     return inventory_record;
 }
+
+async function calculateTotalInventory(inv_id, end_date) {
+    var inventory = await models.Inventory.findByPk(inv_id);
+    var records = await inventory.getInventory_records({
+        where: {
+            createdAt: {
+                [Op.lte]: end_date
+            }
+        },
+        order: [
+            ['createdAt']
+        ]
+    });
+    var total = 0;
+    var in_stock = 0;
+    records.forEach(rec => {
+        if (rec.type == 'purchased' || rec.type == 'manufactured' || rec.type == 'returned') {
+            in_stock = in_stock + rec.value;
+        } else if (rec.type == 'rented' || rec.type == 'discarded' || rec.type == 'sold') {
+            in_stock = in_stock - rec.value;
+        }
+
+
+        if (rec.type == 'purchased' || rec.type == 'manufactured') {
+            total = total + rec.value;
+        } else if (rec.type == 'discarded' || rec.type == 'sold') {
+            total = total - rec.value;
+        }
+    });
+
+    return {
+        total, in_stock
+    };
+} 
 
 
 module.exports = {
@@ -153,7 +163,7 @@ module.exports = {
                 include: [{
                     model: models.InventoryRecord,
                     order: [
-                        [sequelize.col('id'), 'DESC']
+                        [sequelize.col('createdAt')]
                     ],
                     include: [{
                         model: models.User
@@ -167,6 +177,10 @@ module.exports = {
                     model: models.InventoryBatch
                 }]
             });
+            var res = await calculateTotalInventory(inv.id, new Date());
+            inv.total = res.total;
+            inv.in_stock = res.in_stock;
+
             return inv;
         },
         updateInventory: async (id, data) => {
@@ -188,25 +202,28 @@ module.exports = {
             await inv.destroy();
             return true;
         },
-        fetchAllInventory: () => {
-            return new Promise((resolve, reject) => {
-                models.Inventory.findAll({
-                    include: [
-                        {
-                            model: models.InventoryRecord,
-                            order: [
-                                [models.InventoryRecord, 'id', 'DESC']
-                            ]
-                        }, {
-                            model: models.InventoryBatch
-                        }]
-                }).then(inventories => {
-                    resolve(inventories);
-                }).catch(err => {
-                    console.log(err);
-                    reject("DB ERROR");
-                });
+        fetchAllInventory: async () => {
+            var inventorries = await models.Inventory.findAll({
+                include: [
+                    {
+                        model: models.InventoryRecord,
+                        order: [
+                            [models.InventoryRecord, 'id', 'DESC']
+                        ]
+                    }, {
+                        model: models.InventoryBatch
+                    }]
             });
+
+            for (let i = 0; i < inventorries.length; i++) {
+                const inv = inventorries[i];
+                var res = await calculateTotalInventory(inv.id, new Date());
+                inv.in_stock = res.in_stock;
+                inv.total = res.total;
+            }
+
+            return inventorries;
+        
         },
         fetchAllInventoryID: () => {
             return models.Inventory.findAll({
@@ -217,8 +234,8 @@ module.exports = {
                 ]
             });
         },
-        fetchAllInventoryIdWithRecord: () => {
-            return models.Inventory.findAll({
+        fetchAllInventoryIdWithRecord: async (limit_date) => {
+            var inventories = await models.Inventory.findAll({
                 include: [{
                     model: models.InventoryRecord,
                     order: [
@@ -229,6 +246,15 @@ module.exports = {
                     model: models.InventoryBatch
                 }]
             });
+
+            for (let i = 0; i < inventories.length; i++) {
+                const inv = inventories[i];
+                var res = await calculateTotalInventory(inv.id, limit_date);
+                inv.in_stock = res.in_stock;
+                inv.total = res.total;
+            }
+
+            return inventories;
         },
         fetchBatches: (id) => {
             return models.InventoryBatch.findAll({
@@ -266,8 +292,9 @@ module.exports = {
             var inventory = await models.Inventory.findByPk(id);
             var inventory_record = await insertInventoryRecord({
                 type: data.type,
-                value: data.value
-            }, id, data.batch_id);
+                value: data.value,
+                createdAt: data.createdAt
+            }, data.batch_id);
             inventory_record.setInventory(inventory);
             inventory_record.setUser(user);
             await inventory_record.save();
@@ -673,8 +700,9 @@ module.exports = {
                     if (transaction.type[j] == 'rented') type = 'rented';
                     const inv_record = await insertInventoryRecord({
                         type,
-                        value: transaction.quantity[j]
-                    }, inventory.id, transaction.id);
+                        value: transaction.quantity[j],
+                        createdAt: bill_date
+                    },  transaction.id);
                     inv_record.setInventory(inventory);
                     if (user != null) {
                         inv_record.setUser(user);
@@ -734,7 +762,7 @@ module.exports = {
             }
             return rented;
         },
-        addReturn: async (tr_id, inv_id, q, bill_id, user_email) => {
+        addReturn: async (tr_id, inv_id, q, bill_id, user_email, date) => {
             q = toNumber(q);
             const inv = await models.Inventory.findByPk(inv_id);
             const user = await models.User.findOne({
@@ -744,8 +772,9 @@ module.exports = {
             });
             const inv_record = await insertInventoryRecord({
                 type: 'returned',
-                value: q
-            }, inv_id);
+                value: q,
+                createdAt: date
+            });
             const tr = await models.BillTransaction.findByPk(tr_id);
             const bill_transac = await models.BillTransaction.create({
                 quantity: q,
@@ -769,66 +798,7 @@ module.exports = {
         },
         deleteBill: async (id) => {
             const bill = await models.Bill.findByPk(id);
-            const transactions = await bill.getBill_transactions();
-            var total = {
 
-            };
-            var stock_total = {
-
-            };
-            for (let i = 0; i < transactions.length; i++) {
-                const tr = transactions[i];
-                var record = await tr.getInventory_record();
-                if (!(record.inventoryId in total)) {
-                    total[record.inventoryId] = 0;
-                }
-
-                if (!(record.inventoryId in stock_total)) {
-                    stock_total[record.inventoryId] = 0;
-                }
-
-                if (record.type == 'purchased' || record.type == 'manufactured' || record.type == 'returned') {
-                    stock_total[record.inventoryId] -= record.value;
-                } else if (record.type == 'rented' || record.type == 'discarded' || record.type == 'sold') {
-                    stock_total[record.inventoryId] += record.value;
-                }
-                if (record.type == 'purchased' || record.type == 'manufactured') {
-                    total[record.inventoryId] -= record.value;
-                } else if (record.type == 'discarded' || record.type == 'sold') {
-                    total[record.inventoryId] += record.value;
-                }
-            }
-
-            for (const [inv_id, t] of Object.entries(total)) {
-                var inv_record = await models.InventoryRecord.findAll({
-                    order: [
-                        ['id', 'DESC']
-                    ],
-                    limit: 1,
-                    where: {
-                        inventory_id: inv_id
-                    }
-                });
-                if (inv_record.length == 0) continue;
-                var record = inv_record[0];
-                record.total += t;
-                await record.save();
-            }
-            for (const [inv_id, st] of Object.entries(stock_total)) {
-                var inv_record = await models.InventoryRecord.findAll({
-                    order: [
-                        ['id', 'DESC']
-                    ],
-                    limit: 1,
-                    where: {
-                        inventory_id: inv_id
-                    }
-                });
-                if (inv_record.length == 0) continue;
-                var record = inv_record[0];
-                record.in_stock += st;
-                await record.save();
-            }
             await bill.destroy();
         }
     },

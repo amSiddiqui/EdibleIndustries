@@ -186,7 +186,13 @@ router.get('/customer/:id', middleware.auth.loggedIn(), function(req, res, next)
 });
 
 router.get('/inventories', middleware.auth.loggedIn(), function(req, res, next)  {
-    utility.inventory.fetchAllInventoryIdWithRecord().then(inventories => {
+    var bill_date = req.query.date;
+    var d = new Date();
+    if (typeof bill_date !== 'undefined') {
+        bill_date = utility.misc.toEnglishDate(bill_date);
+        d = new NepaliDate(bill_date).toJsDate();
+    }
+    utility.inventory.fetchAllInventoryIdWithRecord(d).then(inventories => {
         res.json({
             status: 'success',
             inventories

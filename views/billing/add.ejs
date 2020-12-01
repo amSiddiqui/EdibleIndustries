@@ -309,14 +309,10 @@
                         <hr>
                         <div class="panel list-group">
                             <% for(let i = 0; i < inventories.length; i++) { const inventory = inventories[i]; %>
-                            <% if (inventory.type == 'purchased') { var in_stock = 0;  %>
-                            <% if (inventory.inventory_records.length > 0) in_stock = inventory.inventory_records[0].in_stock; %>
+                            <% var in_stock = 0;  %>
+                            <% in_stock = inventory.in_stock; %>
                             <a href="#" data-value="<%=inventory.id%>"
                                 class="panel-block list-group-item"><%=inventory.name;%> (In Stock: <%=in_stock%>)</a>
-                            <% }else{ %>
-                            <a href="#" data-value="<%=inventory.id%>"
-                                class="panel-block list-group-item"><%=inventory.name;%> (Manufactured)</a>
-                            <% } %>
                             <% } %>
                         </div>
                     </div>
