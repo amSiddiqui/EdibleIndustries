@@ -162,7 +162,7 @@ $(function () {
         $("#select-inventory-item-modal").addClass('is-active');
     });
 
-    $(".list-group-item").on('click', function () {
+    var list_group_item_event = function() {
         $("#select-inventory-item-modal").removeClass('is-active');
         if (currentCustomerData === null) {
             console.log('Current Customer data not set');
@@ -338,7 +338,9 @@ $(function () {
         });
         $("#inventory-table-body").append(row);
         updateTotal();
-    });
+    };
+
+    $(".list-group-item").on('click', list_group_item_event);
 
     const inputElement = document.querySelector('input[type="file"]');
     const pond = FilePond.create(inputElement, {
@@ -405,6 +407,7 @@ $(function () {
 
         $.get('/api/inventories?date='+bill_date, function (data) {
             inventories = data.inventories;
+            console.log(inventories);
             $(".list-group").empty();
             inventories.forEach(function(inv) {
                 var list_group_item = $(`
@@ -413,6 +416,7 @@ $(function () {
                 `);
                 $(".list-group").append(list_group_item); 
             });
+            $(".list-group-item").on('click', list_group_item_event);
 
         }).fail(function (err) {
             console.log(err);

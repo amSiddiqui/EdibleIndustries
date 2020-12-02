@@ -193,6 +193,13 @@ router.get('/inventories', middleware.auth.loggedIn(), function(req, res, next) 
         d = new NepaliDate(bill_date).toJsDate();
     }
     utility.inventory.fetchAllInventoryIdWithRecord(d).then(inventories => {
+        console.log("API Says");
+        for (let i = 0; i < inventories.length; i++) {
+            const inv = inventories[i];
+            inventories[i].dataValues.in_stock = inv.in_stock;
+            inventories[i].dataValues.total = inv.total;
+        }
+        console.log(inventories);
         res.json({
             status: 'success',
             inventories

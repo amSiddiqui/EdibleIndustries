@@ -18,6 +18,10 @@ $(() => {
         ],
         "order": [[0, 'desc']]
     });
+    $('#return_date').nepaliDatePicker({
+        dateFormat: '%d/%m/%y',
+        closeOnDateSelect: true,
+    });
 });
 
 function returnItem(obj)  {

@@ -361,14 +361,27 @@
         <section class="modal-card-body">
             <h1 class="title is-3"></h1>
             <form action="/billing/return/" method="POST">
-                <div class="field">
-                    <div class="control">
-                        <label for="type" class="label">Quantity</label>
-                        <input type="number" id="return_quantity" name="quantity" min="0" step="1" class="input">
-                        <input type="hidden" id="return-inventory" name="inventory_id">
-                        <input type="hidden" id="return-bill" name="bill_id">
+                <div class="columns">
+                    <div class="column">
+                        <div class="field">
+                            <div class="control">
+                                <label for="type" class="label">Quantity</label>
+                                <input type="number" id="return_quantity" name="quantity" min="0" step="1" class="input">
+                                <input type="hidden" id="return-inventory" name="inventory_id">
+                                <input type="hidden" id="return-bill" name="bill_id">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="field">
+                            <div class="control">
+                                <label for="return_date" class="label">Return Date</label>
+                                <input type="text" class="input" id="return_date" name="return_date">
+                            </div>
+                        </div>
                     </div>
                 </div>
+                
                 <div class="field is-grouped is-grouped-right">
                     <div class="control">
                         <button class="button is-rounded is-success">Add</button>

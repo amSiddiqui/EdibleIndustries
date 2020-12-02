@@ -463,8 +463,8 @@ const Bill = db.sequelize.define("bill", {
 
 Bill.beforeCreate(async (rec, options) => {
     var nepali_today = new NepaliDate(new Date());
-    var rec_id = nepali_today.format('YYYY') + nepali_today.format('MM');
-    var month_id = 1;
+    var rec_id = nepali_today.format('YYYY');
+    
     var last_month = await Bill.findOne({
         where: {
             track_id: {
@@ -476,10 +476,10 @@ Bill.beforeCreate(async (rec, options) => {
         ]
     });
     if (last_month == null) {
-        month_id = (month_id + '').padStart(4, '0');
+        
         rec_id = rec_id + month_id;
     } else {
-        var last_id = parseInt(last_month.track_id.substring(6));
+        var last_id = parseInt(last_month.track_id.substring(4));
         last_id++;
         last_id = (last_id + '').padStart(4, '0');
         rec_id = rec_id + last_id;

@@ -250,10 +250,11 @@ module.exports = {
             for (let i = 0; i < inventories.length; i++) {
                 const inv = inventories[i];
                 var res = await calculateTotalInventory(inv.id, limit_date);
-                inv.in_stock = res.in_stock;
-                inv.total = res.total;
+                inventories[i].in_stock = res.in_stock;
+                inventories[i].total = res.total;
             }
-
+            console.log("Utility Says");
+            console.log(inventories);
             return inventories;
         },
         fetchBatches: (id) => {
@@ -621,8 +622,8 @@ module.exports = {
         },
         getBillNo: async () => {
             var nepali_today = new NepaliDate(new Date());
-            var rec_id = nepali_today.format('YYYY') + nepali_today.format('MM');
-            var month_id = 1;
+            var rec_id = nepali_today.format('YYYY');
+            
             var last_month = await models.Bill.findOne({
                 where: {
                     track_id: {
@@ -634,10 +635,10 @@ module.exports = {
                 ]
             });
             if (last_month == null) {
-                month_id = (month_id + '').padStart(4, '0');
+                
                 rec_id = rec_id + month_id;
             } else {
-                var last_id = parseInt(last_month.track_id.substring(6));
+                var last_id = parseInt(last_month.track_id.substring(4));
                 last_id++;
                 last_id = (last_id + '').padStart(4, '0');
                 rec_id = rec_id + last_id;
@@ -778,7 +779,8 @@ module.exports = {
             const tr = await models.BillTransaction.findByPk(tr_id);
             const bill_transac = await models.BillTransaction.create({
                 quantity: q,
-                type: 'returned'
+                type: 'returned',
+                createdAt: date
             });
             const bill = await models.Bill.findByPk(bill_id);
             bill_transac.setInventory_record(inv_record);
