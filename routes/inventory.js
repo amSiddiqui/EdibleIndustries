@@ -56,6 +56,23 @@ router.put('/batch/:id', middleware.auth.loggedIn(), function (req, res, next) {
   });
 });
 
+router.delete('/record/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  var record_id = req.body.record_id.trim();
+  record_id = utility.misc.toNumber(record_id);
+  let id = parseInt(req.params.id);
+  console.log("Deleting record with record id: ", record_id);
+  utility.inventory.deleteRecord(record_id).then(function() {
+    req.flash('flash_message', 'Successfully deleted record');
+    req.flash('flash_color', 'success');
+    res.redirect('/inventory/'+id);
+  }).catch(err => {
+    console.log(err);
+    req.flash('flash_message', 'Error deleting record, try agina later');
+    req.flash('flash_color', 'danger');
+    res.redirect('/inventory/'+id);
+  });
+});
+
 
 router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
   var breadcrumbs = [{

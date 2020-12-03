@@ -300,6 +300,13 @@ module.exports = {
             inventory_record.setUser(user);
             await inventory_record.save();
         },
+        deleteRecord: async (id) => {
+            var record = await models.InventoryRecord.findByPk(id);
+            var batch_record = await record.getInventory_batch_record();
+            await batch_record.destroy();
+            await record.destroy();
+            return true;
+        },
         fetchBills: async (id) => {
             var bills = await models.Bill.findAll({
                 include: [{

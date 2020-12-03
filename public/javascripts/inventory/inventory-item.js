@@ -84,7 +84,7 @@ $(function () {
         $("#edit-batch-modal").addClass('is-active');
     });
 
-    $(".type-delete-button").on('click', function() {
+    $(".batch-delete-button").on('click', function() {
         var id = $(this).val();
         $("#confirm-delete").find("#delete-batch-id").val(id);
         $("#confirm-delete").addClass('is-active');
@@ -128,5 +128,11 @@ $(function () {
     $('#record_date').nepaliDatePicker({
         dateFormat: '%d/%m/%y',
         closeOnDateSelect: true
+    });
+
+    $(".record-delete-button").on('click', function() {
+        var id = $(this).val();
+        $("#confirm-delete-record").find("#delete-record-id").val(id);
+        $("#confirm-delete-record").addClass('is-active');
     });
 });
