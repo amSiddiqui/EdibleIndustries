@@ -900,16 +900,8 @@ module.exports = {
             var total_asset = 0;
             for (let j = 0; j < inventory_ids.length; j++) {
                 const inv_id = inventory_ids[j];
-                const record = await models.InventoryRecord.findOne({
-                    order: [
-                        ['id', 'DESC']
-                    ],
-                    where: {
-                        inventory_id: inv_id.id
-                    }
-                });
-                if (record == null) continue;
-                total_asset += inv_id.cost * record.total;
+                var res = await calculateTotalInventory(inv_id.id, new Date());
+                total_asset += inv_id.cost * res.total;
             }
 
             data.formatted_asset = numeral(total_asset).format('0,0.00');
