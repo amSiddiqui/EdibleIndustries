@@ -477,7 +477,7 @@ Bill.beforeCreate(async (rec, options) => {
     });
     if (last_month == null) {
         
-        rec_id = rec_id + month_id;
+        rec_id = rec_id;
     } else {
         var last_id = parseInt(last_month.track_id.substring(4));
         last_id++;
