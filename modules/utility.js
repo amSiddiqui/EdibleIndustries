@@ -653,7 +653,7 @@ module.exports = {
             });
 
             if (last_bill_no == null) {
-                bill_no = bill_no+'0001';
+                bill_no = bill_no+'00001';
             }
             else{
                 var bn = last_bill_no.track_id;
