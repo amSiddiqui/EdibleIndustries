@@ -31,10 +31,9 @@
                         <th>ID</th>
                         <th>Name</th>
                         <th>Organization</th>
-                        <th>Organization</th>
+                        <th>Vat Number</th>
                         <th>Type</th>
                         <th>Added On</th>
-                        <th>Address</th>
                         <th>City/Jilla</th>
                         <th>Anchal</th>
                     </tr>
@@ -48,7 +47,6 @@
                         <td><%= customer.vat_number %></td>
                         <td><%= customer.customer_type.name %></td>
                         <td><%= customer.nepali_date %></td>
-                        <td><%= customer.address1 %></td>
                         <td><%= customer.post_office == null ? '' : customer.post_office.name;%><br><%= customer.district == null ? '': customer.district.value %></td>
                         <td><%= customer.zone == null ? '': customer.zone.value %></td>
                     </tr>

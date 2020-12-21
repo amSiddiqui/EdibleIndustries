@@ -298,7 +298,7 @@ $(function () {
             }
 
 
-            var sub_total = total * defaultRate;
+            var sub_total = q * defaultRate;
             
             row.find('.rate').val(defaultRate.toFixed(2));
             row.find('.inv-id').html(defaultBatch.id);
@@ -328,7 +328,7 @@ $(function () {
         });
         row.find('.rate').on('change', function () {
             var rate = $(this).val();
-            var q = row.find('.total-quantity').val();
+            var q = row.find('.quantity').val();
             if (isNaN(q) || isNaN(rate)) {
                 row.find('.total').html('Re. 0.00');
             } else {
@@ -349,12 +349,12 @@ $(function () {
             var rate = row.find('.rate').val();
             if (isNaN(q) || isNaN(rate)) {
                 row.find('.total').html('Re. 0.00');
-                row.find('.totla-quantity').val(0);
+                row.find('.total-quantity').val(0);
             } else {
                 q = parseInt(q);
                 var total_q = q * defaultBatch.quantity;
                 rate = parseFloat(rate);
-                var total = total_q * rate;
+                var total = q * rate;
                 row.find('.total-quantity').val(total_q);
                 row.find('.total').html('Re. ' + total.toFixed(2));
             }
