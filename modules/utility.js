@@ -839,11 +839,12 @@ module.exports = {
             
             for (let i = 0; i < bill.bill_transactions.length; i++) {
                 const tr = bill.bill_transactions[i];
-                for (let j = 0; j < tr.bill_transactions.length; j++) {
-                    const returns = tr.bill_transactions[j];
-                    await returns.inventory_record.destroy();        
-                    await returns.destroy();
-                }
+                if (typeof tr.bill_transactions !== 'undefined' && typeof tr.bill_transactions !== 'null')
+                    for (let j = 0; j < tr.bill_transactions.length; j++) {
+                        const returns = tr.bill_transactions[j];
+                        await returns.inventory_record.destroy();        
+                        await returns.destroy();
+                    }
                 await tr.inventory_record.destroy();
                 await tr.destroy();
             } 
