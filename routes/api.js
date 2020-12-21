@@ -193,13 +193,13 @@ router.get('/inventories', middleware.auth.loggedIn(), function(req, res, next) 
         d = new NepaliDate(bill_date).toJsDate();
     }
     utility.inventory.fetchAllInventoryIdWithRecord(d).then(inventories => {
-        console.log("API Says");
+        
         for (let i = 0; i < inventories.length; i++) {
             const inv = inventories[i];
             inventories[i].dataValues.in_stock = inv.in_stock;
             inventories[i].dataValues.total = inv.total;
         }
-        console.log(inventories);
+        
         res.json({
             status: 'success',
             inventories
@@ -296,5 +296,22 @@ router.get('/all-customers', middleware.auth.loggedIn(), function(req, res, next
     })
 });
 
+router.post('/bill-no', middleware.auth.loggedIn(), function(req, res, next) {
+    var bill_date = req.body.bill_date.trim();
+    var bd = null;
+    bill_date = utility.misc.toEnglishDate(bill_date);
+    bd = new NepaliDate(bill_date).toJsDate();
+    utility.billing.getBillNo(bd).then(bill_no => {
+        res.json({
+            status: 'success',
+            bill_no: bill_no
+        });
+    }).catch(err => {
+        req.json({
+            status: 'fail',
+            message: 'DB error'
+        });
+    });
+});
 
 module.exports = router;

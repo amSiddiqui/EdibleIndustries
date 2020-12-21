@@ -140,11 +140,28 @@ $(function () {
                 var inv_id = $(this).find('.inv_id').html();
 
                 var inv_rate = 0;
+                var found = false;
                 currentCustomerData.customer.inventory_batches.forEach(batch => {
                     if (batch.id == inv_id) {
                         inv_rate = batch.cutomer_rate.rate;
+                        found = true;
                     }
                 });
+                // If customer rate is not found find its default rate
+                if (!found) {
+                    let current_customer_type = null;
+                    currentCustomerData.customer_type.forEach(ty => {
+                        if (ty.id == currentCustomerData.customer.customer_type.id) {
+                            current_customer_type = ty;
+                        }
+                    });
+
+                    current_customer_type.inventory_batches.forEach(b => {
+                        if (b.id == inv_id) {
+                            inv_rate = b.customer_type_rate.rate;
+                        }
+                    });
+                }
                 var quant = $(this).find('.total-quantity').val();
                 quant = isNaN(quant) ? 0 : parseFloat(quant);
                 var total = quant * inv_rate;
@@ -158,18 +175,22 @@ $(function () {
     });
 
     $("#add-inventory-item-button").on('click', function () {
-        if (currentCustomerData === null || inventories === null) return;
+        if (currentCustomerData === null || inventories === null) {
+            warn("Please select a customer");
+            return;
+        }
         $("#select-inventory-item-modal").addClass('is-active');
     });
 
     var list_group_item_event = function() {
         $("#select-inventory-item-modal").removeClass('is-active');
         if (currentCustomerData === null) {
-            console.log('Current Customer data not set');
+            warn("Please select a customer");
             return;
         }
         var template = $("#inventory-item-template").html();
         var inventory_key = $(this).attr('data-value');
+        console.log("Inventory Key: ", inventory_key);
         var row = $(template).clone();
         var inventory_rate = 0;
         var inventory = null;
@@ -178,32 +199,11 @@ $(function () {
             if (temp.id == inventory_key) inventory = temp;
         }
         if (inventory === null) {
-            console.log("Inventory not found");
+            warn("Inventory not found");
             return;
         }
+        
 
-        var customer_b = null;
-
-        currentCustomerData.customer.inventory_batches.forEach(batch => {
-            if (batch.name == 'Single') customer_b = batch;
-        });
-
-        if (typeof customer_b !== 'undefined' || customer_b !== null) {
-            inventory_rate = customer_b.customer_rate.rate;
-        }else{
-            let current_customer_type = null;
-            currentCustomerData.customer_type.forEach(ty => {
-                if (ty.id == currentCustomerData.customer.customer_type.id) {
-                    current_customer_type = ty;
-                }
-            });
-
-            current_customer_type.inventory_batches.forEach(b => {
-                if (b.name == 'Single') {
-                    inventory_rate = b.customer_type_rate.rate;
-                }
-            });
-        }
 
         var in_stock = inventory.in_stock;
         
@@ -217,6 +217,34 @@ $(function () {
             }
             row.find('.packing').append(option);
         }
+
+        if (inventory.type != 'purchased') {
+            row.find('option[value="rented"]').remove();
+        }
+
+
+        var customer_b = null;
+        currentCustomerData.customer.inventory_batches.forEach(batch => {
+            if (batch.id === defaultBatch.id) customer_b = batch;
+        });
+
+        if (typeof customer_b !== 'undefined' || customer_b !== null) {
+            inventory_rate = customer_b.customer_rate.rate;
+        }else{
+            let current_customer_type = null;
+            currentCustomerData.customer_type.forEach(ty => {
+                if (ty.id == currentCustomerData.customer.customer_type.id) {
+                    current_customer_type = ty;
+                }
+            });
+
+            current_customer_type.inventory_batches.forEach(b => {
+                if (b.id == defaultBatch.id) {
+                    inventory_rate = b.customer_type_rate.rate;
+                }
+            });
+        }
+
 
         row.find('.packing').on('change', function() {
             var id = $(this).val();
@@ -384,9 +412,11 @@ $(function () {
         if ($(this).is(':checked')) {
             $("#due_date_container").hide();
             $("#due_date_container").prop('required', false);
+            $("#payment_method").val('Cash');
         } else {
             $("#due_date_container").show();
             $("#due_date_container").prop('required', true);
+            $("#payment_method").val('Credit');
         }
     });
 
@@ -407,7 +437,6 @@ $(function () {
 
         $.get('/api/inventories?date='+bill_date, function (data) {
             inventories = data.inventories;
-            console.log(inventories);
             $(".list-group").empty();
             inventories.forEach(function(inv) {
                 var list_group_item = $(`
@@ -420,9 +449,19 @@ $(function () {
 
         }).fail(function (err) {
             console.log(err);
-            window.history.back();
+            window.location.href = '/billing';
         });
-
+        $.post('/api/bill-no', {bill_date: bill_date}, function(data) {
+            if (data.status == 'success') {
+                $("#track_id").val(data.bill_no);
+                console.log("Bill number updated");
+                console.log(data);
+            }else{
+                console.log("Bill number update error");
+                console.log(data);
+                window.location.href = '/billing';
+            }
+        });
     });
 });
 

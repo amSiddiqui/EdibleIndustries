@@ -82,6 +82,10 @@
     <%=flash_message %>
   </div>
   <% } %>
+  <div class="notification is-warning is-light" id="warning-message" style="display: none;">
+    <button class="delete"></button>
+    <p>This is a warning Message</p>
+  </div>
   <% if(typeof breadcrumbs !== 'undefined') { %>
     <div class="container">
       <div class="breadcrumb" aria-label="breadcrumbs">

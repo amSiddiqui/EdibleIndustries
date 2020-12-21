@@ -124,12 +124,14 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     data.flash_color = flash_color;
   }
 
+  var today = new Date();
+
   utility.billing.fetch(id).then(bill => {
       bill.nepali_date = new NepaliDate(bill.createdAt).format("ddd, DD MMMM YYYY", 'np');
       if (!bill.paid) {
         bill.nepali_due = new NepaliDate(bill.dueDate).format("ddd, DD MMMM YYYY", 'np');
         bill.danger = false;
-        if (bill.dueDate < bill.createdAt) {
+        if (bill.dueDate < today) {
           bill.danger = true;
         }
       }
@@ -207,6 +209,7 @@ router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
     data.flash_message = flash_message;
     data.flash_color = flash_color;
   }
+  var today = new Date();
 
   utility.billing.fetchAll().then(bills => {
     for (let i = 0; i < bills.length; i++) {
@@ -215,7 +218,7 @@ router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
       if (!bill.paid && bill.dueDate != null) {
         bills[i].nepali_due = new NepaliDate(bill.dueDate).format("DD/MM/YYYY");
 
-        if (bill.dueDate < bill.createdAt) {
+        if (bill.dueDate < today) {
           bills[i].danger = true;
         } else {
           bills[i].danger = false;
@@ -242,6 +245,7 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
   var tax_value = req.body.tax_value;
   var due_date = req.body.due_date.trim();
   var bill_date = req.body.bill_date.trim();
+  var track_id = req.body.track_id;
 
   var bd = null;
   if (bill_date.length !== 0) {
@@ -312,7 +316,8 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
       paid,
       discount_percent,
       dd,
-      bd
+      bd,
+      track_id
     }, transactions, user_email).then((id) => {
       req.flash('flash_message', 'Bill Added Successfully');
       req.flash('flash_color', 'success');

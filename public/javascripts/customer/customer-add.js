@@ -237,4 +237,8 @@ $(function () {
         $(this).siblings('.help').hide();
     });
 
+    $('#date-added').nepaliDatePicker({
+        dateFormat: '%d/%m/%y',
+        closeOnDateSelect: true,
+    });
 });

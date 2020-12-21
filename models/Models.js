@@ -292,6 +292,9 @@ const Customer = db.sequelize.define("customer", {
     address1: {
         type: db.Sequelize.STRING
     },
+    vat_number: {
+        type: db.Sequelize.STRING
+    },
     anchal: {
         type: db.Sequelize.INTEGER.UNSIGNED,
         references: {
@@ -459,32 +462,6 @@ const Bill = db.sequelize.define("bill", {
         type: db.Sequelize.DOUBLE,
         defaultValue: 0.0
     }
-});
-
-Bill.beforeCreate(async (rec, options) => {
-    var nepali_today = new NepaliDate(new Date());
-    var rec_id = nepali_today.format('YYYY');
-    
-    var last_month = await Bill.findOne({
-        where: {
-            track_id: {
-                [Op.like]: rec_id + '%'
-            }
-        },
-        order: [
-            ['id', 'DESC']
-        ]
-    });
-    if (last_month == null) {
-        
-        rec_id = rec_id;
-    } else {
-        var last_id = parseInt(last_month.track_id.substring(4));
-        last_id++;
-        last_id = (last_id + '').padStart(4, '0');
-        rec_id = rec_id + last_id;
-    }
-    rec.track_id = rec_id;
 });
 
 const BillTransaction = db.sequelize.define("bill_transaction", {

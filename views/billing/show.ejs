@@ -48,6 +48,7 @@
                             <p><%=bill.customer.first_name+' '+bill.customer.last_name%>
                                 <em>(<%=bill.customer.customer_type.name;%>)</em></p>
                             <% } %>
+                            <p>VAT Number: <%=bill.customer.vat_number%></p>
                             <% if (bill.customer.address1.length != 0) { %>
                             <p><%=bill.customer.address1%></p>
                             <% } %>

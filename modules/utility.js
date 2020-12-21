@@ -253,8 +253,6 @@ module.exports = {
                 inventories[i].in_stock = res.in_stock;
                 inventories[i].total = res.total;
             }
-            console.log("Utility Says");
-            console.log(inventories);
             return inventories;
         },
         fetchBatches: (id) => {
@@ -477,6 +475,8 @@ module.exports = {
             customer.email = customerData.email;
             customer.phone = customerData.phone;
             customer.address1 = customerData.address1;
+            customer.vat_number = customerData.vat_number;
+
             if (addressData.zone.trim().length > 0 && !isNaN(addressData.zone)) {
                 var zone = await models.Zone.findByPk(addressData.zone);
                 customer.setZone(zone);
@@ -627,29 +627,45 @@ module.exports = {
                 ]
             });
         },
-        getBillNo: async () => {
-            var nepali_today = new NepaliDate(new Date());
-            var rec_id = nepali_today.format('YYYY');
-            
-            var last_month = await models.Bill.findOne({
+        getBillNo: async (date = new Date()) => {
+            // if current month == 3 then bill no in category 2077/78/0001
+            // if current month == 2 then bill no in category 2076/77/0001
+            var nepali_today = new NepaliDate(date);
+            var month = nepali_today.getMonth();
+            var year = nepali_today.getYear();
+            var bill_no = "";
+            if (month <= 2) {
+                bill_no = (year-1)+"/"+(year%100)+"/";
+            }
+            else{
+                bill_no = (year)+"/"+((year+1)%100)+"/";
+            }
+
+            var last_bill_no = await models.Bill.findOne({
                 where: {
                     track_id: {
-                        [Op.like]: rec_id + '%'
+                        [Op.like]: bill_no+"%"
                     }
                 },
                 order: [
                     ['id', 'DESC']
                 ]
             });
-            if (last_month == null) {
-                rec_id = rec_id;
-            } else {
-                var last_id = parseInt(last_month.track_id.substring(4));
-                last_id++;
-                last_id = (last_id + '').padStart(4, '0');
-                rec_id = rec_id + last_id;
+
+            if (last_bill_no == null) {
+                bill_no = bill_no+'0001';
             }
-            return rec_id;
+            else{
+                var bn = last_bill_no.track_id;
+                var parts = bn.split('/');
+                var last_no = parts[parts.length - 1];
+                last_no = parseInt(last_no);
+                last_no++;
+                last_no = last_no + '';
+                last_no = last_no.padStart(5, 0);
+                bill_no = bill_no + last_no;
+            }
+            return bill_no;
         },
         createFull: async (customer_id, data, transactions, userEmail) => {
             var customer = await models.Customer.findByPk(customer_id);
@@ -690,12 +706,13 @@ module.exports = {
                 tax: data.tax_value,
                 description: data.description,
                 paid: data.paid,
-                paidOn: data.paid ? new Date() : null,
+                paidOn: data.paid ? bill_date : null,
                 payment_method: data.payment_method,
                 image: data.image_loc,
                 total: cost + '',
                 dueDate: data.dd == null ? new Date() : data.dd,
-                createdAt: bill_date
+                createdAt: bill_date,
+                track_id: data.track_id
             });
         
             for (let i = 0; i < transactions.length; i++) {
@@ -805,8 +822,31 @@ module.exports = {
             await bill.save();
         },
         deleteBill: async (id) => {
-            const bill = await models.Bill.findByPk(id);
-
+            const bill = await models.Bill.findByPk(id, {
+                include: [{
+                        model: models.BillTransaction,
+                        include: [{
+                                model: models.InventoryRecord,
+                            },
+                            {
+                                model: models.BillTransaction,
+                                as: 'return'
+                            }
+                        ]
+                    },
+                ]
+            });
+            
+            for (let i = 0; i < bill.bill_transactions.length; i++) {
+                const tr = bill.bill_transactions[i];
+                for (let j = 0; j < tr.bill_transactions.length; j++) {
+                    const returns = tr.bill_transactions[j];
+                    await returns.inventory_record.destroy();        
+                    await returns.destroy();
+                }
+                await tr.inventory_record.destroy();
+                await tr.destroy();
+            } 
             await bill.destroy();
         }
     },

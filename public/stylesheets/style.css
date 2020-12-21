@@ -7747,8 +7747,7 @@ a.has-text-danger-dark:hover, a.has-text-danger-dark:focus {
 
 .auth-container {
   width: 600px;
-  margin: auto;
-  margin-top: 1rem; }
+  margin: auto; }
 
 .auth-container .title {
   text-align: center; }

@@ -31,3 +31,8 @@ $(() => {
     });
     
 });
+
+function warn(msg) {
+    $("#warning-message").find('p').html(msg);
+    $("#warning-message").show();
+}

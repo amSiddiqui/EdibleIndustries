@@ -2,6 +2,7 @@ var express = require('express');
 const middleware = require('../modules/middleware');
 const utility = require('../modules/utility');
 const NepaliDate = require('nepali-date-converter');
+const { customer } = require('../modules/utility');
 var router = express.Router();
 
 router.put('/customer-type/:id', middleware.auth.loggedIn(), function (req, res, next) {
@@ -438,7 +439,8 @@ router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     organization: req.body.organization.trim(),
     email: req.body.email.trim(),
     phone: req.body.phone_code.trim() + ' ' + req.body.phone.trim(),
-    address1: req.body.address.trim()
+    address1: req.body.address.trim(),
+    vat_number: req.body.vat.trim()
   };
   let zone = '';
   let district = '';
@@ -529,15 +531,29 @@ router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
 });
 
 router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
-  console.log(req.body);
   let customer_data = {
     first_name: req.body.first_name.trim(),
     last_name: req.body.last_name.trim(),
     organization: req.body.organization.trim(),
     email: req.body.email.trim(),
     phone: req.body.phone_code.trim() + ' ' + req.body.phone.trim(),
-    address1: req.body.address.trim()
+    address1: req.body.address.trim(),
+    vat_number: req.body.vat.trim()
   };
+
+  var date_added = req.body.date.trim();
+  var bd = null;
+  if (date_added.length !== 0) {
+    date_added = utility.misc.toEnglishDate(date_added);
+    bd = new NepaliDate(date_added).toJsDate();
+  }
+
+  if (bd == null) {
+    customer_data.createdAt = new Date();
+  }else{
+    customer_data.createdAt = bd;
+  }
+
   let zone = '';
   let district = '';
   let post_office = '';

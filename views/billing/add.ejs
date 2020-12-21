@@ -14,7 +14,7 @@
                     <div class="field">
                         <div class="control">
                             <label for="track_id" class="label">Bill No</label>
-                            <input type="text" disabled readonly value="<%=billno%>" class="input">
+                            <input type="text" id="track_id" readonly value="<%=billno%>" class="input" name="track_id">
                         </div>
                     </div>
                 </div>
@@ -82,7 +82,7 @@
                             <th>Name</th>
                             <th>Packing</th>
                             <th>Quantity</th>
-                            <th>Total Quantity</th>
+                            <th>Total Quant</th>
                             <th>Type</th>
                             <th>Rate</th>
                             <th>Sub Total</th>
@@ -111,7 +111,7 @@
                                 <div class="select is-fullwidth">
                                     <select name="payment_method" id="payment_method">
                                         <option value="Cash">Cash</option>
-                                        <option value="Credit">Credit</option>
+                                        <option selected value="Credit">Credit</option>
                                         <option value="Bank">Bank</option>
                                     </select>
                                 </div>
@@ -265,13 +265,13 @@
                 </select>
             </div>
         </td>
-        <td style="width: 190px;">
+        <td style="width: 90px;">
             <input min="0" type="number" step="1" value="0" class="input quantity">
         </td>
-        <td style="width: 170px;">
+        <td style="width: 130px;">
             <input min="0" readonly type="number" step="1" value="0" class="input total-quantity">
         </td>
-        <td style="width: 190px;">
+        <td style="width: 130px;">
             <div class="select is-fullwidth">
                 <select name="" class="inv-type">
                     <option value="sold">Sold</option>
@@ -279,7 +279,7 @@
                 </select>
             </div>
         </td>
-        <td style="width: 190px;">
+        <td style="width: 150px;">
             <div class="field">
                 <div class="control has-icons-left">
                     <input min="0" type="number" step="any" class="input rate">
@@ -289,7 +289,7 @@
                 </div>
             </div>
         </td>
-        <td class="total" style="width: 190px;">Re. 0</td>
+        <td class="total" style="width: 150px;">Re. 0</td>
         <td style="width: 40px;">
             <button type="button" class="add-item-button remove-item has-text-danger">
                 <i class="fas fa-minus-circle fa-lg"></i>
