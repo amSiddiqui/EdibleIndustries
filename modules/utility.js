@@ -682,7 +682,7 @@ module.exports = {
                     transactions[k].rate[i] = toNumberFloat(transactions[k].rate[i]);
                     transactions[k].quantity[i] = toNumberFloat(transactions[k].quantity[i]);
 
-                    grand_total += transactions[k].rate[i] * transactions[k].quantity[i] * btch.quantity;
+                    grand_total += transactions[k].rate[i] * transactions[k].quantity[i];
                 }
             }
             data.discount_value = toNumberFloat(data.discount_value);
@@ -733,7 +733,7 @@ module.exports = {
                     }
                     await inv_record.save();
                     const bill_transac = await models.BillTransaction.create({
-                        quantity: transaction.quantity[j] * batch.quantity,
+                        quantity: transaction.quantity[j],
                         rate: transaction.rate[j],
                         type: type
                     });
