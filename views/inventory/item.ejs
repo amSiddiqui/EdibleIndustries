@@ -19,7 +19,7 @@
                 <div class="columns">
                     <div class="column is-3">
                         <p>
-                            Cost: <strong>Re. <%=inventory.cost%></strong>
+                            Default Cost: <strong>Re. <%=inventory.cost%></strong>
                         </p>
                     </div>
                     <div class="column">
@@ -87,8 +87,9 @@
                             <th>Packing</th>
                             <th>Type</th>
                             <th>Quantity</th>
+                            <th>Cost</th>
                             <th>Date</th>
-                            <th>Delete</th>
+                            <th>Edit/Delete</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -116,15 +117,29 @@
                             <% } %>
                             <td class="is-capitalized <%=color%>"><%=record.type%></td>
                             <% if (hasPacking) { %>
-                            <td>(<%=record.inventory_batch_record.inventory_batch.quantity%> x
+                            <td>(<%=record.inventory_batch_record.inventory_batch.quantity%> 
                                 <%=record.inventory_batch_record.value%>) <%=record.value%></td>
                             <% }else{ %>
                             <td><%=record.value%></td>
                             <% } %>
-                            <td><%=toNepaliDate(record.createdAt);%></td>
+                            <% if (record.type == 'purchased' || record.type == 'manufactured'){ %>
+                                <td><%=record.cost%></td>
+                            <% }else{ %>
+                                <td></td>
+                            <% } %>
+                            <td><%=toNepaliDate(record.recordDate);%></td>
                             <td>
                                 <% if(record.type == 'discarded' || record.type == 'purchased' || record.type == 'manufactured') { %>
-                                <div class="field">
+                                <div class="field  is-grouped">
+                                    <div class="control">
+                                        <button class="record-edit-button type-edit-button has-text-info"
+                                            data-date="<%=toNepaliDate(record.recordDate);%>"
+                                            data-type="<%=record.type%>"
+                                            data-cost="<%=record.cost%>"
+                                            data-packing="<%=record.inventory_batch_record.inventory_batch.id%>"
+                                            data-quantity="<%=record.value%>"
+                                            value="<%=record.id%>"><i class="fas fa-pen"></i></button>
+                                    </div>
                                     <div class="control">
                                         <button class="record-delete-button type-delete-button has-text-danger"
                                             value="<%=record.id%>"><i
@@ -184,7 +199,7 @@
                                 <div class="field is-grouped">
                                     <div class="control">
                                         <button data-name="<%=batch.name%>" data-quantity="<%=batch.quantity%>"
-                                            value="<%=batch.id%>" class="type-edit-button has-text-info"><i
+                                            value="<%=batch.id%>" class="batch-edit-button type-edit-button has-text-info"><i
                                                 class="fas fa-pen"></i></button>
                                     </div>
                                     <div class="control">
@@ -261,9 +276,6 @@
     </div>
 </div>
 
-
-
-
 <div class="modal" id="add-inventory-record-modal">
     <div class="modal-background"></div>
     <div class="modal-card">
@@ -296,6 +308,16 @@
                             <div class="control">
                                 <label for="record_date" class="label">Record Date</label>
                                 <input type="text" class="input" required id="record_date" name="record_date">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="column">
+                        <div class="field">
+                            <div class="control">
+                                <label for="inventory_cost" class="label">Cost</label>
+                                <input type="number" class="input" step="any" name="inventory_cost" id="inventory_cost" value="<%=inventory.cost%>">
                             </div>
                         </div>
                     </div>
@@ -346,6 +368,89 @@
     </div>
 </div>
 
+
+<div class="modal" id="edit-inventory-record-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Edit Inventory Record</p>
+            <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+            <form action="/inventory/edit/<%=inventory.id%>" method="POST">
+                <div class="columns">
+                    <div class="column">
+                        <div class="field">
+                            <div class="control">
+                                <label for="edit-type" class="label">Type</label>
+                                <input type="readonly" disabled value="" class="input is-capitalized" id="edit-inventory-type">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="field">
+                            <div class="control">
+                                <label for="edit_record_date" class="label">Record Date</label>
+                                <input type="text" class="input" required id="edit_record_date" name="record_date">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="column">
+                        <div class="field">
+                            <div class="control">
+                                <label for="edit_inventory_cost" class="label">Cost</label>
+                                <input type="number" class="input" step="any" name="inventory_cost" id="edit_inventory_cost" value="<%=inventory.cost%>">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="column">
+                        <div class="field">
+                            <label for="edit-inv-batch" class="label">Packing</label>
+                            <div class="control">
+                                <div class="select is-fullwidth">
+                                    <select name="batch" id="edit-inv-batch">
+                                        <% for(let i = 0; i < batches.length; i++) { const batch = batches[i]; %>
+                                        <option data-quant="<%=batch.quantity%>" value="<%=batch.id%>"><%=batch.name%>
+                                            (<%=batch.quantity%>)</option>
+                                        <% } %>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="field">
+                            <div class="control">
+                                <label for="edit-quantity" class="label">Quantity</label>
+                                <input type="number" min="0" name="quantity" id="edit-quantity" class="input" value="0">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column is-2">
+                        <div class="field">
+                            <label for="edit-total-quant" class="label">Total</label>
+                            <div class="control">
+                                <input type="text" class="input" readonly disabled id="edit-total-quant">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="field is-grouped is-grouped-right">
+                    <div class="control">
+                        <button class="button is-rounded is-success">Save</button>
+                    </div>
+                    <div class="control">
+                        <button type="button" class="button close-modal is-rounded is-light">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
 
 
 <div class="modal" id="add-batch-modal">

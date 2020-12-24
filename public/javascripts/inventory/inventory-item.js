@@ -74,7 +74,7 @@ $(function () {
         $("#add-batch-modal").addClass('is-active');
     });
 
-    $(".type-edit-button").on('click', function () {
+    $(".batch-edit-button").on('click', function () {
         var id = $(this).val();
         var name = $(this).attr('data-name');
         var quantity = $(this).attr('data-quantity');        
@@ -130,9 +130,43 @@ $(function () {
         closeOnDateSelect: true
     });
 
+    $('#edit_record_date').nepaliDatePicker({
+        dateFormat: '%d/%m/%y',
+        closeOnDateSelect: true
+    });
+
+    var inventory_cost = $("#inventory_cost").val();
+    $("#type").on('change', function() {
+        var val = $(this).val();
+        if (val == 'discarded') {
+            $("#inventory_cost").val(0.0);
+        }
+        else{
+            $("#inventory_cost").val(inventory_cost);
+        }
+    });
+
+    $(".record-edit-button").on('click', function() {
+        var date = $(this).attr('data-date');
+        var type = $(this).attr('data-type');
+        var cost = $(this).attr('data-cost');
+        var packing = $(this).attr('data-packing');
+        var quantity = $(this).attr('data-quantity');
+        var record_id = $(this).val();
+        $("#edit-inventory-type").val(type);
+        $("#edit_record_date").val(date);
+        $("#edit_inventory_cost").val(cost);
+        $("#edit-inv-batch").val(packing);
+        $("#edit-quantity").val(quantity);
+        $("#edit-inventory-record-modal").find('form').attr('action', '/inventory/edit/'+record_id+'?_method=PUT');
+        $("#edit-inventory-record-modal").addClass('is-active');
+    });
+
     $(".record-delete-button").on('click', function() {
         var id = $(this).val();
         $("#confirm-delete-record").find("#delete-record-id").val(id);
         $("#confirm-delete-record").addClass('is-active');
     });
+
+
 });

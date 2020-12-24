@@ -73,6 +73,34 @@ router.delete('/record/:id', middleware.auth.loggedIn(), function (req, res, nex
   });
 });
 
+router.put('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  let id = parseInt(req.params.id);
+  var data = {
+    value: req.body.quantity,
+    batch_id: req.body.batch,
+  };
+
+  var record_date = req.body.record_date.trim();
+  data.created = new Date();
+  if (typeof record_date !== 'undefined' && record_date != null && record_date.length !== 0) {
+    record_date = utility.misc.toEnglishDate(record_date);
+    data.created = new NepaliDate(record_date).toJsDate();
+  }
+  data.value = utility.misc.toNumber(data.value);
+  data.batch_id = utility.misc.toNumber(data.batch_id);
+  data.cost = utility.misc.toNumberFloat(req.body.inventory_cost.trim());
+  utility.inventory.editRecord(id, data).then(()=>{
+    req.flash('flash_message', 'Record Added');
+    req.flash('flash_color', 'success');
+    res.redirect('/inventory/' + id);
+  }).catch(err => {
+    console.log(err);
+    req.flash('flash_message', 'Error Adding Record. Check your inputs.');
+    req.flash('flash_color', 'danger');
+    console.log("Data name is empty: ", data);
+    res.redirect('/inventory/' + id);
+  });
+});
 
 router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
   var breadcrumbs = [{
@@ -116,70 +144,6 @@ router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
 
       });
     }
-  });
-});
-
-router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
-  let data = {
-    name: req.body.name.trim(),
-    description: req.body.description.trim(),
-    type: req.body.type.trim(),
-    cost: req.body.cost.trim(),
-    batch_names: req.body['batch_name[]'],
-    batch_quantity: req.body['batch_quantity[]']
-  };
-
-  if (typeof data.batch_names == 'string') {
-    data.batch_names = [data.batch_names];
-  }
-
-  if (typeof data.batch_quantity == 'string') {
-    data.batch_quantity = [data.batch_quantity];
-  }  
-  
-  for (let index = 0; index < data.batch_quantity.length; index++) {
-    data.batch_quantity[index] = utility.misc.toNumber(data.batch_quantity[index]);
-  }
-  
-  data.cost = utility.misc.toNumberFloat(data.cost);
-  
-  if (data.name.length === 0) {
-    req.flash('flash_message', 'Error Creating Inventory Item. Make sure the data entered is correct');
-    req.flash('flash_color', 'danger');
-    console.log("Data name is empty", data);
-    res.redirect('/inventory');
-    return;
-  }
-  if (data.type !== 'purchased' && data.type !== 'manufactured') {
-    console.log("Data type is empty", data);
-    req.flash('flash_message', 'Error Creating Inventory Item. Make sure the data entered is correct');
-    req.flash('flash_color', 'danger');
-    res.redirect('/inventory');
-    return;
-  }
-  data.cost = utility.misc.toNumberFloat(data.cost);
-
-  var image_id = req.session.image_id;
-  req.session.image_id = null;
-  if (typeof image_id !== 'undefined' && image_id !== null) {
-    if (fs.existsSync('uploads/tmp/' + image_id)) {
-      var folder = 'uploads/tmp/' + image_id;
-      var files = fs.readdirSync(folder);
-      if (files.length > 0) {
-        var image = files[0];
-        fs.copyFileSync(folder + '/' + image, 'uploads/' + image);
-        data.image = '/uploads/' + image;
-      }
-      fs.rmdirSync(folder, {
-        recursive: true
-      });
-    }
-  }
-  inventory.createInventory(data).then(inv => {
-    console.log("Inventory Created: ");
-    req.flash('flash_message', 'Inventory ' + data.name + ' Successfully Added');
-    req.flash('flash_color', 'success');
-    res.redirect('/inventory');
   });
 });
 
@@ -320,18 +284,20 @@ router.post('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   var data = {
     type: req.body.type,
     value: req.body.quantity,
-    batch_id: req.body.batch
+    batch_id: req.body.batch,
   };
 
+
   var record_date = req.body.record_date.trim();
-  data.createdAt = new Date();
+  data.created = new Date();
   if (typeof record_date !== 'undefined' && record_date != null && record_date.length !== 0) {
     record_date = utility.misc.toEnglishDate(record_date);
-    data.createdAt = new NepaliDate(record_date).toJsDate();
+    data.created = new NepaliDate(record_date).toJsDate();
   }
 
   data.value = utility.misc.toNumber(data.value);
   data.batch_id = utility.misc.toNumber(data.batch_id);
+  data.cost = utility.misc.toNumberFloat(req.body.inventory_cost.trim());
   var user_email = req.session.email;
   if (typeof user_email === 'undefined') user_email = 'gt_ams@yahoo.in';
   utility.inventory.addRecord(id, data, user_email).then(()=>{
@@ -413,6 +379,71 @@ router.delete('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   let id = parseInt(req.params.id);
   inventory.deleteInventory(id).then(() => {
     req.flash('flash_message', 'Inventory Item Successfully Deleted');
+    req.flash('flash_color', 'success');
+    res.redirect('/inventory');
+  });
+});
+
+
+router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
+  let data = {
+    name: req.body.name.trim(),
+    description: req.body.description.trim(),
+    type: req.body.type.trim(),
+    cost: req.body.cost.trim(),
+    batch_names: req.body['batch_name[]'],
+    batch_quantity: req.body['batch_quantity[]']
+  };
+
+  if (typeof data.batch_names == 'string') {
+    data.batch_names = [data.batch_names];
+  }
+
+  if (typeof data.batch_quantity == 'string') {
+    data.batch_quantity = [data.batch_quantity];
+  }  
+  
+  for (let index = 0; index < data.batch_quantity.length; index++) {
+    data.batch_quantity[index] = utility.misc.toNumber(data.batch_quantity[index]);
+  }
+  
+  data.cost = utility.misc.toNumberFloat(data.cost);
+  
+  if (data.name.length === 0) {
+    req.flash('flash_message', 'Error Creating Inventory Item. Make sure the data entered is correct');
+    req.flash('flash_color', 'danger');
+    console.log("Data name is empty", data);
+    res.redirect('/inventory');
+    return;
+  }
+  if (data.type !== 'purchased' && data.type !== 'manufactured') {
+    console.log("Data type is empty", data);
+    req.flash('flash_message', 'Error Creating Inventory Item. Make sure the data entered is correct');
+    req.flash('flash_color', 'danger');
+    res.redirect('/inventory');
+    return;
+  }
+  data.cost = utility.misc.toNumberFloat(data.cost);
+
+  var image_id = req.session.image_id;
+  req.session.image_id = null;
+  if (typeof image_id !== 'undefined' && image_id !== null) {
+    if (fs.existsSync('uploads/tmp/' + image_id)) {
+      var folder = 'uploads/tmp/' + image_id;
+      var files = fs.readdirSync(folder);
+      if (files.length > 0) {
+        var image = files[0];
+        fs.copyFileSync(folder + '/' + image, 'uploads/' + image);
+        data.image = '/uploads/' + image;
+      }
+      fs.rmdirSync(folder, {
+        recursive: true
+      });
+    }
+  }
+  inventory.createInventory(data).then(inv => {
+    console.log("Inventory Created: ");
+    req.flash('flash_message', 'Inventory ' + data.name + ' Successfully Added');
     req.flash('flash_color', 'success');
     res.redirect('/inventory');
   });

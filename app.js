@@ -72,14 +72,14 @@ db.sequelize.authenticate()
 const models = require('./models/Models');
 
 // Sync DB
-// db.sequelize.sync({
-//   force: true
-// }).then(() => {
-//   require('./modules/seed')(true, false);
-//   console.log("Database synchronized");
-// }).catch(err => {
-//   console.log("Error while synchronizing data: ", err);
-// });
+db.sequelize.sync({
+  force: true
+}).then(() => {
+  require('./modules/seed')(true, false);
+  console.log("Database synchronized");
+}).catch(err => {
+  console.log("Error while synchronizing data: ", err);
+});
 
 global.dbErrorMsg = "Database not responding try again later";
 global.cookieOpt = {

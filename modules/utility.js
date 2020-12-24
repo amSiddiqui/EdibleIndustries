@@ -50,13 +50,12 @@ async function insertInventoryRecord(rec, batch_id='') {
         batch = await models.InventoryBatch.findByPk(batch_id);
         rec.value = batch_value * batch.quantity;
     }
-    
     var inventory_record = await models.InventoryRecord.create(rec);
     if (batch_id !== '') {
         var inventory_batch_record = await batch.createInventory_batch_record({
             type: rec.type,
             value: batch_value,
-            createdAt: rec.createdAt
+            createdAt: rec.recordDate
         });
         await inventory_record.setInventory_batch_record(inventory_batch_record);
     }
@@ -67,12 +66,12 @@ async function calculateTotalInventory(inv_id, end_date) {
     var inventory = await models.Inventory.findByPk(inv_id);
     var records = await inventory.getInventory_records({
         where: {
-            createdAt: {
+            recordDate: {
                 [Op.lte]: end_date
             }
         },
         order: [
-            ['createdAt']
+            ['recordDate']
         ]
     });
     var total = 0;
@@ -163,7 +162,7 @@ module.exports = {
                 include: [{
                     model: models.InventoryRecord,
                     order: [
-                        [sequelize.col('createdAt')]
+                        [sequelize.col('recordDate')]
                     ],
                     include: [{
                         model: models.User
@@ -292,11 +291,30 @@ module.exports = {
             var inventory_record = await insertInventoryRecord({
                 type: data.type,
                 value: data.value,
-                createdAt: data.createdAt
+                recordDate: data.created,
+                cost: data.cost
             }, data.batch_id);
             inventory_record.setInventory(inventory);
             inventory_record.setUser(user);
             await inventory_record.save();
+        },
+        editRecord: async (id, data) => {
+            var inventory_record = await models.InventoryRecord.findByPk(id);
+            var batch = await models.InventoryBatch.findByPk(data.batch_id);
+            var batch_value = data.value;
+            inventory_record.value = batch_value * batch.quantity;
+            inventory_record.recordDate = data.created;
+            inventory_record.cost = data.cost;
+            await inventory_record.save();
+            var inventory_batch_record = await batch.createInventory_batch_record({
+                type: inventory_record.type,
+                value: batch_value,
+                createdAt: data.created
+            });
+            var old_inv_batch_record = await inventory_record.getInventory_batch_record();
+            await old_inv_batch_record.destroy();
+            await inventory_record.setInventory_batch_record(inventory_batch_record);
+            await inventory_batch_record.save();
         },
         deleteRecord: async (id) => {
             var record = await models.InventoryRecord.findByPk(id);
@@ -350,7 +368,6 @@ module.exports = {
                 name: data.name
             });
             var rates_data = [];
-            console.log(data);
             data.rates.forEach(rate => {
                 rates_data.push({
                     inventoryBatchId: rate.id,
@@ -725,7 +742,7 @@ module.exports = {
                     const inv_record = await insertInventoryRecord({
                         type,
                         value: transaction.quantity[j],
-                        createdAt: bill_date
+                        recordDate: bill_date
                     },  transaction.id);
                     inv_record.setInventory(inventory);
                     if (user != null) {
@@ -797,7 +814,7 @@ module.exports = {
             const inv_record = await insertInventoryRecord({
                 type: 'returned',
                 value: q,
-                createdAt: date
+                recordDate: date
             });
             const tr = await models.BillTransaction.findByPk(tr_id);
             const bill_transac = await models.BillTransaction.create({
@@ -932,7 +949,6 @@ module.exports = {
             data.total = total;
             data.formatted_total = numeral(total).format('0,0.00');
             data.yearName = yearName;
-            console.log("Reached this point");
             // Total Assets
             var inventory_ids = await models.Inventory.findAll({
                 attributes: ['id', 'cost'],

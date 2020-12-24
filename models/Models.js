@@ -214,7 +214,14 @@ const InventoryRecord = db.sequelize.define("inventory_record", {
     },
     value: {
         type: db.Sequelize.INTEGER
-    }
+    },
+    cost: {
+        type: db.Sequelize.DOUBLE,
+        defaultValue: 0
+    },
+    recordDate: {
+        type: db.Sequelize.DATE
+    },
 }, {
     underscored: true
 });
