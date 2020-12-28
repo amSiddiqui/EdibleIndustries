@@ -48,8 +48,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 app.use(flash());
 
-if (environment === 'production') {
-  
+// Enforce HTTPS
+app.enable('trust proxy');
+app.use(function(request, response, next) {
+  if (process.env.NODE_ENV != 'development' && !request.secure) {
+    return response.redirect("https://" + request.headers.host + request.url);
+  }
+  next();
+});
+
+
+if (environment === 'production') {  
   app.use(compression());
 }
 //for PUT and DELETE requests

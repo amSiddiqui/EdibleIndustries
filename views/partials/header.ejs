@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="/stylesheets/dataTables.bulma.min.css">
 
   <script src="/javascripts/lib/jquery.min.js"></script>
-  <script src="/javascripts/lib/fontawesome.min.js"></script>  
+  <script src="/javascripts/lib/fontawesome.min.js"></script>
 </head>
 
 <body>
@@ -26,15 +26,14 @@
         <a class="navbar-item" href="/" style="padding: 0;">
           <img src="/images/logo_nav.png" class="company-logo-nav">
         </a>
-  
-        <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
-          data-target="navMenu">
+
+        <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navMenu">
           <span aria-hidden="true"></span>
           <span aria-hidden="true"></span>
           <span aria-hidden="true"></span>
         </a>
       </div>
-  
+
       <div id="navMenu" class="navbar-menu">
         <div class="navbar-start">
           <a href="/" class="navbar-item">
@@ -53,21 +52,19 @@
             Reports
           </a>
         </div>
-  
+
         <div class="navbar-end">
-          <div class="navbar-item">
-            Hello <%=first_name%>
-          </div>
-          <div class="navbar-item">
-            <div class="buttons">
-              <a href="/auth/signup" class="button is-rounded is-small is-info is-light">
+          <div class="navbar-item has-dropdown is-hoverable">
+            <a class="navbar-link">
+              Hello <%=first_name%>
+            </a>
+
+            <div class="navbar-dropdown">
+              <a href="/auth/signup" class="navbar-item">
                 Add User
               </a>
-            </div>
-          </div>
-          <div class="navbar-item">
-            <div class="buttons">
-              <a href="/auth/logout" class="button is-rounded is-small logout-button">
+              <hr class="navbar-divider">
+              <a href="/auth/logout" class="navbar-item">
                 Log Out
               </a>
             </div>
@@ -87,14 +84,15 @@
     <p>This is a warning Message</p>
   </div>
   <% if(typeof breadcrumbs !== 'undefined') { %>
-    <div class="container">
-      <div class="breadcrumb" aria-label="breadcrumbs">
-        <ul>
-          <% for (var i = 0; i < breadcrumbs.length; i++) { %>
-            <% var breadcrumb = breadcrumbs[i]; %>
-          <li <%= breadcrumbs.length == i+1? 'class=is-active':'' %> ><a href="<%=breadcrumb.link%>" <%= breadcrumbs.length == i+1? 'aria-current=page':'' %> > <%=breadcrumb.name%> </a></li>
-          <% } %>
-        </ul>
-      </div>
+  <div class="container">
+    <div class="breadcrumb" aria-label="breadcrumbs">
+      <ul>
+        <% for (var i = 0; i < breadcrumbs.length; i++) { %>
+        <% var breadcrumb = breadcrumbs[i]; %>
+        <li <%= breadcrumbs.length == i+1? 'class=is-active':'' %>><a href="<%=breadcrumb.link%>"
+            <%= breadcrumbs.length == i+1? 'aria-current=page':'' %>> <%=breadcrumb.name%> </a></li>
+        <% } %>
+      </ul>
     </div>
+  </div>
   <% } %>
