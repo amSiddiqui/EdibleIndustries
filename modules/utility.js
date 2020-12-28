@@ -832,10 +832,10 @@ module.exports = {
             await tr.save();
             await inv_record.save();
         },
-        pay: async (id) => {
+        pay: async (id, bd) => {
             const bill = await models.Bill.findByPk(id);
             bill.paid = true;
-            bill.paidOn = new Date();
+            bill.paidOn = bd;
             await bill.save();
         },
         deleteBill: async (id) => {
@@ -930,12 +930,10 @@ module.exports = {
             var monthName = new NepaliDate(today).format('MMMM', 'np');
             var yearName = new NepaliDate(today).format('YYYY', 'np');
             var dt = new Date();
-            let i = 0;
             while (true) {
-                dt.setDate(dt.getDate() - i);
+                dt.setDate(dt.getDate() - 1);
                 var np = new NepaliDate(dt);
                 if (np.getDate() == 1) break;
-                i++;
             }
             data.monthName = monthName;
             var total = await models.Bill.sum('total' ,{
@@ -985,7 +983,7 @@ module.exports = {
                 const tr = transactions[j];
                 total_rented += tr.quantity;
                 var rented = tr.quantity;
-                const returns = tr.getReturn();
+                const returns = await tr.getReturn();
                 for (let k = 0; k < returns.length; k++) {
                     const r = returns[k];
                     total_rented -= r.quantity;

@@ -84,7 +84,13 @@ router.post('/return/:id', middleware.auth.loggedIn(), function (req, res, next)
 
 router.post('/pay/:id', middleware.auth.loggedIn(), function (req, res, next) {
   let id = parseInt(req.params.id);
-  utility.billing.pay(id).then(() => {
+  let pay_date = req.body.pay_date;
+  var bd = new Date();
+  if (pay_date.length !== 0) {
+    pay_date = utility.misc.toEnglishDate(pay_date);
+    bd = new NepaliDate(pay_date).toJsDate();
+  }
+  utility.billing.pay(id, bd).then(() => {
     req.flash('flash_message', 'Paid Successfully');
     req.flash('flash_color', 'success');
     res.redirect('/billing/' + id);

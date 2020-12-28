@@ -22,6 +22,11 @@ $(() => {
         dateFormat: '%d/%m/%y',
         closeOnDateSelect: true,
     });
+
+    $('#pay_date').nepaliDatePicker({
+        dateFormat: '%d/%m/%y',
+        closeOnDateSelect: true,
+    });
 });
 
 function returnItem(obj)  {

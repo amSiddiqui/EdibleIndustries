@@ -345,16 +345,26 @@
         </header>
         <section class="modal-card-body">
             <h1 class="title is-4">Confirm Pay</h1>
-            <div class="columns">
-                <div class="column">
-                    <form action="/billing/pay/<%=bill.id%>" method="post">
+            <form action="/billing/pay/<%=bill.id%>" method="post">
+                <div class="columns">
+                    <div class="column">
+                        <div class="field">
+                            <div class="control">
+                                <label for="pay_date" class="label">Payment Date</label>
+                                <input type="text" class="input" id="pay_date" name="pay_date">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="column">
                         <button class="button is-success is-rounded">Pay?</button>
-                    </form>
+                    </div>
+                    <div class="column">
+                        <button type="button" class="button is-link is-light is-rounded close-modal">Cancel</button>
+                    </div>
                 </div>
-                <div class="column">
-                    <button type="button" class="button is-link is-light is-rounded close-modal">Cancel</button>
-                </div>
-            </div>
+            </form>
         </section>
     </div>
 </div>

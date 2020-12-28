@@ -12,9 +12,10 @@ module.exports = {
         loggedIn: (redirect = '/auth/login') => {
             return (req, res, next) => {
                 if (!req.session.loggedin) {
-                    // TODO: REMOVE ON DEPLOY
-                    // next();
-                    res.redirect(redirect);
+                    if (typeof process.env.ENV !== 'undefined' && process.env.ENV == 'development')
+                        next();
+                    else
+                        res.redirect(redirect);
                 }else{
                     next();
                 }

@@ -68,6 +68,8 @@ db.sequelize.authenticate()
   });
 
 
+console.log("Current Environment: ", process.env.ENV);
+
 // Initializing models
 const models = require('./models/Models');
 
