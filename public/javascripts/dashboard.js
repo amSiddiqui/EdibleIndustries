@@ -4,6 +4,18 @@ function removeSearchResult() {
 }
 
 $(function () {
+    $("#rented-table").DataTable({
+        "columnDefs": [
+            { "width": "3%", "targets": 0 },
+        ],
+        "order": [[0, 'desc']]
+    });
+    $("#unpaid-table").DataTable({
+        "columnDefs": [
+            { "width": "3%", "targets": 0 },
+        ],
+        "order": [[0, 'desc']]
+    });
     removeSearchResult();
     $.get('/api/all-bills', function (data) {
         if (data.status == 'success') {

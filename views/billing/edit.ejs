@@ -1,0 +1,328 @@
+<%include ../partials/header %>
+<div class="container" style="margin-bottom: 300px;">
+    <div class="columns">
+        <div class="column">
+            <h1 class="title">Edit Bill</h1>
+        </div>
+    </div>
+
+    <form id="new-bill-form" action="/billing/<%=bill.id%>?_method=PUT" method="POST">
+
+        <div class="level">
+            <div class="level-left is-3">
+                <div class="level-item">
+                    <div class="field">
+                        <div class="control">
+                            <label for="track_id" class="label">Bill No</label>
+                            <input type="text" id="track_id" disabled readonly value="<%=bill.track_id%>" class="input" name="track_id">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="level-right">
+                <div class="level-item">
+                    <div class="field">
+                        <div class="control">
+                            <label for="Bill_date" class="label">Bill Date</label>
+                            <input type="text" disabled value="<%=bill.nepali_date%>" class="input" id="bill_date" name="bill_date">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="columns">
+            <div class="column">
+                <div class="field">
+                    <div class="control">
+                        <label class="label" for="customer">Customer</label>
+                        <% if (bill.customer.organization.length == 0) { %>
+                            <input type="text" id="customer" disabled readonly value="<%=bill.customer.first_name+' '+bill.customer.last_name%>" class="input">
+                        <% }else{ %>
+                            <input type="text" id="customer" disabled readonly value="<%=bill.customer.organization%> (<%=bill.customer.first_name+' '+bill.customer.last_name%>)" class="input">
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="columns">
+            <div class="column">
+                <h5 class="label">Items</h5>
+            </div>
+        </div>
+        <div class="columns">
+            <div class="column">
+                <table class="table is-bordered is-fullwidth">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Packing</th>
+                            <th>Quantity</th>
+                            <th>Total Quant</th>
+                            <th>Type</th>
+                            <th>Rate</th>
+                            <th>Sub Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-table-body">
+                        <% for (let i = 0; i < bill.bill_transactions.length; i++){ var txn = bill.bill_transactions[i]; %>
+                        <tr>
+                            <td class="inv-id"><%= txn.inventory_record.inventory_batch_record.inventory_batch.id %></td>
+                            <td class="inv-name"><%= txn.inventory_record.inventory.name %></td>
+                            <td class="packing-name">
+                                <%= txn.inventory_record.inventory_batch_record.inventory_batch.name; %> (<%=txn.inventory_record.inventory_batch_record.inventory_batch.quantity; %>)
+                            </td>
+                            <td style="width: 90px;">
+                                <input onchange="quantityChange('<%= txn.id; %>', this.value)" name="quantity-<%= txn.id %>" min="0" type="number" step="1" value="<%= txn.inventory_record.inventory_batch_record.value %>" class="input quantity">
+                            </td>
+                            <td style="width: 130px;">
+                                <input id="total-quantity-<%=txn.id%>" data-packing="<%=txn.inventory_record.inventory_batch_record.inventory_batch.quantity;%>" min="0" readonly type="number" step="1" value="<%= txn.inventory_record.value %>" class="input total-quantity">
+                            </td>
+                            <td style="width: 130px;">
+                                <%= txn.inventory_record.type %>
+                            </td>
+                            <td style="width: 150px;">
+                                <div class="field">
+                                    <div class="control has-icons-left">
+                                        <input onchange="rateChange('<%=txn.id%>', this.value);" name="rate-<%= txn.id %>" id="rate-<%= txn.id %>" min="0" value="<%= (txn.rate).toFixed(2) %>" type="number" step="any" class="input rate">
+                                        <span class="icon is-left">
+                                            Re.
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="total" id="sum-total-<%=txn.id%>" style="width: 150px;">Re. <%= (txn.rate * txn.quantity).toFixed(2) %></td>
+                        </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="columns">
+            <div class="column">
+                <div class="columns">
+                    <div class="column">
+                        <div class="field">
+                            <div class="control">
+                                <label for="payment_method" class="label">Payment Method</label>
+                                <div class="select is-fullwidth">
+                                    <select name="payment_method" id="payment_method">
+                                        <option <%= bill.payment_method == 'Cash' ? 'selected': '' %> value="Cash">Cash</option>
+                                        <option <%= bill.payment_method == 'Credit' ? 'selected': '' %> value="Credit">Credit</option>
+                                        <option <%= bill.payment_method == 'Bank' ? 'selected': '' %> value="Bank">Bank</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column is-2">
+                        <div class="field">
+                            <div class="control">
+                                <label for="paid" class="label">Paid</label>
+                                <div class="checkbox-container">
+                                    <% if (bill.paid){ %>
+                                        <input checked class="tgl tgl-flip" name="paid" value="1" id="cb5" type="checkbox"/>
+                                    <% }else{ %>
+                                        <input class="tgl tgl-flip" name="paid" value="1" id="cb5" type="checkbox"/>
+                                    <% } %>
+                                    <label class="tgl-btn" data-tg-off="No" data-tg-on="Yes" for="cb5"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="<%= bill.paid? 'display: none' : '' %>" class="columns" id="due_date_container">
+                    <div class="column">
+                        <div class="field">
+                            <div class="control">
+                                <label for="due_date" class="label">Due Date</label>
+                                <input type="text" class="input" id="due_date" value="<%= bill.nepali_due; %>" name="due_date">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="column">
+                        <div class="field">
+                            <div class="control">
+                                <label for="description" class="label">Description</label>
+                                <textarea class="textarea" placeholder="Description" name="description"
+                                    id="description"><%= bill.description %></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="column">
+                        <label for="image" class="label">Receipt Image</label>
+                        <div class="image-placeholder">
+                            <img src="<%= bill.image %>" alt="">
+                        </div>
+                        <div class="filepond-container">
+                            <input type="file" class="filepond" name="inventory"
+                                accept="image/png, image/jpeg, image/gif" />
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="column">
+                <div class="columns" style="margin-right: 60px;">
+                    <div class="column">
+                        <div class="field is-grouped is-grouped-right">
+                            <div style="width: 190px; text-align: right;"> <strong>Total</strong></div>
+                            <div style="width: 190px; text-align: center;" id="sum-total">Re. 0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="columns" style="margin-right: 60px;">
+                    <div class="column">
+                        <div class="field is-grouped is-grouped-right">
+                            <div style="width: 190px; text-align: right;"> <strong>Discount</strong></div>
+                            <div style="width: 150px; margin-left: 10px;" id="discount-percent">
+                                <div class="control has-icons-right">
+                                    <input type="number" step="any" value="<%= bill.discountPercent %>" min="0" max="100" name="discount_percent"
+                                        placeholder="Percent" class="input">
+                                    <span class="icon is-right">
+                                        %
+                                    </span>
+                                </div>
+                            </div>
+                            <div style="width: 150px; margin-left: 10px;" id="discount-value">
+                                <span class="control has-icons-left">
+                                    <input type="number" step="any" min="0" value="<%= bill.discount %>" name="discount_value" class="input">
+                                    <span class="icon is-left">
+                                        Re.
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="columns" style="margin-right: 60px;">
+                    <div class="column">
+                        <div class="field is-grouped is-grouped-right">
+                            <div style="width: 190px; text-align: right;"> <strong>After Discount</strong></div>
+                            <div style="width: 190px; text-align: center;" id="discount-total">Re. 0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="columns" style="margin-right: 60px;">
+                    <div class="column">
+                        <div class="field is-grouped is-grouped-right">
+                            <div style="width: 190px; text-align: right;"> <strong>Tax</strong></div>
+                            <div style="width: 150px; margin-left: 10px;" id="tax-percent">
+                                <div class="control has-icons-right">
+                                    <input type="number" step="any" value="<%= bill.taxRate %>" min="0" max="100" name="tax_percent"
+                                        placeholder="Percent" class="input">
+                                    <span class="icon is-right">
+                                        %
+                                    </span>
+                                </div>
+                            </div>
+                            <div style="width: 150px; margin-left: 10px;" id="tax-value">
+                                <span class="control has-icons-left">
+                                    <input type="number" step="any" value="<%= bill.tax %>" min="0" name="tax_value" class="input">
+                                    <span class="icon is-left">
+                                        Re.
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="columns" style="margin-right: 60px; border-bottom: 3px solid hsl(141, 71%, 48%);">
+                    <div class="column">
+                        <div class="field is-grouped is-grouped-right">
+                            <div style="width: 190px; text-align: right;"> <strong>Grand Total</strong></div>
+                            <div style="width: 190px; text-align: center;" id="grand-total">Re. 0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="columns" style="margin-top: 100px;">
+                    <div class="column">
+                        <div class="field is-grouped is-grouped-right">
+                            <div class="control">
+                                <button class="button is-large is-success is-rounded">Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </form>
+</div>
+
+<template id="inventory-item-template">
+    <tr>
+        <td class="inv-id">1</td>
+        <td class="inv-name">Jar 4 ltr</td>
+        <td class="packing-name">
+            <div class="select is-fullwidth">
+                <select name="packing-name" class="packing">
+                    
+                </select>
+            </div>
+        </td>
+        <td style="width: 90px;">
+            <input min="0" type="number" step="1" value="0" class="input quantity">
+        </td>
+        <td style="width: 130px;">
+            <input min="0" readonly type="number" step="1" value="0" class="input total-quantity">
+        </td>
+        <td style="width: 130px;">
+            <div class="select is-fullwidth">
+                <select name="" class="inv-type">
+                    <option value="sold">Sold</option>
+                    <option value="rented">Rented</option>
+                </select>
+            </div>
+        </td>
+        <td style="width: 150px;">
+            <div class="field">
+                <div class="control has-icons-left">
+                    <input min="0" type="number" step="any" class="input rate">
+                    <span class="icon is-left">
+                        Re.
+                    </span>
+                </div>
+            </div>
+        </td>
+        <td class="total" style="width: 150px;">Re. 0</td>
+        <td style="width: 40px;">
+            <button type="button" class="add-item-button remove-item has-text-danger">
+                <i class="fas fa-minus-circle fa-lg"></i>
+            </button>
+        </td>
+    </tr>
+</template>
+
+<div class="modal" id="select-inventory-item-modal">
+    <div class="modal-background"></div>
+    <div class="modal-content">
+        <div class="card">
+            <div class="card-content">
+                <section class="section">
+                    <div class="content">
+                        <h4>Select Inventory Item</h4>
+                        <hr>
+                        <div class="panel list-group">
+                            <% for(let i = 0; i < inventories.length; i++) { const inventory = inventories[i]; %>
+                            <% var in_stock = 0;  %>
+                            <% in_stock = inventory.in_stock; %>
+                            <a href="#" data-value="<%=inventory.id%>"
+                                class="panel-block list-group-item"><%=inventory.name;%> (In Stock: <%=in_stock%>)</a>
+                            <% } %>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+    <button class="modal-close close-modal is-large" aria-label="close"></button>
+</div>
+
+<%include ../partials/footer %>

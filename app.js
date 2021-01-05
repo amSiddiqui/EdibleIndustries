@@ -49,16 +49,18 @@ app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 app.use(flash());
 
 // Enforce HTTPS
-app.enable('trust proxy');
-app.use(function(request, response, next) {
-  if (process.env.NODE_ENV != 'development' && !request.secure) {
-    return response.redirect("https://" + request.headers.host + request.url);
-  }
-  next();
-});
+if (process.env.ENV != 'development') {
+  app.enable('trust proxy');
+  app.use(function(request, response, next) {
+    if (process.env.NODE_ENV != 'development' && !request.secure) {
+      return response.redirect("https://" + request.headers.host + request.url);
+    }
+    next();
+  });
+}
 
 
-if (environment === 'production') {  
+if (process.env.ENV != 'development') {  
   app.use(compression());
 }
 //for PUT and DELETE requests

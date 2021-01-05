@@ -767,6 +767,46 @@ module.exports = {
             await bill.save();
             return bill.id;
         },
+        edit_bill: async (id, data, body) => {
+            var bill = await models.Bill.findByPk(id);
+            bill.image = data.image_loc;
+            bill.description = data.description;
+            if (!data.paid) {
+                bill.dueDate = data.due_date;
+            }
+            bill.paid = data.paid;
+            bill.payment_method = data.payment_method;
+            data.discount_value = toNumberFloat(data.discount_value);
+            bill.discount = data.discount_value;
+            data.discount_percent = toNumberFloat(data.discount_percent);
+            bill.discountPercent = data.discount_percent;
+            data.tax_value = toNumberFloat(data.tax_value);
+            bill.tax = data.tax_value;
+            data.tax_percent = toNumberFloat(data.tax_percent);
+            bill.taxRate = data.tax_percent;
+            var total = 0;
+            var txns = await bill.getBill_transactions();
+            for (let i = 0; i < txns.length; i++) {
+                var txn = txns[i];
+                var quant =  toNumber(body['quantity-'+txn.id]);
+                var rate = toNumberFloat(body['rate-'+txn.id]);
+                total += quant * rate;
+                var inv_record = await txn.getInventory_record();
+                var batch_record = await inv_record.getInventory_batch_record();
+                var batch = await batch_record.getInventory_batch();
+                txn.quantity = quant;
+                txn.rate = rate;
+                await txn.save();
+                var total_quant = quant * batch.quantity;
+                inv_record.value = total_quant;
+                await inv_record.save();
+                batch_record.value = quant;
+                await batch_record.save();
+            }
+            total = total + data.tax_value - data.discount_value;
+            bill.total = total;
+            await bill.save();
+        },
         areItemsRented: async (id) => {
             const bill = await models.Bill.findByPk(id, {
                 include: [{
