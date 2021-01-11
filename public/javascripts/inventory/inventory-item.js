@@ -3,6 +3,27 @@ function resetTabs() {
     $(".tab-content").hide();
 }
 
+function fetchAndUpdateReport() {
+    $("#report-message").show();
+    var from = $("#report-date-from").val();
+    var to = $("#report-date-to").val();
+    
+    $.post('/api/inventory/report/'+inventory_id,{from, to}, function(data) {
+        $("#report-message").html(data.message);
+        
+        if (data.status == 'success') {
+            $("#report-message").removeClass('has-text-danger');
+            $("#report-message").addClass('has-text-success');
+        }else {
+            $("#report-message").addClass('has-text-danger');
+            $("#report-message").removeClass('has-text-success');
+        }
+    }).fail(function(err) {
+        console.log("Some error occured");
+        console.log(err);
+    });
+}
+
 $(function () {
     $(".add-inventory-record").on('click', function () {
         $('#add-inventory-record-modal').addClass('is-active');
@@ -169,4 +190,18 @@ $(function () {
     });
 
 
+
+
+    // Reports Script
+    $("#report-date-from").nepaliDatePicker({
+        dateFormat: '%d/%m/%y',
+        closeOnDateSelect: true
+    });
+
+    $("#report-date-to").nepaliDatePicker({
+        dateFormat: '%d/%m/%y',
+        closeOnDateSelect: true
+    });
+
+    fetchAndUpdateReport();
 });

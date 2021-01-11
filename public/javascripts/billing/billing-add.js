@@ -127,12 +127,25 @@ $(function () {
 
     var currentCustomerData = null;
     $("#customer").on('change', function (e) {
+
         $("#customer").removeClass('is-danger');
         $("#customer").siblings('.help').hide();
         var id = $(this).val();
         if (isNaN(id)) {
             return;
         }
+
+        
+        $.get('/api/customer/rented/'+id, function(data) {
+            if (data.status == 'success') {
+                $("#total-jars-rented").find('strong').html(data.rented);
+                $("#total-jars-rented").show();
+            }
+        }).fail(function(err) {
+            console.log(err);
+        });
+
+
         $.get('/api/customer/' + id, function (data) {
             currentCustomerData = data;
             $("#inventory-table-body tr").each(function (i) {

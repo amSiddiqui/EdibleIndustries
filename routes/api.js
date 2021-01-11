@@ -314,4 +314,58 @@ router.post('/bill-no', middleware.auth.loggedIn(), function(req, res, next) {
     });
 });
 
+router.post('/inventory/report/:id', middleware.auth.loggedIn(), function(req, res, next) {
+    let id = parseInt(req.params.id);
+    var start =  req.body.from;
+    var end = req.body.to;
+    var temp = utility.misc.toEnglishDate(start);
+    start = new NepaliDate(temp).toJsDate();
+    temp = utility.misc.toEnglishDate(end);
+    end = new NepaliDate(temp).toJsDate();
+    if (start > end) {
+        res.json({
+            status: 'error',
+            message: 'From cannot be larger than To.'
+        });
+    } else {
+        utility.inventory.fetchReport(id, start, end).then(function(data) {
+            if (data == null) {
+                res.json({
+                    status: 'error',
+                    message: 'Error Generating Report, please check the dates.'
+                });
+            }else{
+                
+                res.json({
+                    status: 'success',
+                    message: 'Report Generated'
+                });
+            }
+        }).catch(error => {
+            console.log(error);
+            res.json({
+                status: 'error',
+                message: 'Error Generating Report try again later.'
+            });
+        });
+    }
+});
+
+router.get('/customer/rented/:id', middleware.auth.loggedIn(), function(req, res, next) {
+    let id = parseInt(req.params.id);
+    utility.customer.fetchTotalRented(id).then(data => {
+        res.json({
+            status: 'success',
+            message: 'Report Generated',
+            rented: data
+        });
+    }).catch(err => {
+        console.log(err);
+        res.json({
+            status: 'error',
+            message: 'Error Generating Report try again later.'
+        });
+    });
+});
+
 module.exports = router;

@@ -3,7 +3,6 @@ const NepaliDate = require('nepali-date-converter');
 var _ = require('lodash');
 var numeral = require('numeral');
 
-
 function getMethods(obj) {
     var result = [];
     for (var id in obj) {
@@ -41,6 +40,16 @@ function toNumber(num) {
         return 0;
     }
     return parseInt(num);
+}
+
+function getThisMonthStart() {
+    var dt = new Date();
+    while (true) {
+        dt.setDate(dt.getDate() - 1);
+        var np = new NepaliDate(dt);
+        if (np.getDate() == 1) break;
+    }
+    return dt;
 }
 
 async function insertInventoryRecord(rec, batch_id='') {
@@ -355,6 +364,52 @@ module.exports = {
                 }
             }
             return inv_bills;
+        },
+        fetchReport: async (id, start, end) => {
+            if (!start instanceof Date || !end instanceof Date) {
+                return null;
+            }
+
+            if (start > end) {
+                return null;
+            }
+
+            var bills = await models.Bill.findAll({
+                where: {
+                    [Op.between]: [start, end]
+                },
+                include: [{
+                        model: models.BillTransaction,
+                        include: [{
+                            model: models.InventoryRecord,
+                            include: [{
+                                model: models.Inventory
+                            }]
+                        }]
+                    },
+                    {
+                        model: models.Customer,
+                        include: [{
+                            model: models.CustomerType
+                        }]
+                    }
+                ]
+            });
+            var inv_bills = [];
+            for (let i = 0; i < bills.length; i++) {
+                const bill = bills[i];
+                const transactions = bill.bill_transactions;
+                for (let j = 0; j < transactions.length; j++) {
+                    const tr = transactions[j];
+                    if (tr.inventory_record.inventory.id == id) {
+                        inv_bills.push(bill);
+                        break;
+                    }
+                }
+            }
+
+            return inv_bills;
+
         }
     },
     customer_type: {
@@ -583,6 +638,29 @@ module.exports = {
                     }]
                 }]
             });
+        },
+        fetchTotalRented: async (id) => {
+            var customer = await models.Customer.findByPk(id);
+            var bills = await customer.getBills({
+                include: [{
+                    model: models.BillTransaction,
+                }]
+            });
+            var rented = 0;
+            for (let i = 0; i < bills.length; i++) {
+                var bill = bills[i];
+                var txns = bill.bill_transactions;
+                for (let j = 0; j < txns.length; j++) {
+                    var txn = txns[j];
+                    if (txn.type == 'rented') {
+                        rented += txn.quantity;
+                        var returns = await txn.getReturn(); 
+                        var total_return = _.sumBy(returns, (o) => o.quantity);
+                        rented -= total_return;
+                    }
+                }
+            }
+            return rented;
         }
     },
     billing: {
@@ -939,6 +1017,7 @@ module.exports = {
         },
         toNumberFloat: toNumberFloat,
         toNumber: toNumber,
+        getThisMonthStart: getThisMonthStart,
         toEnglishDate: (date) => {
             var numbers = {
                 '१': 1,

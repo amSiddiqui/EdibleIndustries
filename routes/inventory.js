@@ -203,6 +203,15 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     },
   ];
   var data = {};
+
+  var reports = {};
+  // var today nepali date and start of month neapli date
+  var today = new Date();
+  var start_of_month = utility.misc.getThisMonthStart();
+  reports.today = new NepaliDate(today).format("DD/MM/YYYY", "np");
+  reports.start_of_month = new NepaliDate(start_of_month).format("DD/MM/YYYY", "np");
+  
+
   inventory.fetchInventory(id).
   then(inv => {
     var flash_message = req.flash('flash_message');
@@ -268,6 +277,8 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   }).
   then(batches => {
     data.batches = batches;
+
+    data.reports = reports;
     res.render('inventory/item', data);
   }).
   catch(err => {
