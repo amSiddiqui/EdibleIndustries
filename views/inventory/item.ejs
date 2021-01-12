@@ -106,9 +106,15 @@
 
                             var hasPacking = typeof record.inventory_batch_record !== 'undefined' && record.inventory_batch_record !== null;
                         %>
-                        <tr>
+                        <tr class="<%= record.type == 'sold'?'bill-id-show-container':''; %>">
                             <td><%=(i+1)%></td>
-                            <td><%=record.user.first_name+' '+record.user.last_name;%></td>
+                            <td><%=record.user.first_name+' '+record.user.last_name;%>
+                            <% if (record.type == 'sold') { %>
+                            <div class="has-text-success bill-id-show">
+                                <p><%=record.bill_id%></p>
+                            </div>
+                            <% } %>
+                            </td>
                             <% if (hasPacking) { %>
                             <td><%=record.inventory_batch_record.inventory_batch.name%>
                                 (<%=record.inventory_batch_record.inventory_batch.quantity%>)</td>
@@ -118,7 +124,7 @@
                             <td class="is-capitalized <%=color%>"><%=record.type%></td>
                             <% if (hasPacking) { %>
                             <td>(<%=record.inventory_batch_record.inventory_batch.quantity%>
-                                <%=record.inventory_batch_record.value%>) <%=record.value%></td>
+                                <%=record.inventory_batch_record.value%>) * <%=record.value%></td>
                             <% }else{ %>
                             <td><%=record.value%></td>
                             <% } %>

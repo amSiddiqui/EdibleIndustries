@@ -15,6 +15,18 @@ $shadow: rgba(200, 200, 200, 0.4);
 
 }
 
+.bill-id-show {
+  display: none;
+}
+
+.bill-id-show-container{
+  :hover {
+    .bill-id-show {
+      display: block;
+    }
+  }
+}
+
 .auth-container .title {
   text-align: center;
 }

@@ -189,6 +189,17 @@ module.exports = {
             inv.total = res.total;
             inv.in_stock = res.in_stock;
 
+            for (let i = 0; i < inv.inventory_records.length; i++) { var record = inv.inventory_records[i];
+                if (record.type == 'sold') {
+                    var txn = await record.getBill_transaction({
+                        include: [{
+                            model: models.Bill
+                        }]
+                    });
+                    inv.inventory_records[i].bill_id = txn.bill.track_id;
+                }
+            }
+            
             return inv;
         },
         updateInventory: async (id, data) => {
