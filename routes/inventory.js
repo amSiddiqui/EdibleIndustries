@@ -89,16 +89,16 @@ router.put('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
   data.value = utility.misc.toNumber(data.value);
   data.batch_id = utility.misc.toNumber(data.batch_id);
   data.cost = utility.misc.toNumberFloat(req.body.inventory_cost.trim());
-  utility.inventory.editRecord(id, data).then(()=>{
+  utility.inventory.editRecord(id, data).then((inventory_id)=>{
     req.flash('flash_message', 'Record Added');
     req.flash('flash_color', 'success');
-    res.redirect('/inventory/' + id);
+    res.redirect('/inventory/' + inventory_id);
   }).catch(err => {
     console.log(err);
     req.flash('flash_message', 'Error Adding Record. Check your inputs.');
     req.flash('flash_color', 'danger');
     console.log("Data name is empty: ", data);
-    res.redirect('/inventory/' + id);
+    res.redirect('/inventory/');
   });
 });
 

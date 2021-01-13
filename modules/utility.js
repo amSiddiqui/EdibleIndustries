@@ -335,6 +335,9 @@ module.exports = {
             await old_inv_batch_record.destroy();
             await inventory_record.setInventory_batch_record(inventory_batch_record);
             await inventory_batch_record.save();
+
+            var inventory_id = await inventory_record.getInventory();
+            return inventory_id.id;
         },
         deleteRecord: async (id) => {
             var record = await models.InventoryRecord.findByPk(id);
@@ -385,41 +388,41 @@ module.exports = {
                 return null;
             }
 
-            var bills = await models.Bill.findAll({
-                where: {
-                    [Op.between]: [start, end]
-                },
-                include: [{
-                        model: models.BillTransaction,
-                        include: [{
-                            model: models.InventoryRecord,
-                            include: [{
-                                model: models.Inventory
-                            }]
-                        }]
-                    },
-                    {
-                        model: models.Customer,
-                        include: [{
-                            model: models.CustomerType
-                        }]
-                    }
-                ]
-            });
-            var inv_bills = [];
-            for (let i = 0; i < bills.length; i++) {
-                const bill = bills[i];
-                const transactions = bill.bill_transactions;
-                for (let j = 0; j < transactions.length; j++) {
-                    const tr = transactions[j];
-                    if (tr.inventory_record.inventory.id == id) {
-                        inv_bills.push(bill);
-                        break;
-                    }
-                }
-            }
+            // var bills = await models.Bill.findAll({
+            //     where: {
+            //         [Op.between]: [start, end]
+            //     },
+            //     include: [{
+            //             model: models.BillTransaction,
+            //             include: [{
+            //                 model: models.InventoryRecord,
+            //                 include: [{
+            //                     model: models.Inventory
+            //                 }]
+            //             }]
+            //         },
+            //         {
+            //             model: models.Customer,
+            //             include: [{
+            //                 model: models.CustomerType
+            //             }]
+            //         }
+            //     ]
+            // });
+            // var inv_bills = [];
+            // for (let i = 0; i < bills.length; i++) {
+            //     const bill = bills[i];
+            //     const transactions = bill.bill_transactions;
+            //     for (let j = 0; j < transactions.length; j++) {
+            //         const tr = transactions[j];
+            //         if (tr.inventory_record.inventory.id == id) {
+            //             inv_bills.push(bill);
+            //             break;
+            //         }
+            //     }
+            // }
 
-            return inv_bills;
+            return null;
 
         }
     },

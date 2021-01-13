@@ -123,8 +123,8 @@
                             <% } %>
                             <td class="is-capitalized <%=color%>"><%=record.type%></td>
                             <% if (hasPacking) { %>
-                            <td>(<%=record.inventory_batch_record.inventory_batch.quantity%>
-                                <%=record.inventory_batch_record.value%>) * <%=record.value%></td>
+                            <td>(<%=record.inventory_batch_record.inventory_batch.quantity%> *
+                                <%=record.inventory_batch_record.value%>) <%=record.value%></td>
                             <% }else{ %>
                             <td><%=record.value%></td>
                             <% } %>
@@ -138,16 +138,23 @@
                                 <% if(record.type == 'discarded' || record.type == 'purchased' || record.type == 'manufactured') { %>
                                 <div class="field  is-grouped">
                                     <div class="control">
-                                        <button class="record-edit-button type-edit-button has-text-info"
-                                            data-date="<%=toNepaliDate(record.recordDate);%>"
-                                            data-type="<%=record.type%>" data-cost="<%=record.cost%>"
-                                            data-packing="<%=record.inventory_batch_record.inventory_batch.id%>"
-                                            data-quantity="<%=record.value%>" value="<%=record.id%>"><i
+                                        <button
+                                        onclick = "recordEdit(
+                                            '<%=toNepaliDate(record.recordDate);%>',
+                                            '<%=record.type%>',
+                                            '<%=record.cost%>',
+                                            '<%=record.inventory_batch_record.inventory_batch.id%>',
+                                            '<%=record.value%>',
+                                            '<%=record.id%>'
+                                        );"
+                                        class="record-edit-button type-edit-button has-text-info"><i
                                                 class="fas fa-pen"></i></button>
                                     </div>
                                     <div class="control">
                                         <button class="record-delete-button type-delete-button has-text-danger"
-                                            value="<%=record.id%>"><i class="fas fa-trash"></i></button>
+                                        onclick = "recordDelete(
+                                            '<%=record.id%>'
+                                        );"><i class="fas fa-trash"></i></button>
                                     </div>
                                 </div>
                                 <% } %>

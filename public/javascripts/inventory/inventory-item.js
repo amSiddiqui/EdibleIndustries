@@ -3,6 +3,28 @@ function resetTabs() {
     $(".tab-content").hide();
 }
 
+function recordEdit(
+    date,
+    type,
+    cost,
+    packing,
+    quantity,
+    record_id
+) {
+    $("#edit-inventory-type").val(type);
+    $("#edit_record_date").val(date);
+    $("#edit_inventory_cost").val(cost);
+    $("#edit-inv-batch").val(packing);
+    $("#edit-quantity").val(quantity);
+    $("#edit-inventory-record-modal").find('form').attr('action', '/inventory/edit/'+record_id+'?_method=PUT');
+    $("#edit-inventory-record-modal").addClass('is-active');
+}
+
+function recordDelete(id) {
+    $("#confirm-delete-record").find("#delete-record-id").val(id);
+    $("#confirm-delete-record").addClass('is-active');
+}
+
 function fetchAndUpdateReport() {
     $("#report-message").show();
     var from = $("#report-date-from").val();
@@ -54,39 +76,43 @@ $(function () {
 
 
     var total = 0;
-    var table_loaded = new Promise((resolve, reject) => {
-        $('.rent-status').each(function () {
-            let id = $(this).attr('data-key');
-            var container = $(this);
-            $.get('/api/check-item-rented/' + id, function (data) {
-                if (data.status == 'success') {
-                    if (data.result) {
-                        container.append('<span class="has-text-danger">Rented</span>');
-                    } else {
-                        container.append('<span class="has-text-success">No</span>');
-                    }
-                }
-            }).fail(function (err) {
-                console.log(err);
-            }).always(function () {
-                total++;
-                if (total == totals_bills) {
-                    resolve();
-                }
-            });
-        });
+
+    // var table_loaded = new Promise((resolve, reject) => {
+    //     $('.rent-status').each(function () {
+    //         let id = $(this).attr('data-key');
+    //         var container = $(this);
+    //         $.get('/api/check-item-rented/' + id, function (data) {
+    //             if (data.status == 'success') {
+    //                 if (data.result) {
+    //                     container.append('<span class="has-text-danger">Rented</span>');
+    //                 } else {
+    //                     container.append('<span class="has-text-success">No</span>');
+    //                 }
+    //             }
+    //         }).fail(function (err) {
+    //             console.log(err);
+    //         }).always(function () {
+    //             total++;
+    //             if (total == totals_bills) {
+    //                 resolve();
+    //             }
+    //         });
+    //     });
+    // });
+
+    $("#billing-table").DataTable({
+        "columnDefs": [{
+            "width": "3%",
+            "targets": 0
+        }, ],
+        "order": [
+            [0, 'desc']
+        ]
     });
-    table_loaded.then(function () {
-        $("#billing-table").DataTable({
-            "columnDefs": [{
-                "width": "3%",
-                "targets": 0
-            }, ],
-            "order": [
-                [0, 'desc']
-            ]
-        });
-    });
+
+    // table_loaded.then(function () {
+        
+    // });
 
     $("#history-table").DataTable({});
 
@@ -166,31 +192,6 @@ $(function () {
             $("#inventory_cost").val(inventory_cost);
         }
     });
-
-    $(".record-edit-button").on('click', function() {
-        var date = $(this).attr('data-date');
-        var type = $(this).attr('data-type');
-        var cost = $(this).attr('data-cost');
-        var packing = $(this).attr('data-packing');
-        var quantity = $(this).attr('data-quantity');
-        var record_id = $(this).val();
-        $("#edit-inventory-type").val(type);
-        $("#edit_record_date").val(date);
-        $("#edit_inventory_cost").val(cost);
-        $("#edit-inv-batch").val(packing);
-        $("#edit-quantity").val(quantity);
-        $("#edit-inventory-record-modal").find('form').attr('action', '/inventory/edit/'+record_id+'?_method=PUT');
-        $("#edit-inventory-record-modal").addClass('is-active');
-    });
-
-    $(".record-delete-button").on('click', function() {
-        var id = $(this).val();
-        $("#confirm-delete-record").find("#delete-record-id").val(id);
-        $("#confirm-delete-record").addClass('is-active');
-    });
-
-
-
 
     // Reports Script
     $("#report-date-from").nepaliDatePicker({
