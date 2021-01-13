@@ -30,6 +30,7 @@
                         <th>Customer</th>
                         <th>Customer Type</th>
                         <th>Amount</th>
+                        <th>Total Sold</th>
                         <th>Payment</th>
                         <th>Due</th>
                     </tr>
@@ -46,6 +47,7 @@
                             <% } %>
                             <td><%=bill.customer.customer_type.name;%></td>
                             <td>Re. <%=bill.total; %></td>
+                            <td><%=bill.total_sold; %></td>
                             <td><%=bill.payment_method; %></td>
                             <% if(bill.paid) { %>
                             <td> <span class="has-text-success">Paid</span> </td>

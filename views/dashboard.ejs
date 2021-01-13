@@ -151,7 +151,7 @@
                                     <th>Date</th>
                                     <th>Customer</th>
                                     <th>Rented</th>
-                                    <th>Paid</th>
+                                    <th>Rent Total</th>
                                     <th>Total</th>
                                 </tr>
                             </thead>
@@ -172,11 +172,7 @@
                                             <% } %>
                                         <% } %>
                                     </td>
-                                    <% if (bill.paid) { %>
-                                    <td class="has-text-success">Yes</td>
-                                    <% } else { %>
-                                    <td class="has-text-danger">No</td>
-                                    <% } %>
+                                    <td><%= bill.bill_rented; %></td>
                                     <td>Re. <%=bill.total.toFixed(2);%></td>
                                 </tr>
                                 <% } %>

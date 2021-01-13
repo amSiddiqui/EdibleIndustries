@@ -1143,6 +1143,19 @@ module.exports = {
                             }
                         ]
                     });
+                    var bill_rented = 0;
+                    var txns = bill.bill_transactions;
+                    for (let j = 0; j < txns.length; j++) {
+                        var txn = txns[j];
+                        if (txn.type == 'rented') {
+                            bill_rented += txn.quantity;
+                            var returns_rented = await txn.getReturn(); 
+                            var total_return = _.sumBy(returns_rented, (o) => o.quantity);
+                            bill_rented -= total_return;
+                        }
+                    }
+                    bill.bill_rented = bill_rented;
+
                     if (!bill_ids.includes(bill.id))  {
                         bills.push(bill);
                         bill_ids.push(bill.id);
