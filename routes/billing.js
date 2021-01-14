@@ -206,7 +206,10 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   utility.billing.fetch(id).then(bill => {
       bill.nepali_date = new NepaliDate(bill.createdAt).format("ddd, DD MMMM YYYY", 'np');
       if (!bill.paid) {
-        bill.nepali_due = new NepaliDate(bill.dueDate).format("ddd, DD MMMM YYYY", 'np');
+        if (bill.dueDate == null)
+          bill.nepali_due = '';
+        else
+          bill.nepali_due = new NepaliDate(bill.dueDate).format("ddd, DD MMMM YYYY", 'np');
         bill.danger = false;
         if (bill.dueDate < today) {
           bill.danger = true;
@@ -234,9 +237,11 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     }).then(were_rented => {
       data.bill.were_rented = were_rented;
       data.toNepaliDate = (d) => {
+        if (d == null) d = new Date();
         return new NepaliDate(d).format("DD/MM/YYYY", 'np');
       };
       data.toNepaliDateFull = (d) => {
+        if (d == null) d = new Date();
         return new NepaliDate(d).format("ddd, DD MMMM YYYY", 'np');
       };
       console.log('Bill Transaction Status: ', data.bill.bill_transactions[0].status);
