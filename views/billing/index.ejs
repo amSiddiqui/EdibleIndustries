@@ -8,7 +8,8 @@
         <div class="column is-3">
             <div class="field is-grouped is-grouped-right">
                 <div class="control">
-                    <button class="button is-success is-rounded" onclick="window.location.href = '/billing/add'" id="add-customer">
+                    <button class="button is-success is-rounded" onclick="window.location.href = '/billing/add'"
+                        id="add-customer">
                         <span class="icon">
                             <i class="fas fa-plus fa-xs"></i>
                         </span>
@@ -37,30 +38,42 @@
                 </thead>
                 <tbody>
                     <% for(let i=0; i < bills.length; i++) { const bill = bills[i]; %>
-                        <tr onclick="window.location.href =  '/billing/<%=bill.id%>'">
-                            <td><%=bill.track_id;%></td>
-                            <td><%=bill.nepali_date;%></td>
-                            <% if (bill.customer.organization.length == 0) { %>
-                            <td><%=bill.customer.first_name+' '+bill.customer.last_name;%></td>
-                            <% } else { %>
-                            <td><%=bill.customer.organization;%></td>
-                            <% } %>
-                            <td><%=bill.customer.customer_type.name;%></td>
-                            <td>Re. <%=bill.total; %></td>
-                            <td><%=bill.total_sold; %></td>
-                            <td><%=bill.payment_method; %></td>
-                            <% if(bill.paid) { %>
-                            <td> <span class="has-text-success">Paid</span> </td>
-                            <% }else{ %>
-                                <% if(!bill.danger) { %>    
-                            <td> <span><%=bill.nepali_due;%></span> </td>
-                                <% }else{ %>
-                            <td> <span class="has-text-danger"><%=bill.nepali_due;%></span> </td>
-                                <% } %>
-                            <% } %>
-                        </tr>
+                    <tr onclick="window.location.href =  '/billing/<%=bill.id%>'">
+                        <td><%=bill.track_id;%></td>
+                        <td><%=bill.nepali_date;%></td>
+                        <% if (bill.customer.organization.length == 0) { %>
+                        <td><%=bill.customer.first_name+' '+bill.customer.last_name;%></td>
+                        <% } else { %>
+                        <td><%=bill.customer.organization;%></td>
+                        <% } %>
+                        <td><%=bill.customer.customer_type.name;%></td>
+                        <td>Re. <%=bill.total; %></td>
+                        <td><%=bill.total_sold; %></td>
+                        <td><%=bill.payment_method; %></td>
+                        <% if(bill.paid) { %>
+                        <td> <span class="has-text-success">Paid</span> </td>
+                        <% }else{ %>
+                        <% if(!bill.danger) { %>
+                        <td> <span><%=bill.nepali_due;%></span> </td>
+                        <% }else{ %>
+                        <td> <span class="has-text-danger"><%=bill.nepali_due;%></span> </td>
+                        <% } %>
+                        <% } %>
+                    </tr>
                     <% } %>
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     </div>

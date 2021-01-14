@@ -227,9 +227,11 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
       breadcrumbs
     };
     data.toNepaliDate = (d) => {
+      if (d == null) return '';
       return new NepaliDate(d).format("DD/MM/YYYY", 'np');
     };
     data.toNepaliDateFull = (d) => {
+      if (d == null) return '';
       return new NepaliDate(d).format("ddd, DD MMMM YYYY", 'np');
     };
     var percent = data.in_stock / data.total;
@@ -264,7 +266,10 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
 
       bills[i].nepali_date = new NepaliDate(bill.createdAt).format("DD/MM/YYYY");
       if (!bill.paid) {
-        bills[i].nepali_due = new NepaliDate(bill.dueDate).format("DD/MM/YYYY");
+        if (bill.dueDate == null) 
+          bills[i].nepali_due = '';
+        else
+          bills[i].nepali_due = new NepaliDate(bill.dueDate).format("DD/MM/YYYY");
         if (bill.dueDate < bill.createdAt) {
           bills[i].danger = true;
         }else{

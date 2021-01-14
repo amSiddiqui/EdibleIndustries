@@ -18,11 +18,11 @@ router.get('/', middleware.auth.loggedIn(), function(req, res, next) {
   }
 
   data.toNepaliDate = (d) => {
-    if (d == null) d = new Date();
+    if (d == null)return '';
     return new NepaliDate(d).format("DD/MM/YYYY", 'np');
   };
   data.toNepaliDateFull = (d) => {
-    if (d == null) d = new Date();
+    if (d == null)return '';
     return new NepaliDate(d).format("ddd, DD MMMM YYYY", 'np');
   };
 

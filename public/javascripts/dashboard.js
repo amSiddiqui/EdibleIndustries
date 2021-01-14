@@ -8,13 +8,85 @@ $(function () {
         "columnDefs": [
             { "width": "3%", "targets": 0 },
         ],
-        "order": [[0, 'desc']]
+        "order": [[0, 'desc']],
+        "footerCallback": function (row, data, start, end, display) {
+            var api = this.api(),
+                data;
+            var intVal = function (i) {
+                if (typeof i === 'string') {
+                    i = i.trim();
+                    if (i.length == 0) {
+                        return 0;
+                    }
+                    if (isNaN(i)) {
+                        i = i.substring(3);
+                        return parseFloat(i);
+                    }
+                    return parseFloat(i);
+                }
+                return i;
+            };
+
+            // computing column Total of the complete result 
+            var costTotal = api
+                .column(5)
+                .data()
+                .reduce(function (a, b) {
+                    return intVal(a) + intVal(b);
+                }, 0);
+
+            var total = api
+                .column(4)
+                .data()
+                .reduce(function (a, b) {
+                    return intVal(a) + intVal(b);
+                }, 0);
+
+            costTotal = formatMoney(costTotal);
+
+            // Update footer by showing the total with the reference of the column index 
+            $(api.column(0).footer()).html('Total');
+            $(api.column(5).footer()).html('Re. '+costTotal);
+            $(api.column(4).footer()).html(total);
+        }
     });
     $("#unpaid-table").DataTable({
         "columnDefs": [
             { "width": "3%", "targets": 0 },
         ],
-        "order": [[0, 'desc']]
+        "order": [[0, 'desc']],
+        "footerCallback": function (row, data, start, end, display) {
+            var api = this.api(),
+                data;
+            var intVal = function (i) {
+                if (typeof i === 'string') {
+                    i = i.trim();
+                    if (i.length == 0) {
+                        return 0;
+                    }
+                    if (isNaN(i)) {
+                        i = i.substring(3);
+                        return parseFloat(i);
+                    }
+                    return parseFloat(i);
+                }
+                return i;
+            };
+
+            // computing column Total of the complete result 
+            var costTotal = api
+                .column(4)
+                .data()
+                .reduce(function (a, b) {
+                    return intVal(a) + intVal(b);
+                }, 0);
+
+            costTotal = formatMoney(costTotal);
+
+            // Update footer by showing the total with the reference of the column index 
+            $(api.column(0).footer()).html('Total');
+            $(api.column(4).footer()).html('Re. '+costTotal);
+        }
     });
     removeSearchResult();
     $.get('/api/all-bills', function (data) {
