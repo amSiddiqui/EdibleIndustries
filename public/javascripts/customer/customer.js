@@ -71,7 +71,7 @@ $(function() {
     
                 // computing column Total of the complete result 
                 var costTotal = api
-                    .column(5, { search:'applied' })
+                    .column(2, { search:'applied' })
                     .data()
                     .reduce(function (a, b) {
                         return intVal(a) + intVal(b);
@@ -82,7 +82,7 @@ $(function() {
     
                 // Update footer by showing the total with the reference of the column index 
                 $(api.column(0).footer()).html('Total');
-                $(api.column(5).footer()).html('Re. '+costTotal);
+                $(api.column(2).footer()).html('Re. '+costTotal);
             }
         });
     });

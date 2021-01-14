@@ -372,6 +372,7 @@ module.exports = {
                 for (let j = 0; j < transactions.length; j++) {
                     const tr = transactions[j];
                     if (tr.inventory_record.inventory.id == id) {
+                        bill.inv_total = tr.quantity * tr.rate;
                         inv_bills.push(bill);
                         break;
                     }

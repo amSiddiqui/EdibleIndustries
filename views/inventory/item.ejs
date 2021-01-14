@@ -299,7 +299,7 @@
                             <td><%=bill.nepali_date;%></td>
                             <td><%=bill.customer.first_name+' '+bill.customer.last_name;%></td>
                             <td><%=bill.customer.customer_type.name;%></td>
-                            <td>Re. <%=bill.total; %></td>
+                            <td>Re. <%=bill.inv_total.toFixed(2); %></td>
                             <td><%=bill.total_items; %></td>
                             <% if(bill.paid) { %>
                             <td> <span class="has-text-success">Paid</span> </td>
