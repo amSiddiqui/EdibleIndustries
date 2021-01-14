@@ -42,14 +42,16 @@ $(() => {
 
             // computing column Total of the complete result 
             var costTotal = api
-                .column(4)
+                .column(4, { search:'applied' })
                 .data()
                 .reduce(function (a, b) {
                     return intVal(a) + intVal(b);
                 }, 0);
-
+                
+            
+            
             var total = api
-                .column(5)
+                .column(5, { search:'applied' })
                 .data()
                 .reduce(function (a, b) {
                     return intVal(a) + intVal(b);
