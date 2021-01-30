@@ -11,3 +11,4 @@ deployment:
  - /bin/cp ./.gitignore $DEPLOYPATH
  - /bin/cp ./app.js $DEPLOYPATH
  - /bin/cp ./package.json $DEPLOYPATH
+ - touch $DEPLOYPATH/tmp/restart.txt
