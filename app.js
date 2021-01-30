@@ -51,6 +51,7 @@ app.use(flash());
 // Enforce HTTPS
 if (process.env.ENV != 'development') {
   app.enable('trust proxy');
+  app.set('trust proxy', 1);
   app.use(function(request, response, next) {
     if (process.env.NODE_ENV != 'development' && !request.secure) {
       return response.redirect("https://" + request.headers.host + request.url);
