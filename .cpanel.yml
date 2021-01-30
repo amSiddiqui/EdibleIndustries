@@ -1,0 +1,13 @@
+---
+deployment:
+ tasks:
+ - export DEPLOYPATH=/home/tpollco/kushee.com/edible
+ - /bin/cp -r ./bin $DEPLOYPATH
+ - /bin/cp -r ./models $DEPLOYPATH
+ - /bin/cp -r ./modules $DEPLOYPATH
+ - /bin/cp -r ./public $DEPLOYPATH
+ - /bin/cp -r ./routes $DEPLOYPATH
+ - /bin/cp -r ./views $DEPLOYPATH
+ - /bin/cp ./.gitignore $DEPLOYPATH
+ - /bin/cp ./app.js $DEPLOYPATH
+ - /bin/cp ./package.json $DEPLOYPATH
