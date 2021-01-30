@@ -12,8 +12,6 @@ const compression = require('compression');
 const helmet = require('helmet');
 const fs = require('fs');
 const environment = process.env.NODE_ENV || 'development';
-
-
 const indexRouter = require('./routes/index');
 const authRouter = require('./routes/auth');
 const customerRouter = require('./routes/customer');
@@ -22,8 +20,10 @@ const billingRouter = require('./routes/billing');
 const recordsRouter = require('./routes/records');
 const apiRouter = require('./routes/api');
 
-
 const app = express();
+
+// Set Defautl timezone
+process.env.TZ = 'Asia/Kathmandu';
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

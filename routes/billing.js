@@ -138,7 +138,7 @@ router.post('/return/:id', middleware.auth.loggedIn(), function (req, res, next)
 
   let bill_id = req.body.bill_id;
   let user_email = req.session.email;
-  if (typeof user_email == 'undefined' || user_email == null) {
+  if (typeof user_email == 'undefined' || user_email === null) {
     user_email = 'gt_ams@yahoo.in';
   }
   utility.billing.addReturn(id, inv_id, quant, bill_id, user_email, bd).then(() => {
@@ -202,11 +202,10 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   }
 
   var today = new Date();
-
   utility.billing.fetch(id).then(bill => {
       bill.nepali_date = new NepaliDate(bill.createdAt).format("ddd, DD MMMM YYYY", 'np');
       if (!bill.paid) {
-        if (bill.dueDate == null)
+        if (bill.dueDate === null)
           bill.nepali_due = '';
         else
           bill.nepali_due = new NepaliDate(bill.dueDate).format("ddd, DD MMMM YYYY", 'np');
@@ -237,14 +236,13 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     }).then(were_rented => {
       data.bill.were_rented = were_rented;
       data.toNepaliDate = (d) => {
-        if (d == null) return '';
+        if (d === null) return '';
         return new NepaliDate(d).format("DD/MM/YYYY", 'np');
       };
       data.toNepaliDateFull = (d) => {
-        if (d == null) return '';
+        if (d === null) return '';
         return new NepaliDate(d).format("ddd, DD MMMM YYYY", 'np');
       };
-      console.log('Bill Transaction Status: ', data.bill.bill_transactions[0].status);
       res.render('billing/show', data);
     })
     .catch(err => {
