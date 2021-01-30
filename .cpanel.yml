@@ -2,6 +2,12 @@
 deployment:
  tasks:
  - export DEPLOYPATH=/home/tpollco/kushee.com/edible
+ - rm -rf $DEPLOYPATH/bin
+ - rm -rf $DEPLOYPATH/models
+ - rm -rf $DEPLOYPATH/modules
+ - rm -rf $DEPLOYPATH/public
+ - rm -rf $DEPLOYPATH/routes
+ - rm -rf $DEPLOYPATH/views
  - /bin/cp -r ./bin $DEPLOYPATH
  - /bin/cp -r ./models $DEPLOYPATH
  - /bin/cp -r ./modules $DEPLOYPATH
