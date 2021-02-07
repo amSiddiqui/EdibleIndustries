@@ -50,6 +50,8 @@ function updateTotal() {
 
 $(function () {
     
+    $("#customer").select2();
+
     updateTotal();
 
     $("#discount-percent input").on('change', function () {

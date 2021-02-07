@@ -35,11 +35,18 @@
                 <div class="field">
                     <div class="control">
                         <label class="label" for="customer">Customer</label>
-                        <% if (bill.customer.organization.length == 0) { %>
-                            <input type="text" id="customer" disabled readonly value="<%=bill.customer.first_name+' '+bill.customer.last_name%>" class="input">
-                        <% }else{ %>
-                            <input type="text" id="customer" disabled readonly value="<%=bill.customer.organization%> (<%=bill.customer.first_name+' '+bill.customer.last_name%>)" class="input">
-                        <% } %>
+                        <select name="customer" id="customer">
+                            <option value="" selected disabled></option>
+                            <% for(let i = 0; i < customers.length; i++) { const customer = customers[i]; var selected = bill.customer.id == customer.id; %>
+                            <% if (customer.organization.length == 0) { %>
+                            <option <%=selected?"selected":"" %> value="<%= customer.id; %>"><%=customer.first_name+' '+customer.last_name;%>
+                            </option>
+                            <% }else{ %>
+                            <option <%=selected?"selected":"" %> value="<%= customer.id; %>"><%= customer.organization; %>
+                                (<%= customer.first_name+' '+customer.last_name;%>)</option>
+                            <% } %>
+                            <% } %>
+                        </select>
                     </div>
                 </div>
             </div>

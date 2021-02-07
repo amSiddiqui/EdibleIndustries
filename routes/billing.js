@@ -277,6 +277,7 @@ router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   var tax_percent = req.body.tax_percent;
   var tax_value = req.body.tax_value;
   var due_date = req.body.due_date.trim();
+  var customer = req.body.customer;
 
 
   var dd = null;
@@ -313,7 +314,8 @@ router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     discount_value,
     tax_percent,
     tax_value,
-    paid
+    paid,
+    customer
   }, req.body).then(function() {
     req.flash('flash_message', 'Bill Updated Successfully');
     req.flash('flash_color', 'success');

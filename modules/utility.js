@@ -862,6 +862,8 @@ module.exports = {
         },
         edit_bill: async (id, data, body) => {
             var bill = await models.Bill.findByPk(id);
+            var customer = await models.Customer.findByPk(data.customer);
+            await bill.setCustomer(customer);
             bill.image = data.image_loc;
             bill.description = data.description;
             if (!data.paid) {
