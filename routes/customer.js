@@ -373,7 +373,6 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
         for (let i = 0; i < customer.inventory_batches.length; i++) {
           const b = customer.inventory_batches[i];
           if (b.id == b_id) {
-            console.log("Found: ", b.customer_rate);
             return 'Re. ' + b.customer_rate.rate;
           }
         }
