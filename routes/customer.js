@@ -369,7 +369,6 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
       var phone = customer.phone;
       data.inventories = inventories;
       data.getInventoryRate = function (b_id) {
-        console.log("Finding Rate for b_id: ", b_id);
         for (let i = 0; i < customer.inventory_batches.length; i++) {
           const b = customer.inventory_batches[i];
           if (b.id == b_id) {
