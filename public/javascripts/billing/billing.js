@@ -14,14 +14,33 @@ $(() => {
         $(this).siblings('.return-history').hide();
     });
 
-    $("#billing-table").DataTable({
+    $('#billing-table thead tr').clone(true).appendTo( '#billing-table thead' );
+    $('#billing-table thead tr:eq(1) th').each( function (i) {
+        var title = $(this).text();
+        $(this).html( '<input type="text" style="width: 100%; padding: 3px; box-sizing: border-box;" placeholder="Search '+title+'" />' );
+ 
+        $( 'input', this ).on( 'keyup change', function () {
+            if ( billingTable.column(i).search() !== this.value ) {
+                billingTable
+                    .column(i)
+                    .search( this.value )
+                    .draw();
+            }
+        } );
+    } );
+
+    var billingTable = $("#billing-table").DataTable({
         "columnDefs": [{
             "width": "3%",
             "targets": 0
-        }, ],
+        }, {
+            "width": "12%",
+            "targets": 3
+        }],
         "order": [
             [0, 'desc']
         ],
+        orderCellsTop: true,
         "footerCallback": function (row, data, start, end, display) {
             var api = this.api(),
                 data;
