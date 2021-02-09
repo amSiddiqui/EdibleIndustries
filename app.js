@@ -36,8 +36,9 @@ app.use(session({
   store: new MemoryStore({
     checkPeriod: 86400000 // prune expired entries every 24h
   }),
-  resave: false,
-  secret: 'y9rRgjnvB94m4ZJ78wD7V'
+  secret: 'y9rRgjnvB94m4ZJ78wD7V',
+  resave: true,
+  saveUninitialized: true
 }));
 
 var log_config = process.env.ENV === 'development'? 'dev': 'tiny';
