@@ -19,6 +19,7 @@ const inventoryRouter = require('./routes/inventory');
 const billingRouter = require('./routes/billing');
 const recordsRouter = require('./routes/records');
 const apiRouter = require('./routes/api');
+const MemoryStore = require('memorystore')(session);
 
 const app = express();
 
@@ -30,11 +31,13 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 
-// Create Session
 app.use(session({
-  secret: 'Exmn3dsaf23S122qfsan58bEXF7Jupke',
-  resave: true,
-  saveUninitialized: true
+  cookie: { maxAge: 86400000 },
+  store: new MemoryStore({
+    checkPeriod: 86400000 // prune expired entries every 24h
+  }),
+  resave: false,
+  secret: 'y9rRgjnvB94m4ZJ78wD7V'
 }));
 
 var log_config = process.env.ENV === 'development'? 'dev': 'tiny';
@@ -53,16 +56,16 @@ app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 app.use(flash());
 
 // Enforce HTTPS
-// if (process.env.ENV != 'development') {
-//   app.enable('trust proxy');
-//   app.set('trust proxy', 1);
-//   app.use(function(request, response, next) {
-//     if (process.env.NODE_ENV != 'development' && !request.secure) {
-//       return response.redirect("https://" + request.headers.host + request.url);
-//     }
-//     next();
-//   });
-// }
+if (process.env.ENV != 'development') {
+  app.enable('trust proxy');
+  app.set('trust proxy', 1);
+  app.use(function(request, response, next) {
+    if (process.env.NODE_ENV != 'development' && !request.secure) {
+      return response.redirect("https://" + request.headers.host + request.url);
+    }
+    next();
+  });
+}
 
 
 if (process.env.ENV != 'development') {  
