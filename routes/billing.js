@@ -279,7 +279,6 @@ router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   var due_date = req.body.due_date.trim();
   var customer = req.body.customer;
 
-
   var dd = null;
   if (due_date.length !== 0) {
     due_date = utility.misc.toEnglishDate(due_date);
