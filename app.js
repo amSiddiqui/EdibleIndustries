@@ -93,15 +93,21 @@ console.log("Current Environment: ", process.env.ENV);
 // Initializing models
 const models = require('./models/Models');
 
-// Sync DB
-// db.sequelize.sync({
-//   force: true
-// }).then(() => {
-//   require('./modules/seed')(true, false);
-//   console.log("Database synchronized");
-// }).catch(err => {
-//   console.log("Error while synchronizing data: ", err);
-// });
+// Sync DB and seed
+
+var do_seed = false;
+
+db.sequelize.sync({
+  alter: true
+}).then(() => {
+  if (do_seed)
+    require('./modules/seed')(true, false);
+  console.log("Database synchronized");
+}).catch(err => {
+  console.log("Error while synchronizing data: ", err);
+});
+
+
 
 global.dbErrorMsg = "Database not responding try again later";
 global.cookieOpt = {

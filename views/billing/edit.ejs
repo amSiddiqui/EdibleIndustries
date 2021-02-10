@@ -73,17 +73,29 @@
                     </thead>
                     <tbody id="inventory-table-body">
                         <% for (let i = 0; i < bill.bill_transactions.length; i++){ var txn = bill.bill_transactions[i]; %>
+                        <!-- Get inventory of this particular transaction -->
+                        <% var batches = txn.inventory_record.inventory.inventory_batches %>
                         <tr>
                             <td class="inv-id"><%= txn.inventory_record.inventory_batch_record.inventory_batch.id %></td>
                             <td class="inv-name"><%= txn.inventory_record.inventory.name %></td>
                             <td class="packing-name">
-                                <%= txn.inventory_record.inventory_batch_record.inventory_batch.name; %> (<%=txn.inventory_record.inventory_batch_record.inventory_batch.quantity; %>)
+                                <div class="select is-fullwidth">
+                                    <select id="packing-<%=txn.id%>" onchange="updatePacking(this);" name="packing-<%=txn.id%>" class="packing">
+                                        <% for (let j = 0; j < batches.length; j++){ var batch = batches[j]; %>
+                                        <% if (batch.id == txn.inventory_record.inventory_batch_record.inventory_batch.id){ %>
+                                        <option data-quantity="<%=batch.quantity%>" selected value="<%= batch.id %>"><%= batch.name + '('+ batch.quantity+')' %></option>
+                                        <% }else{ %>
+                                        <option data-quantity="<%=batch.quantity%>" value="<%= batch.id %>"><%= batch.name + '('+ batch.quantity+')' %></option>
+                                        <% } %>
+                                        <% } %>
+                                    </select>
+                                </div>
                             </td>
                             <td style="width: 90px;">
                                 <input onchange="quantityChange('<%= txn.id; %>', this.value)" name="quantity-<%= txn.id %>" min="0" type="number" step="1" value="<%= txn.inventory_record.inventory_batch_record.value %>" class="input quantity">
                             </td>
                             <td style="width: 130px;">
-                                <input id="total-quantity-<%=txn.id%>" data-packing="<%=txn.inventory_record.inventory_batch_record.inventory_batch.quantity;%>" min="0" readonly type="number" step="1" value="<%= txn.inventory_record.value %>" class="input total-quantity">
+                                <input id="total-quantity-<%=txn.id%>" min="0" readonly type="number" step="1" value="<%= txn.inventory_record.value %>" class="input total-quantity">
                             </td>
                             <td style="width: 130px;">
                                 <%= txn.inventory_record.type %>
@@ -139,7 +151,7 @@
                         </div>
                     </div>
                 </div>
-                <div style="<%= bill.paid? 'display: none' : '' %>" class="columns" id="due_date_container">
+                <div <%= bill.paid? 'style="display: none"' : '' %> class="columns" id="due_date_container">
                     <div class="column">
                         <div class="field">
                             <div class="control">

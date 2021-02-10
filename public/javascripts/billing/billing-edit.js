@@ -1,7 +1,7 @@
 function quantityChange(id, value) {
     id = parseInt(id);
     value = parseInt(value);
-    var quantity = parseInt($("#total-quantity-"+id).attr('data-packing'));
+    var quantity = parseInt($("#packing-"+id+" option:selected").attr('data-quantity'));
     var total = quantity * value;
     $("#total-quantity-"+id).val(total);
     var rate = parseFloat($("#rate-"+id).val());
@@ -46,6 +46,20 @@ function updateTotal() {
     $("#tax-value input").val(tax.toFixed(2));
     var grand = remaining + tax;
     $("#grand-total").html('Re. ' + grand.toFixed(2));
+}
+
+
+function updatePacking(select) {
+    var id = $(select).val();
+    var batch_quant = $(select).find('option:selected').attr('data-quantity');
+    var row = $(select).parents('tr');
+    var quant = row.find('.quantity').val();
+    var total_quant = parseInt(batch_quant) * parseInt(quant);
+    row.find('.total-quantity').val(total_quant);
+    var rate = parseFloat(row.find('.rate').val());
+    var subtotal = quant * rate;
+    row.find('.total').html('Rs. '+(subtotal.toFixed(2)));
+    updateTotal();
 }
 
 $(function () {

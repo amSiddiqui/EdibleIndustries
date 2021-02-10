@@ -681,12 +681,16 @@ module.exports = {
     billing: {
         fetchAll: () => {
             return models.Bill.findAll({
-                include: [{
+                include: [
+                    {
                         model: models.BillTransaction
                     },
                     {
                         model: models.Customer,
                         include: models.CustomerType
+                    },
+                    {
+                        model: models.User
                     }
                 ],
                 order: [
@@ -698,13 +702,20 @@ module.exports = {
             return models.Bill.findByPk(id, {
                 include: [{
                         model: models.BillTransaction,
-                        include: [{
+                        include: [
+                            {
                                 model: models.InventoryRecord,
-                                include: [{
-                                    model: models.Inventory
+                                include: [
+                                {
+                                    model: models.Inventory,
+                                    include: [
+                                    {
+                                        model: models.InventoryBatch,
+                                    }]
                                 }, {
                                     model: models.InventoryBatchRecord,
-                                    include: [{
+                                    include: [
+                                    {
                                         model: models.InventoryBatch,
                                     }]
                                 }]
@@ -885,18 +896,26 @@ module.exports = {
                 var txn = txns[i];
                 var quant =  toNumber(body['quantity-'+txn.id]);
                 var rate = toNumberFloat(body['rate-'+txn.id]);
-                total += quant * rate;
+                var batch_id = toNumber(body['packing-'+txn.id]);
                 var inv_record = await txn.getInventory_record();
                 var batch_record = await inv_record.getInventory_batch_record();
-                var batch = await batch_record.getInventory_batch();
+                await batch_record.destroy();
+                var batch = await models.InventoryBatch.findByPk(batch_id);
+                var new_batch_record = await models.InventoryBatchRecord.create({
+                    type: inv_record.type,
+                    value: quant
+                });
+                await inv_record.setInventory_batch_record(new_batch_record);
+                await new_batch_record.setInventory_batch(batch);
+
+                total += quant * rate;
+
                 txn.quantity = quant;
                 txn.rate = rate;
                 await txn.save();
                 var total_quant = quant * batch.quantity;
                 inv_record.value = total_quant;
                 await inv_record.save();
-                batch_record.value = quant;
-                await batch_record.save();
             }
             total = total + data.tax_value - data.discount_value;
             bill.total = total;
