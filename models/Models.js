@@ -97,6 +97,11 @@ const User = db.sequelize.define("user", {
             notEmpty: true
         },
     },
+    user_type: {
+        type: db.Sequelize.ENUM,
+        values: ['Admin', 'Accountant'],
+        defaultValue: 'Admin'
+    },
     password: {
         type: db.Sequelize.STRING,
         get() {

@@ -681,12 +681,16 @@ module.exports = {
     billing: {
         fetchAll: () => {
             return models.Bill.findAll({
-                include: [{
+                include: [
+                    {
                         model: models.BillTransaction
                     },
                     {
                         model: models.Customer,
                         include: models.CustomerType
+                    },
+                    {
+                        model: models.User
                     }
                 ],
                 order: [
