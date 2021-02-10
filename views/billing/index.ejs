@@ -30,6 +30,7 @@
                         <th>Date</th>
                         <th>Customer</th>
                         <th>Customer Type</th>
+                        <th>Billed By</th>
                         <th>Amount</th>
                         <th>Total Sold</th>
                         <th>Payment</th>
@@ -47,6 +48,7 @@
                         <td><%=bill.customer.organization;%></td>
                         <% } %>
                         <td><%=bill.customer.customer_type.name;%></td>
+                        <td><%=bill.user.first_name+' '+bill.user.last_name;%></td>
                         <td>Re. <%=bill.total; %></td>
                         <td><%=bill.total_sold; %></td>
                         <td><%=bill.payment_method; %></td>

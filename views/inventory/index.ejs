@@ -19,7 +19,7 @@
     <div class="columns is-multiline" id="inventory-item-container">
         <% inventories.forEach(inventory => { %>
         <div class="column is-4">
-            <div class="card inventory-card" data-value="<%=inventory.id%>">
+            <div class="card custom-card" data-value="<%=inventory.id%>">
                 <div class="card-content">
                     <button class="edit" onclick="window.location.href = '/inventory/edit/<%=inventory.id%>/'"
                         aria-label="close"><i class="fas fa-pen"></i></button>

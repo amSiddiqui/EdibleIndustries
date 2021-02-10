@@ -60,10 +60,12 @@
             </a>
 
             <div class="navbar-dropdown">
-              <a href="/auth/signup" class="navbar-item">
-                Add User
+              <% if (check_perm()) { %>
+              <a href="/auth/users" class="navbar-item">
+                Users
               </a>
               <hr class="navbar-divider">
+              <% } %>
               <a href="/auth/logout" class="navbar-item">
                 Log Out
               </a>

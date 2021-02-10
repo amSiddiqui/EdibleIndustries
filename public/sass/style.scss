@@ -148,13 +148,13 @@ select {
   }
 }
 
-.inventory-card {
+.custom-card {
   transition: all 200ms ease-in;
   border-radius: 20px;
   cursor: pointer;
 }
 
-.inventory-card:hover {
+.custom-card:hover {
   background-color: rgba($color: #cfe6f1, $alpha: 0.4);
 }
 

@@ -102,7 +102,12 @@ db.sequelize.sync({
 }).then(() => {
   if (do_seed)
     require('./modules/seed')(true, false);
-  console.log("Database synchronized");
+
+  require('./modules/utility').misc.fixUserType().then(() => {
+    console.log("Database synchronized");
+  }).catch(err => {
+    console.log("Error while synchronizing data: ", err);  
+  });
 }).catch(err => {
   console.log("Error while synchronizing data: ", err);
 });
@@ -117,6 +122,12 @@ global.cookieOpt = {
 
 app.use((req, res, next) => {
   res.locals.first_name = req.session.first_name;
+  res.locals.check_perm = function() {
+    if (req.session.user_type === 'Admin' || process.env.ENV === 'development') {
+      return true;
+    }
+    return false;
+  };
   next();
 });
 

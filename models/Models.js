@@ -108,7 +108,6 @@ const User = db.sequelize.define("user", {
             return () => this.getDataValue('password')
         },
         validate: {
-            len: [6, 20],
             notEmpty: true,
         }
     },

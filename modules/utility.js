@@ -108,10 +108,28 @@ async function calculateTotalInventory(inv_id, end_date) {
 
 module.exports = {
     user: {
+        fetchAll: async () => {
+            return await models.User.findAll();
+        },
+        fetch: async (id) => {
+            return await models.User.findByPk(id);
+        },
         createUser: (data) => {
             return models.User.create({
                 ...data
             });
+        },
+        editUser: async (id, data) => {
+            var user = await models.User.findByPk(id);
+            user.first_name = data.first_name;
+            user.last_name = data.last_name;
+            user.email = data.email;
+            user.user_type = data.user_type;
+
+            if (data.change_password === 1) {
+                user.password = data.password;
+            }
+            await user.save();
         },
         userExists: (email, password) => {
             return new Promise((resolve, reject) => {
@@ -128,7 +146,8 @@ module.exports = {
                     if (user.correctPassword(password)) {
                         resolve({
                             exists: true,
-                            first_name: user.first_name
+                            first_name: user.first_name,
+                            user_type: user.user_type
                         });
                     } else {
                         resolve({
@@ -1234,6 +1253,22 @@ module.exports = {
             }
             data.unpaid = unpaid;
             return data;
+        },
+        fixUserType: async () => {
+            await models.User.update({user_type: 'Admin'}, {
+                where: {
+                    user_type: null
+                }
+            });
+        },
+        checkPermission: (req, res, message="User does not have permission to access the page") => {
+            if (req.session.user_type === 'Admin' || process.env.ENV === 'development') {
+                return true;
+            }
+            req.flash('flash_message', message);
+            req.flash('flash_color', 'danger');
+            res.redirect('/');
+            return false;
         }
     }
 }

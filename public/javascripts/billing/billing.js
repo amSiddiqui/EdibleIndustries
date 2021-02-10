@@ -61,7 +61,7 @@ $(() => {
 
             // computing column Total of the complete result 
             var costTotal = api
-                .column(4, { search:'applied' })
+                .column(5, { search:'applied' })
                 .data()
                 .reduce(function (a, b) {
                     return intVal(a) + intVal(b);
@@ -70,7 +70,7 @@ $(() => {
             
             
             var total = api
-                .column(5, { search:'applied' })
+                .column(6, { search:'applied' })
                 .data()
                 .reduce(function (a, b) {
                     return intVal(a) + intVal(b);
@@ -80,8 +80,8 @@ $(() => {
 
             // Update footer by showing the total with the reference of the column index 
             $(api.column(0).footer()).html('Total');
-            $(api.column(4).footer()).html('Re. '+costTotal);
-            $(api.column(5).footer()).html(total);
+            $(api.column(5).footer()).html('Re. '+costTotal);
+            $(api.column(6).footer()).html(total);
         }
     });
     $('#return_date').nepaliDatePicker({

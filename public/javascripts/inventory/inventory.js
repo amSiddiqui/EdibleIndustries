@@ -70,9 +70,9 @@ $(document).ready(() => {
         }
     });
 
-    $(".inventory-card").click(e => {
+    $(".custom-card").on('click', function(e) {
         if ($(e.target).parents('.edit').length === 0) {
-            var id = $(e.target).parents('.inventory-card').attr('data-value');
+            var id = $(e.target).parents('.custom-card').attr('data-value');
             window.location.href = '/inventory/' + id;
         }
     });
