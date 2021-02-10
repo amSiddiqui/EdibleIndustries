@@ -91,6 +91,7 @@ router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
   }).
   then(bill => {
     bill.nepali_date = new NepaliDate(bill.createdAt).format("DD/MM/YYYY", 'np');
+    var today = new Date();
     if (!bill.paid) {
       bill.nepali_due = new NepaliDate(bill.dueDate).format("DD/MM/YYYY", 'np');
       bill.danger = false;
