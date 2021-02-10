@@ -17,7 +17,7 @@ $(() => {
     $('#billing-table thead tr').clone(true).appendTo( '#billing-table thead' );
     $('#billing-table thead tr:eq(1) th').each( function (i) {
         var title = $(this).text();
-        $(this).html( '<input type="text" style="width: 100%; padding: 3px; box-sizing: border-box;" placeholder="Search '+title+'" />' );
+        $(this).html( '<input type="text" style="width: 100%; padding: 3px; box-sizing: border-box;" class="input is-small" placeholder="Search '+title+'" />' );
  
         $( 'input', this ).on( 'keyup change', function () {
             if ( billingTable.column(i).search() !== this.value ) {
