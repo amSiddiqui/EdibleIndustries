@@ -3,6 +3,7 @@
 <div class="container" style="margin-bottom: 200px;">
     <h1 class="title">Add New Customer</h1>
     <form action="/customer" method="POST" id="add-new-customer-form">
+        <% if(check_perm()){ %>
         <h5 class="title is-5">Date Added</h5>
         <div class="columns">
             <div class="column">
@@ -13,6 +14,7 @@
                 </div>
             </div>
         </div>
+        <% } %>
         <h5 class="title is-5">Name</h5>
         <div class="columns">
             <div class="column">

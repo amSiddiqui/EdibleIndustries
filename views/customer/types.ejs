@@ -5,6 +5,7 @@
         <div class="column">
             <h1 class="title">Customer Types</h1>
         </div>
+        <% if(check_perm()) { %>
         <div class="column is-2">
             <div class="field is-grouped">
                 <div class="control">
@@ -19,6 +20,7 @@
                 </div>
             </div>
         </div>
+        <% } %>
     </div>
     <div class="columns">
         <div class="column">
@@ -27,8 +29,9 @@
                     <tr>
                         <th>Index</th>
                         <th>Customer Type</th>
-                        
+                        <% if(check_perm()) { %>
                         <th>Edit/Delete</th>
+                        <% } %>
                     </tr>
                 </thead>
                 <tbody>
@@ -36,6 +39,7 @@
                     <tr>
                         <td><%= customer_type.id; %></td>
                         <td><%= customer_type.name; %></td>
+                        <% if(check_perm()){ %>
                         <td>
                             <div class="field is-grouped">
                                 <div class="control">
@@ -49,6 +53,7 @@
                                 </div>
                             </div>
                         </td>
+                        <% } %>
                     </tr>
                     <% } %>
                 </tbody>

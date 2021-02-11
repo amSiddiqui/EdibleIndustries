@@ -26,6 +26,7 @@
                         <p>Total Asset: <strong>Re. <%= inventory.cost * total%></strong>
                         </p>
                     </div>
+                    <% if (check_perm()) { %>
                     <div class="column is-3">
                         <div class="field is-grouped is-grouped-right">
                             <div class="control">
@@ -46,6 +47,7 @@
                             </div>
                         </div>
                     </div>
+                    <% } %>
                 </div>
                 <div class="columns">
                     <div class="column">
@@ -89,7 +91,9 @@
                             <th>Quantity</th>
                             <th>Cost</th>
                             <th>Date</th>
+                            <% if(check_perm()){ %>
                             <th>Edit/Delete</th>
+                            <% } %>
                         </tr>
                     </thead>
                     <tbody>
@@ -134,6 +138,7 @@
                             <td></td>
                             <% } %>
                             <td><%=toNepaliDate(record.recordDate);%></td>
+                            <% if(check_perm()) { %>
                             <td>
                                 <% if(record.type == 'discarded' || record.type == 'purchased' || record.type == 'manufactured') { %>
                                 <div class="field  is-grouped">
@@ -159,6 +164,7 @@
                                 </div>
                                 <% } %>
                             </td>
+                            <% } %>
                         </tr>
                         <% } %>
                     </tbody>
@@ -241,7 +247,9 @@
                             <th>ID</th>
                             <th>Packing</th>
                             <th>Quantity</th>
+                            <% if(check_perm()) { %>
                             <th>Action</th>
+                            <% } %>
                         </tr>
                     </thead>
                     <tbody>
@@ -250,6 +258,7 @@
                             <td><%=(i+1)%></td>
                             <td><%=batch.name %></td>
                             <td><%=batch.quantity%></td>
+                            <% if(check_perm()) { %>
                             <td>
                                 <% if (batch.name != 'Single') {%>
                                 <div class="field is-grouped">
@@ -267,10 +276,12 @@
                                 </div>
                                 <% } %>
                             </td>
+                            <% } %>
                         </tr>
                         <% } %>
                     </tbody>
                 </table>
+                <% if(check_perm()) { %>
                 <div class="columns">
                     <div class="column">
                         <button class="button is-rounded is-success" id="add-batch-button">
@@ -281,6 +292,7 @@
                         </button>
                     </div>
                 </div>
+                <% } %>
                 <% } %>
             </div>
         </div>

@@ -55,6 +55,9 @@ router.get('/add', middleware.auth.loggedIn(), function (req, res, next) {
 });
 
 router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  if (!utility.misc.checkPermission(req, res, 'Only Admin user allowed to edit bills'))
+        return;
+  
   let id = parseInt(req.params.id);
   var breadcrumbs = [{
       link: '/',
@@ -255,6 +258,9 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
 });
 
 router.delete('/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  if (!utility.misc.checkPermission(req, res))
+      return;
+  
   let id = parseInt(req.params.id);
   utility.billing.deleteBill(id).then(function () {
     console.log(`Bill with id ${id} was deleted`);
@@ -270,6 +276,9 @@ router.delete('/:id', middleware.auth.loggedIn(), function (req, res, next) {
 });
 
 router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  if (!utility.misc.checkPermission(req, res))
+      return;
+  
   let id = parseInt(req.params.id);
   var payment_method = req.body.payment_method;
   var description = req.body.description;

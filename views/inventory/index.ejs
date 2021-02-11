@@ -5,6 +5,7 @@
         <div class="column">
             <h1 class="title">Inventory</h1>
         </div>
+        <% if(check_perm()){ %>
         <div class="column is-2">
             <button class="button is-success is-rounded" id="add-inventory-button">
                 <span class="icon">
@@ -15,14 +16,17 @@
                 </span>
             </button>
         </div>
+        <% } %>
     </div>
     <div class="columns is-multiline" id="inventory-item-container">
         <% inventories.forEach(inventory => { %>
         <div class="column is-4">
             <div class="card custom-card" data-value="<%=inventory.id%>">
                 <div class="card-content">
+                    <% if(check_perm()) {  %>
                     <button class="edit" onclick="window.location.href = '/inventory/edit/<%=inventory.id%>/'"
                         aria-label="close"><i class="fas fa-pen"></i></button>
+                    <% } %>
                     <div class="columns">
                         <div class="column is-3">
                             <img src="<%=inventory.image%>" alt="">

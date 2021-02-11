@@ -290,6 +290,7 @@
                     <img style="height: 400px; width: auto;" src="<%=bill.image%>" alt="">
                 </div>
             </div>
+            <% if (check_perm()){ %>
             <div class="columns" style="margin-top: 50px">
                 <div class="column">
                     <div class="field is-grouped is-grouped-right">
@@ -303,6 +304,7 @@
                     </div>
                 </div>
             </div>
+            <% } %>
 
         </div>
 

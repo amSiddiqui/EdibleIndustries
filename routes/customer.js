@@ -6,6 +6,9 @@ const { customer } = require('../modules/utility');
 var router = express.Router();
 
 router.put('/customer-type/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  if (!utility.misc.checkPermission(req, res))
+      return;
+  
   let id = parseInt(req.params.id);
   var data = {
     name: req.body['name'].trim(),
@@ -42,6 +45,9 @@ router.put('/customer-type/:id', middleware.auth.loggedIn(), function (req, res,
 
 
 router.delete('/customer-type/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  if (!utility.misc.checkPermission(req, res))
+      return;
+  
   let id = parseInt(req.params.id);
   utility.customer_type.delete(id).then(() => {
     req.flash('flash_message', 'Customer type successfully deleted');
@@ -164,6 +170,9 @@ router.get('/customer-type', middleware.auth.loggedIn(), function (req, res, nex
 });
 
 router.post('/customer-type', middleware.auth.loggedIn(), function (req, res, next) {
+  if (!utility.misc.checkPermission(req, res))
+      return;
+  
   var data = {
     name: req.body['name'].trim(),
     rates: []
@@ -250,6 +259,9 @@ router.get('/add', middleware.auth.loggedIn(), function (req, res, next) {
 
 
 router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  if (!utility.misc.checkPermission(req, res))
+      return;
+  
   let id = parseInt(req.params.id);
   var breadcrumbs = [{
       link: '/',
@@ -434,6 +446,9 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
 });
 
 router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  if (!utility.misc.checkPermission(req, res))
+      return;
+  
   let id = parseInt(req.params.id);
   let customer_data = {
     first_name: req.body.first_name.trim(),

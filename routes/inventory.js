@@ -12,6 +12,9 @@ const { invertBy } = require('lodash');
 
 
 router.post('/batch/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  if (!utility.misc.checkPermission(req, res))
+      return;
+  
   let id = parseInt(req.params.id);
   utility.inventory.addBatch(id, {
     name: req.body['batch-name'],
@@ -27,6 +30,9 @@ router.post('/batch/:id', middleware.auth.loggedIn(), function (req, res, next) 
 });
 
 router.delete('/batch/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  if (!utility.misc.checkPermission(req, res))
+      return;
+  
   let id = parseInt(req.params.id);  
   var batch_id = utility.misc.toNumber(req.body['batch-id']);
   utility.inventory.deleteBatch(batch_id).then(() => {
@@ -40,6 +46,9 @@ router.delete('/batch/:id', middleware.auth.loggedIn(), function (req, res, next
 });
 
 router.put('/batch/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  if (!utility.misc.checkPermission(req, res))
+      return;
+  
   var data = {
     name: req.body['batch-name'],
     quantity: utility.misc.toNumber(req.body['batch-quantity'])
@@ -57,6 +66,9 @@ router.put('/batch/:id', middleware.auth.loggedIn(), function (req, res, next) {
 });
 
 router.delete('/record/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  if (!utility.misc.checkPermission(req, res))
+      return;
+  
   var record_id = req.body.record_id.trim();
   record_id = utility.misc.toNumber(record_id);
   let id = parseInt(req.params.id);
@@ -74,6 +86,9 @@ router.delete('/record/:id', middleware.auth.loggedIn(), function (req, res, nex
 });
 
 router.put('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  if (!utility.misc.checkPermission(req, res))
+      return;
+  
   let id = parseInt(req.params.id);
   var data = {
     value: req.body.quantity,
@@ -149,6 +164,12 @@ router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
 
 
 router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  if (!utility.misc.checkPermission(req, res))
+      return;
+  
+  if (!utility.misc.checkPermission(req, res))
+      return;
+  
   let id = parseInt(req.params.id);
   var breadcrumbs = [{
       link: '/',
@@ -188,6 +209,7 @@ router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
 });
 
 router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  
   let id = parseInt(req.params.id);
   var breadcrumbs = [{
       link: '/',
@@ -332,6 +354,9 @@ router.post('/:id', middleware.auth.loggedIn(), function (req, res, next) {
 
 
 router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  if (!utility.misc.checkPermission(req, res))
+      return;
+  
   let id = parseInt(req.params.id);
   let data = {
     name: req.body.name.trim(),
@@ -391,6 +416,9 @@ router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
 });
 
 router.delete('/:id', middleware.auth.loggedIn(), function (req, res, next) {
+  if (!utility.misc.checkPermission(req, res))
+      return;
+  
   console.log("This delete page is called");
   let id = parseInt(req.params.id);
   inventory.deleteInventory(id).then(() => {
