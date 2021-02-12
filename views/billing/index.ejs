@@ -45,7 +45,7 @@
                         <th>Amount</th>
                         <th>Total Sold</th>
                         <th>Payment</th>
-                        <th>Due</th>
+                        <th>Rented</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -63,14 +63,10 @@
                         <td>Re. <%=bill.total; %></td>
                         <td><%=bill.total_sold; %></td>
                         <td><%=bill.payment_method; %></td>
-                        <% if(bill.paid) { %>
-                        <td> <span class="has-text-success">Paid</span> </td>
+                        <% if(bill.rented) { %>
+                        <td>Yes</td>
                         <% }else{ %>
-                        <% if(!bill.danger) { %>
-                        <td>Unpaid<span></span> </td>
-                        <% }else{ %>
-                        <td><span class="has-text-danger">Unpaid</span> </td>
-                        <% } %>
+                        <td>No</td>
                         <% } %>
                     </tr>
                     <% } %>

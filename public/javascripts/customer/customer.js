@@ -22,69 +22,95 @@ $(function() {
         $("#bill-tab").show();
     });
 
-    var total = 0;
-    var table_loaded = new Promise((resolve, reject) => {
-        $('.rent-status').each(function() {
-            let id = $(this).attr('data-key');
-            var container = $(this);
-            $.get('/api/check-item-rented/'+id, function(data) {
-                if (data.status == 'success') {
-                    if (data.result) {
-                        container.append('<span class="has-text-danger">Rented</span>');
-                    }else{
-                        container.append('<span class="has-text-success">No</span>');
-                    }
-                }
-            }).fail(function(err) {
-                console.log(err);
-            }).always(function() {
-                total++;
-                if (total == totals_bills) {
-                    resolve();
-                }
-            });
-        });
+    $('#billing-table thead tr').clone(true).appendTo( '#billing-table thead' );
+    $('#billing-table thead tr:eq(1) th').each( function (i) {
+        var title = $(this).text();
+        $(this).html( '<input type="text" style="width: 100%; padding: 3px; box-sizing: border-box;" class="input is-small" placeholder="Search '+title+'" />' );
+ 
+        $( 'input', this ).on( 'keyup change', function () {
+            if ( billingTable.column(i).search() !== this.value ) {
+                billingTable
+                    .column(i)
+                    .search( this.value )
+                    .draw();
+            }
+        } );
+    } );
+
+    
+    $.fn.dataTable.ext.search.push(
+        function(settings, data, dataIndex) {
+            if (settings.nTable.id !== 'billing-table') return true;
+
+            var min_date = $("#from_date_billing").val();
+            if (!validDate(min_date)) {
+                min_date = "0/0/0";
+            }
+            var max_date = $("#to_date_billing").val();
+            if (!validDate(max_date)){
+                max_date = "99/99/9999";
+            }
+            var date = data[1];
+            min_date = convertNepaliToEnglish(min_date);
+            max_date = convertNepaliToEnglish(max_date);
+            date = convertNepaliToEnglish(date);
+            return dateInRange(date, min_date, max_date);
+        }
+    );
+    
+    $('#from_date_billing').nepaliDatePicker({
+        dateFormat: '%d/%m/%y',
+        closeOnDateSelect: true,
     });
-    table_loaded.then(function() {
-        $("#billing-table").DataTable({
-            "columnDefs": [
-                { "width": "3%", "targets": 0 },
-            ],
-            "order": [[0, 'desc']],
-            "footerCallback": function (row, data, start, end, display) {
-                var api = this.api(),
-                    data;
-                var intVal = function (i) {
-                    if (typeof i === 'string') {
-                        i = i.trim();
-                        if (i.length == 0) {
-                            return 0;
-                        }
-                        if (isNaN(i)) {
-                            i = i.substring(3);
-                            return parseFloat(i);
-                        }
+
+    $('#to_date_billing').nepaliDatePicker({
+        dateFormat: '%d/%m/%y',
+        closeOnDateSelect: true,
+    });
+
+    var billing_table =  $("#billing-table").DataTable({
+        "columnDefs": [
+            { "width": "3%", "targets": 0 },
+        ],
+        "order": [[0, 'desc']],
+        "footerCallback": function (row, data, start, end, display) {
+            var api = this.api(),
+                data;
+            var intVal = function (i) {
+                if (typeof i === 'string') {
+                    i = i.trim();
+                    if (i.length == 0) {
+                        return 0;
+                    }
+                    if (isNaN(i)) {
+                        i = i.substring(3);
                         return parseFloat(i);
                     }
-                    return i;
-                };
-    
-                // computing column Total of the complete result 
-                var costTotal = api
-                    .column(2, { search:'applied' })
-                    .data()
-                    .reduce(function (a, b) {
-                        return intVal(a) + intVal(b);
-                    }, 0);
-    
-             
-                costTotal = formatMoney(costTotal);
-    
-                // Update footer by showing the total with the reference of the column index 
-                $(api.column(0).footer()).html('Total');
-                $(api.column(2).footer()).html('Re. '+costTotal);
-            }
-        });
+                    return parseFloat(i);
+                }
+                return i;
+            };
+
+            // computing column Total of the complete result 
+            var costTotal = api
+                .column(2, { search:'applied' })
+                .data()
+                .reduce(function (a, b) {
+                    return intVal(a) + intVal(b);
+                }, 0);
+
+         
+            costTotal = formatMoney(costTotal);
+
+            // Update footer by showing the total with the reference of the column index 
+            $(api.column(0).footer()).html('Total');
+            $(api.column(2).footer()).html('Re. '+costTotal);
+        }
     });
+
+    $("#from_date_billing, #to_date_billing").on('change', function() {
+        billing_table.draw();
+    });
+
 
 });

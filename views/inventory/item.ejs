@@ -303,6 +303,16 @@
         <div class="columns">
             <div class="column">
                 <h1 class="title is-3">Bills</h1>
+                <div class="columns">
+                    <div class="column is-2">
+                        <label for="from_date_billing" class="label">From</label>
+                        <input type="text" class="input" id="from_date_billing">
+                    </div>
+                    <div class="column is-2">
+                        <label for="to_date_billing" class="label">To</label>
+                        <input type="text" class="input" id="to_date_billing">
+                    </div>
+                </div>
                 <table id="billing-table" class="table is-striped is-hoverable" style="width: 100%;">
                     <thead>
                         <tr>
@@ -310,9 +320,10 @@
                             <th>Date</th>
                             <th>Customer</th>
                             <th>Customer Type</th>
+                            <th>Billed By</th>
                             <th>Amount</th>
                             <th>Quantity</th>
-                            <th>Due</th>
+                            <th>Payment</th>
                             <th>Rented</th>
                         </tr>
                     </thead>
@@ -323,19 +334,12 @@
                             <td><%=bill.nepali_date;%></td>
                             <td><%=bill.customer.first_name+' '+bill.customer.last_name;%></td>
                             <td><%=bill.customer.customer_type.name;%></td>
+                            <td><%=bill.user.first_name+' '+bill.user.last_name;%></td>
                             <td>Re. <%=bill.inv_total.toFixed(2); %></td>
                             <td><%=bill.total_items; %></td>
-                            <% if(bill.paid) { %>
-                            <td> <span class="has-text-success">Paid</span> </td>
-                            <% }else{ %>
-                            <% if(!bill.danger) { %>
-                            <td> <span>Unpaid</span> </td>
-                            <% }else{ %>
-                            <td> <span class="has-text-danger">Unpaid</span> </td>
-                            <% } %>
-                            <% } %>
+                            <td><%=bill.payment_method%></td>
                             <td class="rent-status" data-key="<%=bill.id%>">
-
+                                <%= bill.rented?'Yes':'No' %>
                             </td>
                         </tr>
                         <% } %>

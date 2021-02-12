@@ -433,6 +433,20 @@ $(function () {
         }
     });
 
+    $("#payment-method").on('change', function() {
+        var method = $(this).val();
+        if (method === 'Free' || method === 'Cash') {
+            $("#due_date_container").hide();
+            $("#due_date_container").prop('required', false);
+            $(".tg-flip").prop("checked", true);
+        }
+        else if (method === 'Credit') {
+            $("#due_date_container").show();
+            $("#due_date_container").prop('required', true);
+            $(".tg-flip").prop("checked", false);
+        }
+    });
+
     $('#due_date').nepaliDatePicker({
         dateFormat: '%d/%m/%y',
         closeOnDateSelect: true,

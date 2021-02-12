@@ -381,6 +381,8 @@ module.exports = {
                         include: [{
                             model: models.CustomerType
                         }]
+                    },{
+                        model: models.User
                     }
                 ]
             });
@@ -397,6 +399,24 @@ module.exports = {
                     }
                 }
             }
+            
+            for (let j = 0; j < inv_bills.length; j++) {
+                var rented = false;
+                var bill = inv_bills[j];
+                for (let i = 0; i < bill.bill_transactions.length; i++) {
+                    const tr = bill.bill_transactions[i];
+                    if (tr.type == 'rented') {
+                        const returns = await tr.getReturn();
+                        var total_return = _.sumBy(returns, (o) => o.quantity);
+                        if (total_return < tr.quantity) {
+                            rented = true;
+                            break;
+                        }
+                    }
+                }
+                inv_bills[j].rented = rented;
+            }
+
             return inv_bills;
         },
         fetchReport: async (id, start, end) => {
@@ -661,7 +681,7 @@ module.exports = {
         },
         fetchBills: async (id) => {
             var customer = await models.Customer.findByPk(id);
-            return customer.getBills({
+            var bills = await customer.getBills({
                 include: [{
                     model: models.BillTransaction,
                     include: [{
@@ -670,8 +690,28 @@ module.exports = {
                             model: models.Inventory
                         }]
                     }]
+                },{
+                    model: models.User
                 }]
             });
+            for (let j = 0; j < bills.length; j++) {
+                var rented = false;
+                var bill = bills[j];
+                for (let i = 0; i < bill.bill_transactions.length; i++) {
+                    const tr = bill.bill_transactions[i];
+                    if (tr.type == 'rented') {
+                        const returns = await tr.getReturn();
+                        var total_return = _.sumBy(returns, (o) => o.quantity);
+                        if (total_return < tr.quantity) {
+                            rented = true;
+                            break;
+                        }
+                    }
+                }
+                bills[j].rented = rented;
+            }
+            return bills;
+
         },
         fetchTotalRented: async (id) => {
             var customer = await models.Customer.findByPk(id);
@@ -698,8 +738,8 @@ module.exports = {
         }
     },
     billing: {
-        fetchAll: () => {
-            return models.Bill.findAll({
+        fetchAll: async () => {
+            var bills = await models.Bill.findAll({
                 include: [
                     {
                         model: models.BillTransaction
@@ -716,6 +756,23 @@ module.exports = {
                     ['id', 'DESC']
                 ]
             });
+            for (let j = 0; j < bills.length; j++) {
+                var rented = false;
+                var bill = bills[j];
+                for (let i = 0; i < bill.bill_transactions.length; i++) {
+                    const tr = bill.bill_transactions[i];
+                    if (tr.type == 'rented') {
+                        const returns = await tr.getReturn();
+                        var total_return = _.sumBy(returns, (o) => o.quantity);
+                        if (total_return < tr.quantity) {
+                            rented = true;
+                            break;
+                        }
+                    }
+                }
+                bills[j].rented = rented;
+            }
+            return bills;
         },
         fetch: (id) => {
             return models.Bill.findByPk(id, {
@@ -1008,6 +1065,7 @@ module.exports = {
         pay: async (id, bd) => {
             const bill = await models.Bill.findByPk(id);
             bill.paid = true;
+            bill.payment_method = 'Cash';
             bill.paidOn = bd;
             await bill.save();
         },

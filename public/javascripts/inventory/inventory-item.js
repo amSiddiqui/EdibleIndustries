@@ -74,44 +74,53 @@ $(function () {
         $("#bill-tab").show();
     });
 
+    $('#from_date_billing').nepaliDatePicker({
+        dateFormat: '%d/%m/%y',
+        closeOnDateSelect: true,
+    });
 
-    /**
-     * Check if bill is rented or not
-     * TODO: load this info from database for all bills. Don't use get request
-     */
-    // var total = 0;
+    $('#to_date_billing').nepaliDatePicker({
+        dateFormat: '%d/%m/%y',
+        closeOnDateSelect: true,
+    });
 
-    // var table_loaded = new Promise((resolve, reject) => {
-    //     $('.rent-status').each(function () {
-    //         let id = $(this).attr('data-key');
-    //         var container = $(this);
-    //         $.get('/api/check-item-rented/' + id, function (data) {
-    //             if (data.status == 'success') {
-    //                 if (data.result) {
-    //                     container.append('<span class="has-text-danger">Rented</span>');
-    //                 } else {
-    //                     container.append('<span class="has-text-success">No</span>');
-    //                 }
-    //             }
-    //         }).fail(function (err) {
-    //             console.log(err);
-    //         }).always(function () {
-    //             total++;
-    //             if (total == totals_bills) {
-    //                 resolve();
-    //             }
-    //         });
-    //     });
-    // });
+    $.fn.dataTable.ext.search.push(
+        function(settings, data, dataIndex) {
+            if (settings.nTable.id !== 'billing-table') return true;
+
+            var min_date = $("#from_date_billing").val();
+            if (!validDate(min_date)) {
+                min_date = "0/0/0";
+            }
+            var max_date = $("#to_date_billing").val();
+            if (!validDate(max_date)){
+                max_date = "99/99/9999";
+            }
+            var date = data[1];
+            min_date = convertNepaliToEnglish(min_date);
+            max_date = convertNepaliToEnglish(max_date);
+            date = convertNepaliToEnglish(date);
+            return dateInRange(date, min_date, max_date);
+        }
+    );
+
+    $('#billing-table thead tr').clone(true).appendTo( '#billing-table thead' );
+    $('#billing-table thead tr:eq(1) th').each( function (i) {
+        var title = $(this).text();
+        $(this).html( '<input type="text" style="width: 100%; padding: 3px; box-sizing: border-box;" class="input is-small" placeholder="Search '+title+'" />' );
+ 
+        $( 'input', this ).on( 'keyup change', function () {
+            if ( billingTable.column(i).search() !== this.value ) {
+                billingTable
+                    .column(i)
+                    .search( this.value )
+                    .draw();
+            }
+        } );
+    } );
 
     
-
-    // table_loaded.then(function () {
-        
-    // });
-
-
-    $("#billing-table").DataTable({
+    var billing_table = $("#billing-table").DataTable({
         "columnDefs": [{
             "width": "3%",
             "targets": 0
@@ -159,6 +168,10 @@ $(function () {
             $(api.column(4).footer()).html('Re. '+costTotal);
             $(api.column(5).footer()).html(total);
         }
+    });
+
+    $("#from_date_billing, #to_date_billing").on('change', function() {
+        billing_table.draw();
     });
 
     $("#history-table").DataTable({
