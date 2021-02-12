@@ -403,8 +403,8 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
   var discount_value = req.body.discount_value;
   var tax_percent = req.body.tax_percent;
   var tax_value = req.body.tax_value;
-  var due_date = req.body.due_date.trim();
-  var bill_date = req.body.bill_date.trim();
+  var due_date = req.body.due_date || '';
+  var bill_date = req.body.bill_date || '';
   var track_id = req.body.track_id;
 
   var bd = null;

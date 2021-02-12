@@ -617,3 +617,18 @@ select {
     }
 	}
 }
+
+.clear-button {
+  position: relative; top: -72px; right: -175px;
+  border: none;
+  border-radius: 999px;
+  color: $danger;
+}
+
+.clear-button:focus {
+  outline: 0;
+}
+
+.clear-button:hover {
+  background-color: rgba(200, 200, 200, 0.4);
+}

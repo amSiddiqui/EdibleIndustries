@@ -1,5 +1,3 @@
-const { parse } = require("dotenv/types");
-
 $(() => {
     $(".delete").on('click', e => {
         $(e.target).parents('.modal').toggleClass('is-active');
@@ -129,3 +127,10 @@ function warn(msg) {
     $("#warning-message").find('p').html(msg);
     $("#warning-message").show();
 }
+
+$(() => {
+ $('.clear-button').on('click', function() {
+    $(this).siblings('input').val('');
+    $(this).siblings('input').trigger('change');
+ });
+});
