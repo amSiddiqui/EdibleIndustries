@@ -1,3 +1,5 @@
+const { parse } = require("dotenv/types");
+
 $(() => {
     $(".delete").on('click', e => {
         $(e.target).parents('.modal').toggleClass('is-active');
@@ -48,6 +50,80 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
     }
 };
 
+
+function convertNepaliToEnglish(date) {
+    var numbers = {
+        '१': 1,
+        '२': 2,
+        '३': 3,
+        '४': 4,
+        '५': 5,
+        '६': 6,
+        '७': 7,
+        '८': 8,
+        '९': 9,
+        '०': 0,
+        '1': 1,
+        '2': 2,
+        '3': 3,
+        '4': 4,
+        '5': 5,
+        '6': 6,
+        '7': 7,
+        '8': 8,
+        '9': 9,
+        '0': 0,
+    };
+    var engDate = '';
+    for (let i = 0; i < date.length; i++) {
+        const d = date[i];
+        if (d == '/') {
+            engDate += '/'
+        } else {
+            engDate += numbers[d];
+        }
+    }
+    return engDate;
+}
+
+function compareDate(self, other) {
+    var self_comp = self.split("/");
+    var other_comp = other.split("/");
+    if (parseInt(self_comp[2]) > parseInt(other_comp[2]))
+        return 1;
+    if (parseInt(self_comp[2]) < parseInt(other_comp[2]))
+        return -1;
+    
+    if (parseInt(self_comp[1]) > parseInt(other_comp[1]))
+        return 1;
+    if (parseInt(self_comp[1]) < parseInt(other_comp[1]))
+        return -1;
+    
+    if (parseInt(self_comp[0]) > parseInt(other_comp[0]))
+        return 1;
+    if (parseInt(self_comp[0]) < parseInt(other_comp[0]))
+        return -1;
+    
+    return 0;
+}
+
+function dateInRange(date, low, high) {
+    if (compareDate(date, low) >= 0 && compareDate(date, high) <= 0) {
+        return true;
+    }
+    return false;
+}
+
+function validDate(date) {
+    var d = convertNepaliToEnglish(date);
+    var comp = d.split("/");
+    if (comp.length !== 3) return false;
+    for (let i = 0; i < 3; i++) {
+        if (comp[i].length === 0) return false;
+        if (isNaN(comp[i])) return false;
+    }
+    return true;
+}
 
 function warn(msg) {
     $("#warning-message").find('p').html(msg);

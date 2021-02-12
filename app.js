@@ -97,20 +97,20 @@ const models = require('./models/Models');
 
 var do_seed = false;
 
-db.sequelize.sync({
-  alter: true
-}).then(() => {
-  if (do_seed)
-    require('./modules/seed')(true, false);
+// db.sequelize.sync({
+//   alter: true
+// }).then(() => {
+//   if (do_seed)
+//     require('./modules/seed')(true, false);
 
-  require('./modules/utility').misc.fixUserType().then(() => {
-    console.log("Database synchronized");
-  }).catch(err => {
-    console.log("Error while synchronizing data: ", err);  
-  });
-}).catch(err => {
-  console.log("Error while synchronizing data: ", err);
-});
+//   require('./modules/utility').misc.fixUserType().then(() => {
+//     console.log("Database synchronized");
+//   }).catch(err => {
+//     console.log("Error while synchronizing data: ", err);  
+//   });
+// }).catch(err => {
+//   console.log("Error while synchronizing data: ", err);
+// });
 
 
 
