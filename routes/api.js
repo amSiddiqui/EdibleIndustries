@@ -230,7 +230,8 @@ router.get('/check-item-rented/:id',  middleware.auth.loggedIn(), function(req, 
 });
 
 router.get('/all-bills', middleware.auth.loggedIn(), function(req, res, next) {
-    utility.billing.fetchAll().then(function(bills) {
+    var user_email = req.session.email;
+    utility.billing.fetchAll(user_email).then(function(bills) {
         var bill_query = [];
         bills.forEach(bill => {
             if (bill.customer.organization.length == 0) {

@@ -121,6 +121,11 @@ global.cookieOpt = {
 };
 
 app.use((req, res, next) => {
+  if (process.env.ENV === 'developmen') {
+    req.session.email = 'gt_ams@yahoo.in';
+    req.session.first_name = 'Aamir';
+    req.session.user_type = 'Admin';
+  }
   res.locals.first_name = req.session.first_name;
   res.locals.check_perm = function() {
     if (req.session.user_type === 'Admin' || process.env.ENV === 'development') {

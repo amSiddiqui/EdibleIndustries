@@ -375,8 +375,9 @@ router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
     data.flash_color = flash_color;
   }
   var today = new Date();
-
-  utility.billing.fetchAll().then(bills => {
+  var user_email = req.session.email;
+  
+  utility.billing.fetchAll(user_email).then(bills => {
     for (let i = 0; i < bills.length; i++) {
       const bill = bills[i];
       var total_sold = 0;

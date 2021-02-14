@@ -373,7 +373,7 @@ module.exports = {
                 }
             });
             var bills = [];
-            if (user.user_type === 'Admin' || process.env.ENV === 'development') {
+            if (user.user_type === 'Admin') {
                 bills = await models.Bill.findAll({
                     include: [{
                             model: models.BillTransaction,
@@ -772,24 +772,57 @@ module.exports = {
         }
     },
     billing: {
-        fetchAll: async () => {
-            var bills = await models.Bill.findAll({
-                include: [
-                    {
-                        model: models.BillTransaction
-                    },
-                    {
-                        model: models.Customer,
-                        include: models.CustomerType
-                    },
-                    {
-                        model: models.User
-                    }
-                ],
-                order: [
-                    ['id', 'DESC']
-                ]
+        fetchAll: async (user_email) => {
+            if (typeof user_email === 'undefined') {
+                console.log("User email not provided");
+            }
+            var user = await models.User.findOne({
+                where: {
+                    email: user_email
+                }
             });
+            var bills = [];
+            if (user.user_type === 'Admin') {
+                bills = await models.Bill.findAll({
+                    include: [
+                        {
+                            model: models.BillTransaction
+                        },
+                        {
+                            model: models.Customer,
+                            include: models.CustomerType
+                        },
+                        {
+                            model: models.User
+                        }
+                    ],
+                    order: [
+                        ['id', 'DESC']
+                    ]
+                });
+            }else{
+                bills = await models.Bill.findAll({
+                    include: [
+                        {
+                            model: models.BillTransaction
+                        },
+                        {
+                            model: models.Customer,
+                            include: models.CustomerType
+                        },
+                        {
+                            model: models.User,
+                            where: {
+                                id: user.id
+                            }
+                        }
+                    ],
+                    order: [
+                        ['id', 'DESC']
+                    ]
+                });
+            }
+            
             for (let j = 0; j < bills.length; j++) {
                 var rented = false;
                 var bill = bills[j];
@@ -1364,7 +1397,7 @@ module.exports = {
             });
         },
         checkPermission: (req, res, message="User does not have permission to access the page") => {
-            if (req.session.user_type === 'Admin' || process.env.ENV === 'development') {
+            if (req.session.user_type === 'Admin') {
                 return true;
             }
             req.flash('flash_message', message);
