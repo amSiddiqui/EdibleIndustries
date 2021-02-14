@@ -452,7 +452,7 @@ $(function () {
         closeOnDateSelect: true,
     });
 
-    $('#bill_date').nepaliDatePicker({
+    $('input#bill_date').nepaliDatePicker({
         dateFormat: '%d/%m/%y',
         closeOnDateSelect: true,
     });

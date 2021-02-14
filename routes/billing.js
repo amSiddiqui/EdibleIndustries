@@ -32,6 +32,16 @@ router.get('/add', middleware.auth.loggedIn(), function (req, res, next) {
     data.flash_color = flash_color;
   }
 
+  var last_5_dates = [];
+  var dt = new Date();
+  for (let i = 0; i < 5; i++) {
+    var np = new NepaliDate(dt);
+    last_5_dates.push(np)
+    dt.setDate(dt.getDate() - 1);
+  }
+  
+  data.last_5_dates = last_5_dates;
+
   utility.customer.fetchAllCustomerID().
   then(customers => {
     data.customers = customers;
@@ -241,11 +251,11 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
       data.bill.were_rented = were_rented;
       data.toNepaliDate = (d) => {
         if (d === null) return '';
-        return new NepaliDate(d).format("DD/MM/YYYY", 'np');
+        return new NepaliDate(d).format("DD/MM/YYYY");
       };
       data.toNepaliDateFull = (d) => {
         if (d === null) return '';
-        return new NepaliDate(d).format("ddd, DD MMMM YYYY", 'np');
+        return new NepaliDate(d).format("ddd, DD MMMM YYYY");
       };
       res.render('billing/show', data);
     })
@@ -297,6 +307,11 @@ router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   var paid = false;
   var temp = req.body.paid;
   if (typeof temp !== 'undefined') paid = true;
+  if (payment_method === 'Credit') {
+    paid = false;
+  }else if (payment_method === 'Cash' || payment_method === 'Free') {
+    paid = true;
+  }
   var image_id = req.session.image_id;
   var image_loc = '/images/placeholder-vertical.jpg';
   req.session.image_id = null;
@@ -421,6 +436,12 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
   var paid = false;
   var temp = req.body.paid;
   if (typeof temp !== 'undefined') paid = true;
+  if (payment_method === 'Credit') {
+    paid = false;
+  }else if (payment_method === 'Cash' || payment_method === 'Free') {
+    paid = true;
+  }
+
   utility.inventory.fetchAllInventoryID().then(inventories => {
     var transactions = [];
     for (let i = 0; i < inventories.length; i++) {

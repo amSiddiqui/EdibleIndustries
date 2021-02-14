@@ -233,7 +233,6 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   reports.today = new NepaliDate(today).format("DD/MM/YYYY", "np");
   reports.start_of_month = new NepaliDate(start_of_month).format("DD/MM/YYYY", "np");
   
-
   inventory.fetchInventory(id).
   then(inv => {
     var flash_message = req.flash('flash_message');
@@ -248,13 +247,25 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
       color: 'success',
       breadcrumbs
     };
+    
+    var last_5_dates = [];
+    var dt = new Date();
+    for (let i = 0; i < 5; i++) {
+      var np = new NepaliDate(dt);
+      last_5_dates.push(np)
+      dt.setDate(dt.getDate() - 1);
+    }
+    
+    data.last_5_dates = last_5_dates;
+
+    
     data.toNepaliDate = (d) => {
       if (d == null) return '';
-      return new NepaliDate(d).format("DD/MM/YYYY", 'np');
+      return new NepaliDate(d).format("DD/MM/YYYY");
     };
     data.toNepaliDateFull = (d) => {
       if (d == null) return '';
-      return new NepaliDate(d).format("ddd, DD MMMM YYYY", 'np');
+      return new NepaliDate(d).format("ddd, DD MMMM YYYY");
     };
     var percent = data.in_stock / data.total;
     percent = percent * 100;
@@ -269,7 +280,8 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
       data.flash_message = flash_message;
       data.flash_color = flash_color;
     }
-    return utility.inventory.fetchBills(id);
+    var user_email = req.session.email;
+    return utility.inventory.fetchBills(id, user_email);
   }).
   then(bills => {
     for (let i = 0; i < bills.length; i++) {

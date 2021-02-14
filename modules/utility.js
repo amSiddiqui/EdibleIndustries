@@ -24,6 +24,7 @@ const {
 const {
     sequelize
 } = require('./database');
+const e = require('express');
 
 
 function toNumberFloat(num) {
@@ -365,27 +366,60 @@ module.exports = {
             await record.destroy();
             return true;
         },
-        fetchBills: async (id) => {
-            var bills = await models.Bill.findAll({
-                include: [{
-                        model: models.BillTransaction,
-                        include: [{
-                            model: models.InventoryRecord,
-                            include: [{
-                                model: models.Inventory
-                            }]
-                        }]
-                    },
-                    {
-                        model: models.Customer,
-                        include: [{
-                            model: models.CustomerType
-                        }]
-                    },{
-                        model: models.User
-                    }
-                ]
+        fetchBills: async (id, user_email) => {
+            var user = await models.User.findOne({
+                where: {
+                    email: user_email
+                }
             });
+            var bills = [];
+            if (user.user_type === 'Admin' || process.env.ENV === 'development') {
+                bills = await models.Bill.findAll({
+                    include: [{
+                            model: models.BillTransaction,
+                            include: [{
+                                model: models.InventoryRecord,
+                                include: [{
+                                    model: models.Inventory
+                                }]
+                            }]
+                        },
+                        {
+                            model: models.Customer,
+                            include: [{
+                                model: models.CustomerType
+                            }]
+                        },{
+                            model: models.User
+                        }
+                    ]
+                });
+            }else{
+                bills = await models.Bill.findAll({
+                    include: [{
+                            model: models.BillTransaction,
+                            include: [{
+                                model: models.InventoryRecord,
+                                include: [{
+                                    model: models.Inventory
+                                }]
+                            }]
+                        },
+                        {
+                            model: models.Customer,
+                            include: [{
+                                model: models.CustomerType
+                            }]
+                        },{
+                            model: models.User,
+                            where: {
+                                id: user.id
+                            }
+                        }
+                    ]
+                });
+            }
+            
             var inv_bills = [];
             for (let i = 0; i < bills.length; i++) {
                 const bill = bills[i];

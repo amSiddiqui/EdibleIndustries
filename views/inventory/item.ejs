@@ -47,6 +47,19 @@
                             </div>
                         </div>
                     </div>
+                    <% }else{ %>
+                    <div class="column is-3">
+                        <div class="field is-grouped is-grouped-right">
+                            <div class="control">
+                                <button class="button add-inventory-record is-success is-rounded is-small">
+                                    <span class="icon">
+                                        <i class="fas fa-plus"></i>
+                                    </span>
+                                    <span>New Record</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <% } %>
                 </div>
                 <div class="columns">
@@ -177,7 +190,9 @@
                             <th></th>
                             <th></th>
                             <th></th>
+                            <% if(check_perm()){ %>
                             <th></th>
+                            <% } %>
                         </tr>
                     </tfoot>
                 </table>
@@ -391,6 +406,7 @@
                             </div>
                         </div>
                     </div>
+                    <% if(check_perm()){ %>
                     <div class="column">
                         <div class="field">
                             <div class="control">
@@ -399,6 +415,22 @@
                             </div>
                         </div>
                     </div>
+                    <% }else{ %>
+                    <div class="column">
+                        <div class="field">
+                            <div class="control">
+                                <label for="record_date" class="label">Record Date</label>
+                                <div class="select">
+                                    <select name="record_date" id="record_date">
+                                        <% for(let i = 0; i < last_5_dates.length; i++){ var d = last_5_dates[i] %>
+                                            <option value="<%=d.format("DD/MM/YYYY");%>"><%=d%></option>
+                                        <% } %>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <% } %>
                 </div>
                 <div class="columns">
                     <div class="column">
