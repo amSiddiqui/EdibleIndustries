@@ -571,7 +571,7 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
     vat_number: req.body.vat.trim()
   };
 
-  var date_added = req.body.date.trim();
+  var date_added = req.body.date.trim() || '';
   var bd = null;
   if (date_added.length !== 0) {
     date_added = utility.misc.toEnglishDate(date_added);
