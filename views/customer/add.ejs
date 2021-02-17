@@ -14,13 +14,32 @@
                 </div>
             </div>
         </div>
+        <% }else{ %>
+        <h5 class="title is-5">Date Added</h5>
+        <div class="columns">
+            <div class="column">
+                <div class="field">
+                    <div class="control">
+                        <label for="bill_date" class="label">Bill Date</label>
+                        <div class="select">
+                            <select name="bill_date" id="bill_date">
+                                <% for(let i = 0; i < last_5_dates.length; i++){ var d = last_5_dates[i] %>
+                                    <option value="<%=d.format("DD/MM/YYYY");%>"><%=d%></option>
+                                <% } %>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <% } %>
         <h5 class="title is-5">Name</h5>
         <div class="columns">
             <div class="column">
                 <div class="field">
                     <div class="control has-icons-left">
-                        <input type="text" class="input" id="first_name" name="first_name" placeholder="First Name" required>
+                        <input type="text" class="input" id="first_name" name="first_name" placeholder="First Name"
+                            required>
                         <span class="icon is-left is-small">
                             <i class="fas fa-user"></i>
                         </span>
@@ -60,8 +79,7 @@
             <div class="column">
                 <div class="field">
                     <div class="control has-icons-left">
-                        <input type="text" class="input" id="vat" name="vat"
-                            placeholder="VAT Number">
+                        <input type="text" class="input" id="vat" name="vat" placeholder="VAT Number">
                         <span class="icon is-left is-small">
                             <i class="fas fa-money-check-alt"></i>
                         </span>

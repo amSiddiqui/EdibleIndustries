@@ -2,13 +2,15 @@ var express = require('express');
 const middleware = require('../modules/middleware');
 const utility = require('../modules/utility');
 const NepaliDate = require('nepali-date-converter');
-const { customer } = require('../modules/utility');
+const {
+  customer
+} = require('../modules/utility');
 var router = express.Router();
 
 router.put('/customer-type/:id', middleware.auth.loggedIn(), function (req, res, next) {
   if (!utility.misc.checkPermission(req, res))
-      return;
-  
+    return;
+
   let id = parseInt(req.params.id);
   var data = {
     name: req.body['name'].trim(),
@@ -25,7 +27,7 @@ router.put('/customer-type/:id', middleware.auth.loggedIn(), function (req, res,
           const b = inventory.inventory_batches[i];
           data.rates.push({
             id: b.id,
-            rate: utility.misc.toNumberFloat(req.body['batch-'+b.id])
+            rate: utility.misc.toNumberFloat(req.body['batch-' + b.id])
           });
         }
       });
@@ -46,8 +48,8 @@ router.put('/customer-type/:id', middleware.auth.loggedIn(), function (req, res,
 
 router.delete('/customer-type/:id', middleware.auth.loggedIn(), function (req, res, next) {
   if (!utility.misc.checkPermission(req, res))
-      return;
-  
+    return;
+
   let id = parseInt(req.params.id);
   utility.customer_type.delete(id).then(() => {
     req.flash('flash_message', 'Customer type successfully deleted');
@@ -171,8 +173,8 @@ router.get('/customer-type', middleware.auth.loggedIn(), function (req, res, nex
 
 router.post('/customer-type', middleware.auth.loggedIn(), function (req, res, next) {
   if (!utility.misc.checkPermission(req, res))
-      return;
-  
+    return;
+
   var data = {
     name: req.body['name'].trim(),
     rates: []
@@ -183,18 +185,18 @@ router.post('/customer-type', middleware.auth.loggedIn(), function (req, res, ne
     res.redirect('/customer/customer-type');
   } else {
     utility.inventory.fetchAllInventoryID().then((inventories) => {
-      
+
       inventories.forEach(inventory => {
         for (let i = 0; i < inventory.inventory_batches.length; i++) {
           const b = inventory.inventory_batches[i];
-          
+
           data.rates.push({
             id: b.id,
-            rate: utility.misc.toNumberFloat(req.body['batch-'+b.id])
+            rate: utility.misc.toNumberFloat(req.body['batch-' + b.id])
           });
         }
       });
-      
+
       utility.customer_type.createWithRate(data).then(() => {
         req.flash('flash_message', 'Customer type successfully added');
         req.flash('flash_color', 'success');
@@ -236,10 +238,21 @@ router.get('/add', middleware.auth.loggedIn(), function (req, res, next) {
     data.flash_message = flash_message;
     data.flash_color = flash_color;
   }
+
+  var last_5_dates = [];
+  var dt = new Date();
+  for (let i = 0; i < 5; i++) {
+    var np = new NepaliDate(dt);
+    last_5_dates.push(np)
+    dt.setDate(dt.getDate() - 1);
+  }
+
+  data.last_5_dates = last_5_dates;
+
   utility.customer_type.fetchAllTypes().then(types => {
     data.types = types;
     utility.misc.fetchAllZones().then(zones => {
-      
+
       data.zones = zones;
       res.render('customer/add', data);
     }).catch(err => {
@@ -260,8 +273,8 @@ router.get('/add', middleware.auth.loggedIn(), function (req, res, next) {
 
 router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
   if (!utility.misc.checkPermission(req, res))
-      return;
-  
+    return;
+
   let id = parseInt(req.params.id);
   var breadcrumbs = [{
       link: '/',
@@ -306,7 +319,7 @@ router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
                 const batch = inventory.inventorie_batches[j];
                 if (batch.id == batch_id) {
                   return batch.customer_rate.rate;
-                }    
+                }
               }
             }
             return rate;
@@ -400,24 +413,24 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
       }
       if (total_phone == 1) {
         customer.new_phone = '';
-      }else{
+      } else {
         customer.new_phone = customer.phone;
       }
       customer.nepali_date = new NepaliDate(customer.createdAt).format('ddd, DD MMMM YYYY', 'np');
       data.customer = customer;
-      utility.customer.fetchBills(id).then(function(bills) {
+      utility.customer.fetchBills(id).then(function (bills) {
         for (let i = 0; i < bills.length; i++) {
           const bill = bills[i];
           bills[i].nepali_date = new NepaliDate(bill.createdAt).format("DD/MM/YYYY");
           if (!bill.paid) {
             if (bill.dueDate == null) {
-              bills[i].nepali_due = '';  
-            }else{
+              bills[i].nepali_due = '';
+            } else {
               bills[i].nepali_due = new NepaliDate(bill.dueDate).format("DD/MM/YYYY");
             }
             if (bill.dueDate < bill.createdAt) {
               bills[i].danger = true;
-            }else{
+            } else {
               bills[i].danger = false;
             }
           }
@@ -426,7 +439,7 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
         res.render('customer/customer', data);
       }).catch(err => {
         console.log(err);
-        req.flash('flash_message','Database Error. Please try again later.');
+        req.flash('flash_message', 'Database Error. Please try again later.');
         req.flash('flash_color', 'danger');
         res.redirect('/customer');
       });
@@ -447,8 +460,8 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
 
 router.put('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   if (!utility.misc.checkPermission(req, res))
-      return;
-  
+    return;
+
   let id = parseInt(req.params.id);
   let customer_data = {
     first_name: req.body.first_name.trim(),
@@ -567,7 +580,7 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
 
   if (bd == null) {
     customer_data.createdAt = new Date();
-  }else{
+  } else {
     customer_data.createdAt = bd;
   }
 

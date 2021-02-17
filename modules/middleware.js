@@ -12,7 +12,7 @@ module.exports = {
         loggedIn: (redirect = '/auth/login') => {
             return (req, res, next) => {
                 if (!req.session.loggedin) {
-                    if (typeof process.env.ENV !== 'undefined' && process.env.ENV == 'developmen')
+                    if (typeof process.env.ENV !== 'undefined' && process.env.ENV == 'development')
                         next();
                     else
                         res.redirect(redirect);
