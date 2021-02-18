@@ -124,7 +124,7 @@
                                 <td><%=tr.inventory_record.inventory.name;%></td>
                                 <td><%=tr.inventory_record.inventory_batch_record.inventory_batch.name;%> (<%=tr.inventory_record.inventory_batch_record.inventory_batch.quantity;%>)</td>
                                 <td><%=tr.inventory_record.inventory_batch_record.value %></td>
-                                <td><%=tr.quantity%></td>
+                                <td><%=tr.quantity * tr.inventory_record.inventory_batch_record.inventory_batch.quantity %></td>
                                 <td>Re. <%=tr.rate.toFixed(2);%></td>
                                 <td class="is-capitalized"><%=tr.type%></td>
                                 <td>
