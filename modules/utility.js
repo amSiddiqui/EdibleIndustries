@@ -1036,6 +1036,8 @@ module.exports = {
             var total = 0;
             var txns = await bill.getBill_transactions();
             for (let i = 0; i < txns.length; i++) {
+                if (txn.type === 'returned')
+                    continue;
                 var txn = txns[i];
                 var quant =  toNumber(body['quantity-'+txn.id]);
                 var rate = toNumberFloat(body['rate-'+txn.id]);
