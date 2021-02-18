@@ -74,6 +74,7 @@
                     <tbody id="inventory-table-body">
                         <% for (let i = 0; i < bill.bill_transactions.length; i++){ var txn = bill.bill_transactions[i]; %>
                         <!-- Get inventory of this particular transaction -->
+                        <% if (txn.type === 'returned') {continue;} %>
                         <% var batches = txn.inventory_record.inventory.inventory_batches %>
                         <tr>
                             <td class="inv-id"><%= txn.inventory_record.inventory_batch_record.inventory_batch.id %></td>
