@@ -20,9 +20,8 @@
             <div class="column">
                 <div class="field">
                     <div class="control">
-                        <label for="bill_date" class="label">Bill Date</label>
                         <div class="select">
-                            <select name="bill_date" id="bill_date">
+                            <select name="date" id="date-added">
                                 <% for(let i = 0; i < last_5_dates.length; i++){ var d = last_5_dates[i] %>
                                     <option value="<%=d.format("DD/MM/YYYY");%>"><%=d%></option>
                                 <% } %>
