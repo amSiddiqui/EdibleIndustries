@@ -134,3 +134,9 @@ $(() => {
     $(this).siblings('input').trigger('change');
  });
 });
+
+var wind_ = $(window);
+
+wind_.on('load', function () {
+    $('.preloader').fadeOut(300);
+});
