@@ -125,7 +125,8 @@ $(() => {
                 .column(5, { search:'applied' })
                 .data()
                 .reduce(function (a, b) {
-                    return intVal(a) + intVal(b);
+                    console.log(a);
+                    return a + b.value;
                 }, 0);
                 
             
@@ -134,7 +135,7 @@ $(() => {
                 .column(6, { search:'applied' })
                 .data()
                 .reduce(function (a, b) {
-                    return intVal(a) + intVal(b);
+                    return a + b;
                 }, 0);
 
             costTotal = formatMoney(costTotal);
