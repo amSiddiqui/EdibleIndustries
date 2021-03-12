@@ -41,6 +41,8 @@ app.use(session({
   saveUninitialized: true
 }));
 
+var log_config = process.env.ENV === 'development'?'dev': 'tiny';
+
 app.use(logger(log_config, {
   skip: function (req, res) { return res.statusCode < 400; }
 }));
@@ -97,20 +99,15 @@ const models = require('./models/Models');
 
 var do_seed = false;
 
-// db.sequelize.sync({
-//   alter: true
-// }).then(() => {
-//   if (do_seed)
-//     require('./modules/seed')(true, false);
-
-//   require('./modules/utility').misc.fixUserType().then(() => {
-//     console.log("Database synchronized");
-//   }).catch(err => {
-//     console.log("Error while synchronizing data: ", err);  
-//   });
-// }).catch(err => {
-//   console.log("Error while synchronizing data: ", err);
-// });
+db.sequelize.sync({
+  alter: true
+}).then(() => {
+  if (do_seed)
+    require('./modules/seed')(true, false);
+  console.log("Database synchronized");
+}).catch(err => {
+  console.log("Error while synchronizing data: ", err);
+});
 
 
 
