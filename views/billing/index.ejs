@@ -51,27 +51,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <% for(let i=0; i < bills.length; i++) { const bill = bills[i]; %>
-                    <tr onclick="window.location.href =  '/billing/<%=bill.id%>'">
-                        <td><%=bill.track_id;%></td>
-                        <td><%=bill.nepali_date;%></td>
-                        <% if (bill.customer.organization.length == 0) { %>
-                        <td><%=bill.customer.first_name+' '+bill.customer.last_name;%></td>
-                        <% } else { %>
-                        <td><%=bill.customer.organization;%></td>
-                        <% } %>
-                        <td><%=bill.customer.customer_type.name;%></td>
-                        <td><%=bill.user.first_name+' '+bill.user.last_name;%></td>
-                        <td>Re. <%=bill.total; %></td>
-                        <td><%=bill.total_sold; %></td>
-                        <td><%=bill.payment_method; %></td>
-                        <% if(bill.rented) { %>
-                        <td>Yes</td>
-                        <% }else{ %>
-                        <td>No</td>
-                        <% } %>
-                    </tr>
-                    <% } %>
+                    
                 </tbody>
                 <tfoot>
                     <tr>

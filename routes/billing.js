@@ -6,6 +6,71 @@ const _ = require('lodash');
 var router = express.Router();
 const fs = require('fs');
 
+router.get('/api/bills', middleware.auth.loggedIn(), function (req, res, next) {
+  console.log("Bills fetch API request made");
+  var today = new Date();
+  var user_email = req.session.email;
+  var data = {
+      data: [],
+      'type': 'success',
+      'message': ''
+  };
+  utility.billing.fetchAll(user_email).then(bills => {
+      console.log("Bills fetched from db");
+      for (let i = 0; i < bills.length; i++) {
+          const bill = bills[i];
+          var total_sold = 0;
+          for (let j = 0; j < bill.bill_transactions.length; j++) {
+              var txn = bill.bill_transactions[j];
+              if (txn.type == 'sold') {
+                  total_sold += txn.quantity;
+              }
+          }
+          bills[i].total_sold = total_sold;
+
+          bills[i].nepali_date = new NepaliDate(bill.createdAt).format("DD/MM/YYYY");
+          if (!bill.paid && bill.dueDate != null) {
+              bills[i].nepali_due = new NepaliDate(bill.dueDate).format("DD/MM/YYYY");
+
+              if (bill.dueDate < today) {
+                  bills[i].danger = true;
+              } else {
+                  bills[i].danger = false;
+              }
+          }
+          bill_data = {};
+          bill_data['track_id'] = bills[i].track_id;
+          bill_data['date'] = bills[i].nepali_date;
+          if (bill.customer.organization.length == 0) {
+              bill_data['name'] = bill.customer.first_name+' '+bill.customer.last_name;
+          }else{
+              bill_data['name'] = bill.customer.organization;
+          }
+          bill_data['customer_type'] = bill.customer.customer_type.name;
+          bill_data['user'] = bill.user.first_name+' '+bill.user.last_name;
+          bill_data['total'] = {
+              'display': 'Re. '+bill.total,
+              'value': bill.total
+          };
+          bill_data['total_sold'] = total_sold;
+          bill_data['payment_method'] = bill.payment_method;
+          if(bill.rented) {
+              bill_data['rented'] = 'Yes';
+          }else{
+              bill_data['rented'] = 'No';
+          }
+          bill_data['bill_id'] = bill.id;
+          data.data.push(bill_data);
+      }
+      console.log("BIlls processed and data sent");
+      res.json(data);
+  }).catch(function(err) {
+      console.log(err);
+      data['type'] = 'fail';
+      data['message'] = 'Server problem try again later';
+      res.json(data);
+  });
+});
 
 router.get('/add', middleware.auth.loggedIn(), function (req, res, next) {
   var breadcrumbs = [{
@@ -22,7 +87,7 @@ router.get('/add', middleware.auth.loggedIn(), function (req, res, next) {
     }
   ];
   var data = {
-    dependency: '/billing/billing-add.js',
+    dependency: 'billing/billing-add.js',
     breadcrumbs
   };
   var flash_message = req.flash('flash_message');
@@ -83,7 +148,7 @@ router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
     }
   ];
   var data = {
-    dependency: '/billing/billing-edit.js',
+    dependency: 'billing/billing-edit.js',
     breadcrumbs
   };
   var flash_message = req.flash('flash_message');
@@ -204,7 +269,7 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     }
   ];
   var data = {
-    dependency: '/billing/billing.js',
+    dependency: 'billing/billing.js',
     breadcrumbs
   };
   var flash_message = req.flash('flash_message');
@@ -364,7 +429,7 @@ router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
     }
   ];
   var data = {
-    dependency: '/billing/billing.js',
+    dependency: 'billing/billing.js',
     breadcrumbs
   };
   var flash_message = req.flash('flash_message');
@@ -374,41 +439,8 @@ router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
     data.flash_message = flash_message;
     data.flash_color = flash_color;
   }
-  var today = new Date();
-  var user_email = req.session.email;
-  
-  utility.billing.fetchAll(user_email).then(bills => {
-    for (let i = 0; i < bills.length; i++) {
-      const bill = bills[i];
-      var total_sold = 0;
-      for (let j = 0; j < bill.bill_transactions.length; j++) {
-        var txn = bill.bill_transactions[j];
-        if (txn.type == 'sold') {
-          total_sold += txn.quantity;
-        }
-      }
 
-      bills[i].total_sold = total_sold;
-
-      bills[i].nepali_date = new NepaliDate(bill.createdAt).format("DD/MM/YYYY");
-      if (!bill.paid && bill.dueDate != null) {
-        bills[i].nepali_due = new NepaliDate(bill.dueDate).format("DD/MM/YYYY");
-
-        if (bill.dueDate < today) {
-          bills[i].danger = true;
-        } else {
-          bills[i].danger = false;
-        }
-      }
-    }
-    data.bills = bills;
-    res.render('billing/index', data);
-  }).catch(err => {
-    console.log(err);
-    req.flash('flash_message', 'Some error occurred while loading the bills. Please try again later');
-    req.flash('flash_color', 'danger');
-    res.redirect('/');
-  });
+  res.render('billing/index', data);
 });
 
 router.post('/', middleware.auth.loggedIn(), function (req, res, next) {

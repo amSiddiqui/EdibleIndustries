@@ -57,7 +57,40 @@ $(() => {
         }
     );
 
+
     var billingTable = $("#billing-table").DataTable({
+        "ajax": {
+            "url": "/billing/api/bills",
+            'dataSrc': 'data'
+        },
+        "processing": true,
+        "language": {
+            'loadingRecords': '&nbsp;',
+            'processing': `
+            <div class="sk-chase">
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+            </div>
+            `
+        },
+        "createdRow": function(row, data, dataIndex) {
+            $(row).attr('onclick', `window.location.href = "/billing/${data.bill_id}"`);
+        },
+        "columns": [
+            {data: 'track_id'},
+            {data: 'date'},
+            {data: 'name'},
+            {data: 'customer_type'},
+            {data: 'user'},
+            {data: 'total', render: {_: 'display', sort: 'value'}},
+            {data: 'total_sold'},
+            {data: 'payment_method'},
+            {data: 'rented'}
+        ],
         "columnDefs": [{
             "width": "3%",
             "targets": 0

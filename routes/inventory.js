@@ -146,7 +146,7 @@ router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
     if (flash_message.length !== 0 && flash_color.length !== 0) {
       res.render('inventory/index', {
         inventories,
-        dependency: '/inventory/inventory.js',
+        dependency: 'inventory/inventory.js',
         flash_message: flash_message,
         flash_color: flash_color,
         breadcrumbs
@@ -154,7 +154,7 @@ router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
     } else {
       res.render('inventory/index', {
         inventories,
-        dependency: '/inventory/inventory.js',
+        dependency: 'inventory/inventory.js',
         breadcrumbs
 
       });
@@ -193,7 +193,7 @@ router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
     var flash_color = req.flash('flash_color');
     var data = {
       inventory: inv,
-      dependency: '/inventory/inventory-edit.js',
+      dependency: 'inventory/inventory-edit.js',
       breadcrumbs
     };
     if (flash_message.length !== 0 && flash_color.length !== 0) {
@@ -240,7 +240,7 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
 
     data = {
       inventory: inv,
-      dependency: '/inventory/inventory-item.js',
+      dependency: 'inventory/inventory-item.js',
       recordsExists: inv.inventory_records.length !== 0,
       in_stock: inv.in_stock,
       total: inv.total,

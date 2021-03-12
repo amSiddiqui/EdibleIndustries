@@ -43,9 +43,11 @@ app.use(session({
 
 var log_config = process.env.ENV === 'development'? 'dev': 'tiny';
 
-app.use(logger(log_config, {
-  skip: function (req, res) { return res.statusCode < 400 }
-}));
+// app.use(logger(log_config, {
+//   skip: function (req, res) { return res.statusCode < 400; }
+// }));
+
+app.use(logger('dev'));
 
 app.use(express.json());
 app.use(express.urlencoded({

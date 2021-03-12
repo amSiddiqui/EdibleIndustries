@@ -315,37 +315,6 @@ router.post('/bill-no', middleware.auth.loggedIn(), function (req, res, next) {
     });
 });
 
-router.get('/bills', middleware.auth.loggedIn, function (req, res, next) {
-    var today = new Date();
-    var user_email = req.session.email;
-    var data = {};
-    
-    utility.billing.fetchAll(user_email).then(bills => {
-        for (let i = 0; i < bills.length; i++) {
-            const bill = bills[i];
-            var total_sold = 0;
-            for (let j = 0; j < bill.bill_transactions.length; j++) {
-                var txn = bill.bill_transactions[j];
-                if (txn.type == 'sold') {
-                    total_sold += txn.quantity;
-                }
-            }
-
-            bills[i].total_sold = total_sold;
-
-            bills[i].nepali_date = new NepaliDate(bill.createdAt).format("DD/MM/YYYY");
-            if (!bill.paid && bill.dueDate != null) {
-                bills[i].nepali_due = new NepaliDate(bill.dueDate).format("DD/MM/YYYY");
-
-                if (bill.dueDate < today) {
-                    bills[i].danger = true;
-                } else {
-                    bills[i].danger = false;
-                }
-            }
-        }
-    });
-});
 
 router.post('/inventory/report/:id', middleware.auth.loggedIn(), function (req, res, next) {
     let id = parseInt(req.params.id);
