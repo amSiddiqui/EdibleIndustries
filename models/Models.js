@@ -225,6 +225,10 @@ const InventoryRecord = db.sequelize.define("inventory_record", {
     recordDate: {
         type: db.Sequelize.DATE
     },
+    partnerWarehouseId: {
+        type: db.Sequelize.INTEGER.UNSIGNED,
+        allowNull: true
+    }
 }, {
     underscored: true
 });
@@ -582,12 +586,8 @@ Warehouse.belongsTo(PostOffice, {
 Warehouse.hasMany(InventoryRecord);
 InventoryRecord.belongsTo(Warehouse);
 
-Warehouse.hasMany(InventoryBatchRecord);
-InventoryBatchRecord.belongsTo(Warehouse);
-
 Warehouse.hasMany(Bill);
 Bill.belongsTo(Warehouse);
-
 
 module.exports = {
     User,

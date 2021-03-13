@@ -25,6 +25,15 @@ $(function () {
         $("#grand-total").html('Re. ' + grand.toFixed(2));
     }
 
+    var warehouse = 1;
+
+    $.get('/api/warehouse/all', function(data) {
+        data.warehouses.forEach(w => {
+            if (w.isPrimary) warehouse = w.id;
+            $("#warehouse").append(`<option value="${w.id}">${w.name}</option>`);
+        });
+    });
+
     $("#discount-percent input").on('change', function () {
         var val = $(this).val();
         if (val < 0) {
@@ -117,7 +126,7 @@ $(function () {
 
 
     var inventories = null;
-    $.get('/api/inventories', function (data) {
+    $.get('/api/inventories?warehouse='+warehouse, function (data) {
         inventories = data.inventories;
     }).fail(function (err) {
         console.log(err);
@@ -462,7 +471,7 @@ $(function () {
         $("#inventory-table-body").empty();
         updateTotal();
 
-        $.get('/api/inventories?date='+bill_date, function (data) {
+        $.get('/api/inventories?date='+bill_date+'&warehouse='+warehouse, function (data) {
             inventories = data.inventories;
             $(".list-group").empty();
             inventories.forEach(function(inv) {
@@ -488,6 +497,34 @@ $(function () {
                 console.log(data);
                 window.location.href = '/billing';
             }
+        });
+    });
+
+    $("#warehouse").on('change', function() {
+        console.log("Warehouse changed");
+        warehouse = $(this).val();
+        var bill_date = $("#bill_date").val();
+        if (bill_date == '') {
+            return;
+        }
+        $("#inventory-table-body").empty();
+        updateTotal();
+        $.get('/api/inventories?date='+bill_date+'&warehouse='+warehouse, function (data) {
+            inventories = data.inventories;
+            console.log(inventories);
+            $(".list-group").empty();
+            inventories.forEach(function(inv) {
+                var list_group_item = $(`
+                <a href="#" data-value="${inv.id}"
+                                class="panel-block list-group-item">${inv.name} (In Stock: ${inv.in_stock})</a>
+                `);
+                $(".list-group").append(list_group_item); 
+            });
+            $(".list-group-item").on('click', list_group_item_event);
+
+        }).fail(function (err) {
+            console.log(err);
+            window.location.href = '/billing';
         });
     });
 });

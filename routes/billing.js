@@ -118,6 +118,11 @@ router.get('/add', middleware.auth.loggedIn(), function (req, res, next) {
   }).
   then(billno => {
     data.billno = billno;
+    return utility.warehouse.fetchWarehouses();
+  }).
+  then(warehouses => {
+    console.log("All warehouses retrieved");
+    data.warehouses = warehouses;
     res.render('billing/add', data);
   }).
   catch(err => {
@@ -454,6 +459,7 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
   var due_date = req.body.due_date || '';
   var bill_date = req.body.bill_date || '';
   var track_id = req.body.track_id;
+  var w_id = req.body.warehouse;
 
   var bd = null;
   if (bill_date.length !== 0) {
@@ -532,7 +538,7 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
       dd,
       bd,
       track_id
-    }, transactions, user_email).then((id) => {
+    }, transactions, user_email, w_id).then((id) => {
       req.flash('flash_message', 'Bill Added Successfully');
       req.flash('flash_color', 'success');
       res.redirect('/billing/' + id);

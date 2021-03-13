@@ -72,13 +72,14 @@ async function insertInventoryRecord(rec, batch_id='') {
     return inventory_record;
 }
 
-async function calculateTotalInventory(inv_id, end_date) {
+async function calculateTotalInventory(inv_id, end_date, warehouse_id=1) {
     var inventory = await models.Inventory.findByPk(inv_id);
     var records = await inventory.getInventory_records({
         where: {
             recordDate: {
                 [Op.lte]: end_date
-            }
+            },
+            warehouse_id: warehouse_id
         },
         order: [
             ['recordDate']
@@ -87,16 +88,16 @@ async function calculateTotalInventory(inv_id, end_date) {
     var total = 0;
     var in_stock = 0;
     records.forEach(rec => {
-        if (rec.type == 'purchased' || rec.type == 'manufactured' || rec.type == 'returned') {
+        if (rec.type == 'purchased' || rec.type == 'manufactured' || rec.type == 'returned' || rec.type == 'received') {
             in_stock = in_stock + rec.value;
-        } else if (rec.type == 'rented' || rec.type == 'discarded' || rec.type == 'sold') {
+        } else if (rec.type == 'rented' || rec.type == 'discarded' || rec.type == 'sold' || rec.type == 'transferred') {
             in_stock = in_stock - rec.value;
         }
 
 
-        if (rec.type == 'purchased' || rec.type == 'manufactured') {
+        if (rec.type == 'purchased' || rec.type == 'manufactured' || rec.type == 'received') {
             total = total + rec.value;
-        } else if (rec.type == 'discarded' || rec.type == 'sold') {
+        } else if (rec.type == 'discarded' || rec.type == 'sold' || rec.type == 'transferred') {
             total = total - rec.value;
         }
     });
@@ -183,29 +184,39 @@ module.exports = {
             }
             return inventory;
         },
-        fetchInventory: async (id) => {
+        fetchInventory: async (id, w_id=-1) => {
+            var warehouse = await models.Warehouse.findByPk(w_id);
+            if (warehouse === null) 
+                warehouse = await models.Warehouse.findOne({where: {isPrimary: true}});
             var inv = await models.Inventory.findOne({
                 where: {
                     id
                 },
-                include: [{
-                    model: models.InventoryRecord,
-                    order: [
-                        [sequelize.col('recordDate')]
-                    ],
-                    include: [{
-                        model: models.User
-                    },{
-                        model: models.InventoryBatchRecord,
-                        include: [{
-                            model: models.InventoryBatch
-                        }]
-                    }]
-                },{
+                include: [
+                {
                     model: models.InventoryBatch
                 }]
             });
-            var res = await calculateTotalInventory(inv.id, new Date());
+            var records = await inv.getInventory_records({
+                order: [
+                    [sequelize.col('recordDate')]
+                ],
+                where: {
+                    warehouse_id: warehouse.id
+                },
+                include: [{
+                    model: models.User
+                    },{
+                    model: models.InventoryBatchRecord,
+                    include: [{
+                        model: models.InventoryBatch
+                    }]
+                }]
+            });
+            
+            inv.inventory_records = records;
+
+            var res = await calculateTotalInventory(inv.id, new Date(), warehouse.id);
             inv.total = res.total;
             inv.in_stock = res.in_stock;
 
@@ -241,27 +252,28 @@ module.exports = {
             await inv.destroy();
             return true;
         },
-        fetchAllInventory: async () => {
-            var inventorries = await models.Inventory.findAll({
+        fetchAllInventory: async (id=-1) => {
+            // Load warehouse
+            var warehouse = await models.Warehouse.findByPk(id);
+            if (warehouse === null) {
+                warehouse = await models.Warehouse.findOne({where: {isPrimary: true}});
+            }
+            
+            var inventories = await models.Inventory.findAll({
                 include: [
                     {
-                        model: models.InventoryRecord,
-                        order: [
-                            [models.InventoryRecord, 'id', 'DESC']
-                        ]
-                    }, {
                         model: models.InventoryBatch
                     }]
             });
 
-            for (let i = 0; i < inventorries.length; i++) {
-                const inv = inventorries[i];
-                var res = await calculateTotalInventory(inv.id, new Date());
+            for (let i = 0; i < inventories.length; i++) {
+                const inv = inventories[i];
+                var res = await calculateTotalInventory(inv.id, new Date(), warehouse.id);
                 inv.in_stock = res.in_stock;
                 inv.total = res.total;
             }
 
-            return inventorries;
+            return inventories;
         
         },
         fetchAllInventoryID: () => {
@@ -273,22 +285,33 @@ module.exports = {
                 ]
             });
         },
-        fetchAllInventoryIdWithRecord: async (limit_date) => {
+        fetchAllInventoryIdWithRecord: async (limit_date, w_id = -1) => {
+            var warehouse = await models.Warehouse.findByPk(w_id);
+            if (warehouse === null) {
+                warehouse = await models.Warehouse.findOne({where: {isPrimary: true}});
+            }
+
             var inventories = await models.Inventory.findAll({
-                include: [{
-                    model: models.InventoryRecord,
-                    order: [
-                        [sequelize.col('id'), 'DESC']
-                    ],
-                    limit: 1
-                }, {
+                include: [ {
                     model: models.InventoryBatch
                 }]
             });
 
+
             for (let i = 0; i < inventories.length; i++) {
                 const inv = inventories[i];
-                var res = await calculateTotalInventory(inv.id, limit_date);
+                var record = await inv.getInventory_records({
+                    order: [
+                        [sequelize.col('id'), 'DESC']
+                    ],
+                    limit: 1,
+                    where: {
+                        warehouse_id: warehouse.id
+                    }
+                });
+                inventories[i].inventory_records = record;
+
+                var res = await calculateTotalInventory(inv.id, limit_date, warehouse.id);
                 inventories[i].in_stock = res.in_stock;
                 inventories[i].total = res.total;
             }
@@ -320,22 +343,48 @@ module.exports = {
             await batch.destroy();
             return true;
         },
-        addRecord: async (id, data, user_email) => {
+        addRecord: async (id, data, user_email, w_id=-1) => {            
+            var warehouse = await models.Warehouse.findByPk(w_id);
+            if (warehouse === null) {
+                warehouse = await models.Warehouse.findOne({where: {isPrimary: true}});
+            }
             var user = await models.User.findOne({
                 where: {
                     email: user_email
                 }
             });
 
+            if (data.type != 'transferred') {
+                data.warehouse = null;
+            }
+
             var inventory = await models.Inventory.findByPk(id);
             var inventory_record = await insertInventoryRecord({
                 type: data.type,
                 value: data.value,
                 recordDate: data.created,
-                cost: data.cost
+                cost: data.cost,
+                partnerWarehouseId: data.warehouse
             }, data.batch_id);
-            inventory_record.setInventory(inventory);
-            inventory_record.setUser(user);
+
+            if (data.type == 'transferred') {
+                var receivingWarehouse = await models.Warehouse.findByPk(data.warehouse);
+                var receiveRecord = await insertInventoryRecord({
+                    type: 'received',
+                    value: data.value,
+                    recordDate: data.created,
+                    cost: 0,
+                    partnerWarehouseId: warehouse.id
+                }, data.batch_id);
+                await receiveRecord.setWarehouse(receivingWarehouse);
+                await receiveRecord.setInventory(inventory);
+                await receiveRecord.setUser(user);
+                await receiveRecord.save();   
+            }
+
+            await inventory_record.setWarehouse(warehouse);
+            await inventory_record.setInventory(inventory);
+            await inventory_record.setUser(user);
             await inventory_record.save();
         },
         editRecord: async (id, data) => {
@@ -366,7 +415,11 @@ module.exports = {
             await record.destroy();
             return true;
         },
-        fetchBills: async (id, user_email) => {
+        fetchBills: async (id, user_email, w_id = -1) => {
+            var warehouse = await models.Warehouse.findByPk(w_id);
+            if (warehouse === null) {
+                warehouse = await models.Warehouse.findOne({where: {isPrimary: true}});
+            }
             var user = await models.User.findOne({
                 where: {
                     email: user_email
@@ -374,7 +427,7 @@ module.exports = {
             });
             var bills = [];
             if (user.user_type === 'Admin') {
-                bills = await models.Bill.findAll({
+                bills = await warehouse.getBills({
                     include: [{
                             model: models.BillTransaction,
                             include: [{
@@ -395,7 +448,7 @@ module.exports = {
                     ]
                 });
             }else{
-                bills = await models.Bill.findAll({
+                bills = await warehouse.getBills({
                     include: [{
                             model: models.BillTransaction,
                             include: [{
@@ -931,7 +984,11 @@ module.exports = {
             }
             return bill_no;
         },
-        createFull: async (customer_id, data, transactions, userEmail) => {
+        createFull: async (customer_id, data, transactions, userEmail, w_id=-1) => {
+            var warehouse = await models.Warehouse.findByPk(w_id);
+            if (warehouse === null) {
+                warehouse = await models.Warehouse.findOne({where: {isPrimary: true}});
+            }
             var customer = await models.Customer.findByPk(customer_id);
             var user = await models.User.findOne({
                 where: {
@@ -978,6 +1035,8 @@ module.exports = {
                 createdAt: bill_date,
                 track_id: data.track_id
             });
+
+            await bill.setWarehouse(warehouse);
         
             for (let i = 0; i < transactions.length; i++) {
                 const transaction = transactions[i];
@@ -991,6 +1050,7 @@ module.exports = {
                         value: transaction.quantity[j],
                         recordDate: bill_date
                     },  transaction.id);
+                    inv_record.setWarehouse(warehouse);
                     inv_record.setInventory(inventory);
                     if (user != null) {
                         inv_record.setUser(user);
@@ -1185,6 +1245,19 @@ module.exports = {
         },
         fetchWarehouses: async () => {
             return models.Warehouse.findAll();
+        },
+        getWarehouse: async (id) => {
+            // Check if id exists. If not get the primary warehouse
+            var warehouse = await models.Warehouse.findByPk(id);
+
+            if (warehouse === null) {
+                warehouse = await models.Warehouse.findOne({
+                    where: {
+                        isPrimary: true
+                    }
+                });
+            }
+            return warehouse;
         },
         addWarehouse: async(warehouseName, addressData) => {
             var res = await models.Warehouse.findOne({

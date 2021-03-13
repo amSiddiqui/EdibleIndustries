@@ -117,52 +117,6 @@ router.put('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
   });
 });
 
-router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
-  var breadcrumbs = [{
-      link: '/',
-      name: 'Home'
-    },
-    {
-      link: '/inventory',
-      name: 'Inventory'
-    },
-  ];
-
-  inventory.fetchAllInventory().then(inventories => {
-    for (let index = 0; index < inventories.length; index++) {
-      inventories[index].color = 'primary';
-      var percent = inventories[index].in_stock / inventories[index].total * 100;
-      inventories[index].percent = percent;
-      if (percent < 20) {
-        inventories[index].color = 'warning';
-      }
-      if (percent < 10) {
-        inventories[index].color = 'danger';
-      }
-
-    }
-    var flash_message = req.flash('flash_message');
-    var flash_color = req.flash('flash_color');
-    if (flash_message.length !== 0 && flash_color.length !== 0) {
-      res.render('inventory/index', {
-        inventories,
-        dependency: 'inventory/inventory.js',
-        flash_message: flash_message,
-        flash_color: flash_color,
-        breadcrumbs
-      });
-    } else {
-      res.render('inventory/index', {
-        inventories,
-        dependency: 'inventory/inventory.js',
-        breadcrumbs
-
-      });
-    }
-  });
-});
-
-
 router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
   if (!utility.misc.checkPermission(req, res))
       return;
@@ -202,6 +156,7 @@ router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
     }
     res.render('inventory/edit', data);
   }).catch(err => {
+    console.log(err);
     req.flash('flash_message', 'Error editing inventory, try agina later');
     req.flash('flash_color', 'danger');
     res.redirect('/inventory');
@@ -209,7 +164,6 @@ router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
 });
 
 router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
-  
   let id = parseInt(req.params.id);
   var breadcrumbs = [{
       link: '/',
@@ -233,12 +187,23 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   reports.today = new NepaliDate(today).format("DD/MM/YYYY", "np");
   reports.start_of_month = new NepaliDate(start_of_month).format("DD/MM/YYYY", "np");
   
-  inventory.fetchInventory(id).
+  // Get warehouse id
+  var w_id = req.query.warehouse;
+  if (w_id === undefined) {
+    w_id = -1;
+  } else {
+    w_id = parseInt(w_id);
+    w_id = isNaN(w_id) ? -1 : w_id;
+  }
+  utility.warehouse.getWarehouse(w_id).then(warehouse => {
+    data.warehouse = warehouse;
+    return inventory.fetchInventory(id, w_id);
+  }).
   then(inv => {
     var flash_message = req.flash('flash_message');
     var flash_color = req.flash('flash_color');
 
-    data = {
+    var tdata = {
       inventory: inv,
       dependency: 'inventory/inventory-item.js',
       recordsExists: inv.inventory_records.length !== 0,
@@ -247,6 +212,10 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
       color: 'success',
       breadcrumbs
     };
+    data = {
+      ...data,
+      ...tdata
+    }
     
     var last_5_dates = [];
     var dt = new Date();
@@ -281,7 +250,7 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
       data.flash_color = flash_color;
     }
     var user_email = req.session.email;
-    return utility.inventory.fetchBills(id, user_email);
+    return utility.inventory.fetchBills(id, user_email, w_id);
   }).
   then(bills => {
     for (let i = 0; i < bills.length; i++) {
@@ -335,8 +304,16 @@ router.post('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     type: req.body.type,
     value: req.body.quantity,
     batch_id: req.body.batch,
+    warehouse: req.body.warehouse
   };
 
+  var w_id = req.query.warehouse;
+  if (typeof w_id === 'undefined') {
+    w_id = -1;
+  } else {
+    w_id = parseInt(w_id);
+    w_id = isNaN(w_id) ? -1: w_id;
+  }
 
   var record_date = req.body.record_date.trim();
   data.created = new Date();
@@ -350,7 +327,7 @@ router.post('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   data.cost = utility.misc.toNumberFloat(req.body.inventory_cost.trim());
   var user_email = req.session.email;
   if (typeof user_email === 'undefined') user_email = 'gt_ams@yahoo.in';
-  utility.inventory.addRecord(id, data, user_email).then(()=>{
+  utility.inventory.addRecord(id, data, user_email, w_id).then(()=>{
     req.flash('flash_message', 'Record Added');
     req.flash('flash_color', 'success');
     res.redirect('/inventory/' + id);
@@ -504,6 +481,71 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
     res.redirect('/inventory');
   });
 });
+
+
+router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
+  var breadcrumbs = [{
+      link: '/',
+      name: 'Home'
+    },
+    {
+      link: '/inventory',
+      name: 'Inventory'
+    },
+  ];
+  var data = {};
+  // Check if warehouse is selected
+  var warehouse = req.query.warehouse;
+  if (warehouse === undefined) {
+    warehouse = -1;
+  }else{
+    warehouse = parseInt(warehouse);
+    warehouse = isNaN(warehouse) ? -1 : warehouse;
+  }
+  utility.warehouse.getWarehouse(warehouse).then(w => {
+    data.warehouse = w;
+    return utility.warehouse.fetchWarehouses();
+  }).then(warehouses => {
+    data.warehouses = warehouses;
+    return utility.inventory.fetchAllInventory(data.warehouse.id);
+  }).then(inventories => {
+    for (let index = 0; index < inventories.length; index++) {
+      inventories[index].color = 'primary';
+      var percent = inventories[index].in_stock / inventories[index].total * 100;
+      inventories[index].percent = percent;
+      if (percent < 20) {
+        inventories[index].color = 'warning';
+      }
+      if (percent < 10) {
+        inventories[index].color = 'danger';
+      }
+
+    }
+    var flash_message = req.flash('flash_message');
+    var flash_color = req.flash('flash_color');
+    if (flash_message.length !== 0 && flash_color.length !== 0) {
+      data.inventories = inventories;
+      data.dependency = 'inventory/inventory.js';
+      data.flash_message = flash_message;
+      data.flash_color = flash_color;
+      data.breadcrumbs = breadcrumbs;
+      res.render('inventory/index', data);
+    } else {
+      data.inventories = inventories;
+      data.dependency = 'inventory/inventory.js';
+      data.breadcrumbs = breadcrumbs;
+      res.render('inventory/index', data);
+    }
+  })
+  .catch(err => {
+    console.log(err);
+    req.flash('flash_message', 'Error opening inventory, try again later');
+    req.flash('flash_color', 'danger');
+    res.redirect('/');
+  });
+});
+
+
 
 
 module.exports = router;

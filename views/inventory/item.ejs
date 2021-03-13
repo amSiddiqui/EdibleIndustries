@@ -14,6 +14,11 @@
                         <strong><%=inventory.type.replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));%></strong>
                     </p>
                 </div>
+                <div>
+                    <p>Warehouse: 
+                        <strong><%=warehouse.name%></strong>
+                    </p>
+                </div>
             </div>
             <div class="column">
                 <div class="columns">
@@ -401,6 +406,7 @@
                                         <option value="manufactured">Manufactured</option>
                                         <% } %>
                                         <option value="discarded">Discarded</option>
+                                        <option value="transferred">Transferred</option>
                                     </select>
                                 </div>
                             </div>
@@ -439,6 +445,18 @@
                                 <label for="inventory_cost" class="label">Cost</label>
                                 <input type="number" class="input" step="any" name="inventory_cost" id="inventory_cost"
                                     value="<%=inventory.cost%>">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column" id="inventory-warehouse-container" style="display: none;">
+                        <div class="field">
+                            <div class="control">
+                                <label for="inventory_warehouse" class="label">Warehouse</label>
+                                <div class="select is-fullwidth">
+                                    <select name="warehouse" id="inventory_warehouse">
+    
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>

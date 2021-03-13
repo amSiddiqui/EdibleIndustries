@@ -3,6 +3,16 @@ function resetTabs() {
     $(".tab-content").hide();
 }
 
+
+var warehouses = []; 
+$.get('/api/warehouse/all', function(data) {
+    warehouses = data.warehouses;
+    for (let i = 0; i < warehouses.length; i++) {
+        var w = warehouses[i];
+        $("#inventory_warehouse").append(`<option value="${w.id}">${w.name}</option>`);
+    }
+});
+
 function recordEdit(
     date,
     type,
@@ -283,10 +293,19 @@ $(function () {
         closeOnDateSelect: true
     });
 
+    $("#type").on('change', function() {
+        var val = $(this).val();
+        if (val == 'transferred') {
+            $("#inventory-warehouse-container").show();
+        }else{
+            $("#inventory-warehouse-container").hide();
+        }
+    });
+
     var inventory_cost = $("#inventory_cost").val();
     $("#type").on('change', function() {
         var val = $(this).val();
-        if (val == 'discarded') {
+        if (val == 'discarded' || val == 'transferred') {
             $("#inventory_cost").val(0.0);
         }
         else{

@@ -187,12 +187,19 @@ router.get('/customer/:id', middleware.auth.loggedIn(), function (req, res, next
 
 router.get('/inventories', middleware.auth.loggedIn(), function (req, res, next) {
     var bill_date = req.query.date;
+    var w_id = req.query.warehouse;
+    if (w_id === undefined) {
+        w_id = -1;
+    } else {
+        w_id = parseInt(w_id);
+        w_id = isNaN(w_id) ? -1 : w_id;
+    }
     var d = new Date();
     if (typeof bill_date !== 'undefined') {
         bill_date = utility.misc.toEnglishDate(bill_date);
         d = new NepaliDate(bill_date).toJsDate();
     }
-    utility.inventory.fetchAllInventoryIdWithRecord(d).then(inventories => {
+    utility.inventory.fetchAllInventoryIdWithRecord(d, w_id).then(inventories => {
 
         for (let i = 0; i < inventories.length; i++) {
             const inv = inventories[i];
@@ -342,6 +349,14 @@ router.post('/warehouse/exists', middleware.auth.loggedIn(), function(req, res, 
             res.status(500).json({'message': 'Server error try again later'});
         });
     }
+});
+
+router.get('/warehouse/all', middleware.auth.loggedIn(), function(req, res, next) {
+    utility.warehouse.fetchWarehouses().then(warehouses => {
+        res.json({
+            warehouses
+        });
+    });
 });
 
 router.post('/inventory/report/:id', middleware.auth.loggedIn(), function (req, res, next) {

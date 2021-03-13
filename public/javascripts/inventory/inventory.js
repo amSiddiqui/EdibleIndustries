@@ -1,5 +1,12 @@
-$(document).ready(() => {
-    $("#add-inventory-button").click(e => {
+function changeWarehouse(id) {
+    var url = new URL(window.location.href);
+    url.searchParams.set('warehouse', id);
+    window.location.href = url.href;
+}
+
+
+$(() => {
+    $("#add-inventory-button").on('click', e => {
         $("#add-inventory-modal").toggleClass('is-active');
     });
 
@@ -73,8 +80,9 @@ $(document).ready(() => {
     $(".custom-card").on('click', function(e) {
         if ($(e.target).parents('.edit').length === 0) {
             var id = $(e.target).parents('.custom-card').attr('data-value');
-            window.location.href = '/inventory/' + id;
+            window.location.href = '/inventory/' + id + document.location.search;
         }
+        console.log("Clicked");
     });
 
     const inventory_batch_template = `
@@ -111,8 +119,5 @@ $(document).ready(() => {
         });
         $(".batch-container").append(temp);
     });
-
-
-
 
 });

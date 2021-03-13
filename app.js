@@ -123,6 +123,7 @@ app.use((req, res, next) => {
     req.session.email = 'gt_ams@yahoo.in';
     req.session.first_name = 'Aamir';
     req.session.user_type = 'Admin';
+    req.session.warehouse = 1;
   }
   res.locals.first_name = req.session.first_name;
   res.locals.check_perm = function() {
