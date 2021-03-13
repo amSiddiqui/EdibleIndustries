@@ -252,7 +252,6 @@ router.get('/add', middleware.auth.loggedIn(), function (req, res, next) {
   utility.customer_type.fetchAllTypes().then(types => {
     data.types = types;
     utility.misc.fetchAllZones().then(zones => {
-
       data.zones = zones;
       res.render('customer/add', data);
     }).catch(err => {

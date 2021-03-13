@@ -222,7 +222,7 @@ router.get('/check-item-rented/:id', middleware.auth.loggedIn(), function (req, 
         });
     }).catch(function (err) {
         console.log(err);
-        req.json({
+        res.json({
             status: 'fail',
             message: 'DB error'
         });
@@ -256,7 +256,7 @@ router.get('/all-bills', middleware.auth.loggedIn(), function (req, res, next) {
         });
     }).catch(err => {
         console.log(err);
-        req.json({
+        res.json({
             status: 'fail',
             message: 'DB error'
         });
@@ -290,7 +290,7 @@ router.get('/all-customers', middleware.auth.loggedIn(), function (req, res, nex
         });
     }).catch(err => {
         console.log(err);
-        req.json({
+        res.json({
             status: 'fail',
             message: 'DB error'
         });
@@ -308,13 +308,41 @@ router.post('/bill-no', middleware.auth.loggedIn(), function (req, res, next) {
             bill_no: bill_no
         });
     }).catch(err => {
-        req.json({
+        res.json({
             status: 'fail',
             message: 'DB error'
         });
     });
 });
 
+router.post('/warehouse/exists', middleware.auth.loggedIn(), function(req, res, next) {
+    // Check if warehousename is provided
+    if (typeof req.body.name === 'undefined') {
+        res.status(400).json({'message': 'Provide warehouse name'});
+    } else {
+        let name = req.body.name.trim();
+        var id = -1;
+        if (typeof req.body.id !== 'undefined') {
+            try {
+                id = parseInt(req.body.id);
+            }catch{
+                id = -1;
+            }
+        }
+        utility.warehouse.warehouseExist(name, id).then(exists => {
+            if (exists) {
+                console.log("Warehouse exists");
+                res.json({'exists': true});
+            }else{
+                console.log("Warehouse does not exists");
+                res.json({'exists': false});
+            }
+        }).catch(err => {
+            console.log(err);
+            res.status(500).json({'message': 'Server error try again later'});
+        });
+    }
+});
 
 router.post('/inventory/report/:id', middleware.auth.loggedIn(), function (req, res, next) {
     let id = parseInt(req.params.id);

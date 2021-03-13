@@ -7814,6 +7814,15 @@ nav.navbar {
 .filepond-container {
   height: 82px; }
 
+input.is-invalid.is-touched {
+  border: 1px solid red; }
+
+select.is-invalid.is-touched {
+  border: 1px solid red; }
+
+textarea.is-invalid.is-touched {
+  border: 1px solid red; }
+
 .select,
 select {
   width: 100%; }

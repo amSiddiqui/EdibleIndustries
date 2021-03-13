@@ -1,0 +1,94 @@
+<%include ../partials/header %>
+
+<div class="container" style="margin-bottom: 200px;">
+    <h1 class="title">Edit Warehouse</h1>
+    <form action="/warehouse/<%= warehouse.id %>?_method=PUT" method="POST" id="add-new-warehouse-form">
+        <h5 class="title is-5">Name</h5>
+        <div class="columns">
+            <div class="column">
+                <div class="field">
+                    <div class="control">
+                        <input type="text" id="edit-name" name="name" placeholder="Warehouse Name" value="<%= warehouse.name; %>" class="input">
+                        <p style="display: none;" class="help is-danger"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <h5 class="title is-5">Address</h5>
+        <div class="columns">
+            <div class="column">
+                <div class="field">
+                    <div class="control has-icons-left">
+                        <input type="text" class="input" id="address" value="<%= warehouse.address1 %>" name="address" placeholder="Address">
+                        <span class="icon is-left is-small">
+                            <i class="fas fa-address-card"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="columns">
+            <div class="column">
+                <div class="field">
+                    <div class="control">
+                        <label for="zone" class="label">Anchal</label>
+                        <div class="select is-fullwidth">
+                            <select name="zone" id="zone">
+                                <option value="" selected disabled></option>
+                                <% for(let i=0; i< zones.length; i++) { const zone = zones[i]; %>
+                                <option <%= warehouse.zone != null && warehouse.zone.id == zone.id ? 'selected':''; %> value="<%=zone.id%>"><%=zone.value;%></option>
+                                <% } %>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                <div class="field">
+                    <div class="control">
+                        <label for="district" class="label">Jilla</label>
+                        <div class="select is-fullwidth">
+                            <select name="district" id="district">
+                                <option value="" disabled selected></option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                <div class="field">
+                    <div class="control">
+                        <label for="post_office" class="label">City/Postal Code</label>
+                        <div class="select is-fullwidth">
+                            <select name="post_office" id="post_office">
+                                <option value="" disabled selected></option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="field is-grouped is-grouped-right">
+            <p class="control">
+                <button class="button is-success is-rounded" id="submit-button">Submit</button>
+            </p>
+            <p class="control">
+                <a href="/warehouse" class="button is-light is-rounded">
+                    Cancel
+                </a>
+            </p>
+        </div>
+    </form>
+</div>
+
+
+<script>
+    const zone_id = parseInt("<%= warehouse.zone != null ? warehouse.zone.id : -1%>");
+    const district_id = parseInt("<%= warehouse.district != null ? warehouse.district.id : -1%>");
+    const post_office_id = parseInt("<%= warehouse.post_office != null ? warehouse.post_office.id : -1%>");
+
+    const warehouse_id = parseInt("<%= warehouse.id; %>");
+    
+</script>
+
+<% include ../partials/footer %>

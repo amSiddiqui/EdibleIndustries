@@ -15,6 +15,7 @@ const environment = process.env.NODE_ENV || 'development';
 const indexRouter = require('./routes/index');
 const authRouter = require('./routes/auth');
 const customerRouter = require('./routes/customer');
+const warehouseRouter = require('./routes/warehouse');
 const inventoryRouter = require('./routes/inventory');
 const billingRouter = require('./routes/billing');
 const recordsRouter = require('./routes/records');
@@ -154,6 +155,7 @@ app.use('/auth', authRouter);
 app.use('/inventory', inventoryRouter);
 app.use('/billing', billingRouter);
 app.use('/customer', customerRouter);
+app.use('/warehouse', warehouseRouter);
 app.use('/records', recordsRouter);
 app.use('/api', apiRouter);
 

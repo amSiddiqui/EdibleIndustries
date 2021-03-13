@@ -91,7 +91,6 @@ const User = db.sequelize.define("user", {
     email: {
         type: db.Sequelize.STRING,
         allowNull: false,
-        unique: true,
         validate: {
             isEmail: true,
             notEmpty: true
@@ -516,6 +515,80 @@ BillTransaction.hasMany(BillTransaction, {
     onUpdate: 'CASCADE'
 });
 
+const Warehouse = db.sequelize.define('warehouse', {
+    id: {
+        type: db.Sequelize.INTEGER.UNSIGNED,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    name: {
+        type: db.Sequelize.STRING,
+        allowNull: false,
+        validate: {
+            notEmpty: true
+        }
+    },
+    isPrimary: {
+        type: db.Sequelize.BOOLEAN,
+        defaultValue: false
+    },
+    address1: {
+        type: db.Sequelize.STRING
+    },
+    anchal: {
+        type: db.Sequelize.INTEGER.UNSIGNED,
+        references: {
+            model: Zone,
+            key: 'id'
+        },
+    },
+    jilla: {
+        type: db.Sequelize.INTEGER.UNSIGNED,
+        references: {
+            model: District,
+            key: 'id'
+        },
+    },
+    postal_code: {
+        type: db.Sequelize.INTEGER.UNSIGNED,
+        references: {
+            model: PostOffice,
+            key: 'id'
+        },
+    }
+});
+
+Zone.hasMany(Warehouse, {
+    foreignKey: 'anchal'
+});
+Warehouse.belongsTo(Zone, {
+    foreignKey: 'anchal'
+});
+
+District.hasMany(Warehouse, {
+    foreignKey: 'jilla'
+});
+Warehouse.belongsTo(District, {
+    foreignKey: 'jilla'
+});
+
+PostOffice.hasMany(Warehouse, {
+    foreignKey: 'postal_code'
+});
+Warehouse.belongsTo(PostOffice, {
+    foreignKey: 'postal_code'
+});
+
+Warehouse.hasMany(InventoryRecord);
+InventoryRecord.belongsTo(Warehouse);
+
+Warehouse.hasMany(InventoryBatchRecord);
+InventoryBatchRecord.belongsTo(Warehouse);
+
+Warehouse.hasMany(Bill);
+Bill.belongsTo(Warehouse);
+
+
 module.exports = {
     User,
     Inventory,
@@ -530,5 +603,6 @@ module.exports = {
     District,
     PostOffice,
     Bill,
-    BillTransaction
+    BillTransaction,
+    Warehouse
 };

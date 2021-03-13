@@ -1168,6 +1168,92 @@ module.exports = {
             await bill.destroy();
         }
     },
+    warehouse: {
+        fetchWarehouse: async (id) => {
+            return models.Warehouse.findByPk(id, {
+                include: [
+                {
+                    model: models.Zone
+                },
+                {
+                    model: models.District,
+                },
+                {
+                    model: models.PostOffice
+                }]
+            });
+        },
+        fetchWarehouses: async () => {
+            return models.Warehouse.findAll();
+        },
+        addWarehouse: async(warehouseName, addressData) => {
+            var res = await models.Warehouse.findOne({
+                where: {
+                    name: warehouseName
+                }
+            });
+            if (res !== null) {
+                throw new Error();
+            }
+            var warehouse = await models.Warehouse.create({
+                name: warehouseName,
+                address1: addressData.address1
+            });
+            if (addressData.zone.trim().length > 0 && !isNaN(addressData.zone)) {
+                var zone = await models.Zone.findByPk(addressData.zone);
+                warehouse.setZone(zone);
+            }
+            if (addressData.zone.trim().length > 0 && !isNaN(addressData.district)) {
+                var district = await models.District.findByPk(addressData.district);
+                warehouse.setDistrict(district);
+            }
+            if (addressData.post_office.trim().length > 0 && !isNaN(addressData.post_office)) {
+                var post_office = await models.PostOffice.findByPk(addressData.post_office);
+                warehouse.setPost_office(post_office);
+            }
+            await warehouse.save();
+        },
+        warehouseExist: async (name, id) => {
+            var res = null;
+            if (id === -1) {
+                res = await models.Warehouse.findOne({
+                    where: {
+                        name
+                    }
+                });
+            } else {
+                console.log("Checking with id too");
+                res = await models.Warehouse.findOne({
+                    where: {
+                        name,
+                        id: {
+                            [Op.ne]: id
+                        }
+                    }
+                });
+                console.log(res);
+            }
+            return res !== null;
+        },
+        editWarehouse: async(id, warehouseName, addressData) => {
+            var warehouse = await models.Warehouse.findByPk(id);
+            warehouse.name = warehouseName;
+            warehouse.address1 = addressData.address1;
+            if (addressData.zone.trim().length > 0 && !isNaN(addressData.zone)) {
+                var zone = await models.Zone.findByPk(addressData.zone);
+                warehouse.setZone(zone);
+            }
+            if (addressData.district.trim().length > 0 && !isNaN(addressData.district)) {
+                var district = await models.District.findByPk(addressData.district);
+                warehouse.setDistrict(district);
+            }
+            if (addressData.post_office.trim().length > 0 && !isNaN(addressData.post_office)) {
+                var post_office = await models.PostOffice.findByPk(addressData.post_office);
+                warehouse.setPost_office(post_office);
+            }
+            await warehouse.save();
+        }
+    },
     misc: {
         zones: (data) => {
             return models.Zone.create(data);
