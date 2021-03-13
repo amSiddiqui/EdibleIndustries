@@ -213,7 +213,7 @@ const InventoryRecord = db.sequelize.define("inventory_record", {
     },
     type: {
         type: db.Sequelize.ENUM,
-        values: ['purchased', 'manufactured', 'rented', 'returned', 'discarded', 'sold'],
+        values: ['purchased', 'manufactured', 'rented', 'returned', 'discarded', 'sold', 'transferred', 'received'],
     },
     value: {
         type: db.Sequelize.INTEGER
@@ -237,7 +237,7 @@ const InventoryBatchRecord = db.sequelize.define("inventory_batch_record", {
     },
     type: {
         type: db.Sequelize.ENUM,
-        values: ['purchased', 'manufactured', 'rented', 'returned', 'discarded', 'sold'],
+        values: ['purchased', 'manufactured', 'rented', 'returned', 'discarded', 'sold', 'transferred', 'received'],
     },
     value: {
         type: db.Sequelize.INTEGER
