@@ -100,15 +100,15 @@ const models = require('./models/Models');
 
 var do_seed = false;
 
-// db.sequelize.sync({
-//   alter: true
-// }).then(() => {
-//   if (do_seed)
-//     require('./modules/seed')(true, false);
-//   console.log("Database synchronized");
-// }).catch(err => {
-//   console.log("Error while synchronizing data: ", err);
-// });
+db.sequelize.sync({
+  alter: true
+}).then(() => {
+  if (do_seed)
+    require('./modules/seed')(true, false);
+  console.log("Database synchronized");
+}).catch(err => {
+  console.log("Error while synchronizing data: ", err);
+});
 
 
 
