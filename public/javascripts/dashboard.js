@@ -133,6 +133,18 @@ $(function () {
         console.log(err);
     });
 
+    $("#month-sale").on('change', function() {
+        var dt = $(this).val();
+        $.get('/api/stats/month-sale?date='+dt, function(data) {
+            $("#month-sale-value").html(`
+                <span style="font-size: 1rem;">Re.</span> ${data.total}
+            `);
+        }).fail(function(err) {
+            console.log(err);
+            $("#month-sale-value").html('N/A');
+        });
+    });
+
     $.get('/api/all-customers', function (data) {
         if (data.status == 'success') {
             const customers = data.customers;

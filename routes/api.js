@@ -185,6 +185,20 @@ router.get('/customer/:id', middleware.auth.loggedIn(), function (req, res, next
     });
 });
 
+router.get('/stats/month-sale', middleware.auth.loggedIn(), function(req, res, next) {
+    var date = req.query.date;
+    if (date === undefined) {
+        res.status(400).send('Provide date');
+    } else {
+        utility.misc.month_sale(date).then(total => {
+            res.json({total});
+        }).catch(err => {
+            console.log(err);
+            res.status(500).send('Server error');
+        });
+    }
+});
+
 router.get('/inventories', middleware.auth.loggedIn(), function (req, res, next) {
     var bill_date = req.query.date;
     var w_id = req.query.warehouse;

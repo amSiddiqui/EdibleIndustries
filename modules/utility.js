@@ -1358,6 +1358,29 @@ module.exports = {
             if (user == null) return 'Admin';
             return user.first_name+' '+user.last_name;
         },
+        month_sale: async (date) => {
+            var np_date = new NepaliDate(date);
+            
+            var dt = np_date.toJsDate();
+            while (true) {
+                dt.setDate(dt.getDate() + 1);
+                var np = new NepaliDate(dt);
+                if (np.getDate() == 1) break;
+            }
+            dt.setDate(dt.getDate() - 1);
+            var month_start = new NepaliDate(date).toJsDate();
+            var month_end = dt;
+            var total = await models.Bill.sum('total' ,{
+                where: {
+                    createdAt: {
+                        [Op.lte]: month_end,
+                        [Op.gte]: month_start
+                    }
+                }
+            });
+            return numeral(total).format('0,0.00');
+
+        },
         toNumberFloat: toNumberFloat,
         toNumber: toNumber,
         getThisMonthStart: getThisMonthStart,

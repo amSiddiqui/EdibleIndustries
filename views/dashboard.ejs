@@ -17,8 +17,16 @@
     <div class="tile is-ancestor">
         <div class="tile is-parent">
             <div class="tile is-child box">
-                <p>Sales in <%=monthName%>, <%=yearName%></p>
-                <p class="title has-text-centered"><span style="font-size: 1rem;">Re.</span> <%=formatted_total%></p>
+                <p>Sales in <div class="form-control">
+                    <div class="select">
+                        <select id="month-sale">
+                            <% for(let i = 0; i < month_data.length; i++) { var md = month_data[i]; %>
+                                <option value="<%= md.value %>"><%= md.text %></option>
+                            <% } %>
+                        </select>
+                    </div>
+                </div> </p>
+                <p class="title has-text-centered" id="month-sale-value"><span style="font-size: 1rem;">Re.</span> <%=formatted_total%></p>
             </div>
         </div>
         <div class="tile is-parent">
