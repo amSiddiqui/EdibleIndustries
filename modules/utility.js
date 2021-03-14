@@ -1403,9 +1403,9 @@ module.exports = {
             var yearName = new NepaliDate(today).format('YYYY', 'np');
             var dt = new Date();
             while (true) {
-                dt.setDate(dt.getDate() - 1);
                 var np = new NepaliDate(dt);
                 if (np.getDate() == 1) break;
+                dt.setDate(dt.getDate() - 1);
             }
             data.monthName = monthName;
             var total = await models.Bill.sum('total' ,{
