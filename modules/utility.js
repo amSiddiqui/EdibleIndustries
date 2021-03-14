@@ -1182,8 +1182,10 @@ module.exports = {
                 createdAt: date
             });
             const bill = await models.Bill.findByPk(bill_id);
+            const warehouse = await bill.getWarehouse();
             bill_transac.setInventory_record(inv_record);
             inv_record.setInventory(inv);
+            await inv_record.setWarehouse(warehouse);
             inv_record.setUser(user);
             tr.addReturn(bill_transac);
             bill_transac.setBill(bill);
