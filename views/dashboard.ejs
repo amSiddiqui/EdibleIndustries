@@ -152,7 +152,7 @@
                                     <th>Bill No.</th>
                                     <th>Date</th>
                                     <th>Customer</th>
-                                    <th>Rented</th>
+                                    <th>Billed by</th>
                                     <th>Rent Total</th>
                                     <th>Total</th>
                                 </tr>
@@ -168,11 +168,7 @@
                                     <td><%=bill.customer.organization;%></td>
                                     <% } %>
                                     <td>
-                                        <% for (let j = 0; j < bill.bill_transactions.length; j++) { const tr = bill.bill_transactions[j]; %>
-                                            <% if (tr.type == 'rented') { %>
-                                            <p><%=tr.inventory_record.inventory.name;%></p>
-                                            <% } %>
-                                        <% } %>
+                                        <%= bill.user.first_name + bill.user.last_name; %>
                                     </td>
                                     <td><%= bill.bill_rented; %></td>
                                     <td>Re. <%=bill.total.toFixed(2);%></td>

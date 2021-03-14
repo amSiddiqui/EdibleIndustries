@@ -1479,6 +1479,8 @@ module.exports = {
                             },
                             {
                                 model: models.Customer
+                            },{
+                                model: models.User
                             }
                         ]
                     });
