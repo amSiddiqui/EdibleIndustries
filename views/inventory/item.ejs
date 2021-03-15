@@ -396,7 +396,7 @@
             <button class="delete" aria-label="close"></button>
         </header>
         <section class="modal-card-body">
-            <form action="/inventory/<%=inventory.id%>" method="POST">
+            <form action="/inventory/<%=inventory.id%>?warehouse=<%=warehouse.id%>" method="POST">
                 <div class="columns">
                     <div class="column">
                         <div class="field">

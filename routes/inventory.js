@@ -336,7 +336,7 @@ router.post('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     req.flash('flash_message', 'Error Adding Record. Check your inputs.');
     req.flash('flash_color', 'danger');
     console.log("Data name is empty: ", data);
-    res.redirect('/inventory/' + id);
+    res.redirect('/inventory/' + id+'?warehouse='+w_id);
   });
 
 });
