@@ -9,7 +9,8 @@ $.get('/api/warehouse/all', function(data) {
     warehouses = data.warehouses;
     for (let i = 0; i < warehouses.length; i++) {
         var w = warehouses[i];
-        $("#inventory_warehouse").append(`<option value="${w.id}">${w.name}</option>`);
+        if (w.id != warehouse_id)
+            $("#inventory_warehouse").append(`<option value="${w.id}">${w.name}</option>`);
     }
 });
 
