@@ -120,11 +120,49 @@
     </div>
 
 
-
     <div class="tab-content" id="records-tab" style="display: none;">
         <div class="columns">
             <div class="column">
                 <h1 class="title is-3">Reports</h1>
+                <section class="info-tiles">
+                    <div class="tile is-ancestor has-text-centered">
+                        <div class="tile is-parent">
+                            <article class="tile is-child box">
+                                <p class="title" id="jars-rented-text"></p>
+                                <p class="subtitle">Jars rented</p>
+                            </article>
+                        </div>
+                        <div class="tile is-parent">
+                            <article class="tile is-child box">
+                                <p class="title" id="month-sale-text"></p>
+                                <div class="subtitle">
+                                    Sale in 
+                                    <div class="form-control" style="display: inline">
+                                        <div class="select">
+                                            <select id="month-sale">
+                                                <% for(let i = 0; i < month_data.length; i++) { var md = month_data[i]; %>
+                                                    <option value="<%= md.value %>"><%= md.text %></option>
+                                                <% } %>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                        <div class="tile is-parent">
+                            <article class="tile is-child box">
+                                <p class="title" id="total-sale-text"></p>
+                                <p class="subtitle">Total sales</p>
+                            </article>
+                        </div>
+                        <div class="tile is-parent">
+                            <article class="tile is-child box">
+                                <p class="title has-text-danger" id="outstanding-text">19</p>
+                                <p class="subtitle">Outstanding</p>
+                            </article>
+                        </div>
+                    </div>
+                </section>
             </div>
         </div>
     </div>
@@ -193,6 +231,8 @@
 
 <script>
     var totals_bills = parseInt("<%=bills.length%>");
+    const customer_id = parseInt("<%=customer.id%>");
+    const current_month = '<%=month_data[0].value%>';
 </script>
 
 <%include ../partials/footer %>

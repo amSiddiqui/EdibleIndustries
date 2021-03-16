@@ -427,4 +427,40 @@ router.get('/customer/rented/:id', middleware.auth.loggedIn(), function (req, re
     });
 });
 
+router.get('/stats/customer/sale/:id', middleware.auth.loggedIn(), function (req, res, next) {
+    let id = parseInt(req.params.id);
+    var date = req.query.date;
+    var total = false;
+    if (req.query.total !== undefined) {
+        total = true;
+    }
+    if (date === undefined && !total) {
+        res.status(400).send('Provide date');
+    } else {
+        date = date === undefined ? '' : date;
+        var total = false;
+        if (req.query.total !== undefined) {
+            total = true;
+        }
+        utility.customer.month_sale(id, date, total).then(total => {
+            res.json({total});
+        }).catch(err => {
+            console.log(err);
+            res.status(500).send('Server error');
+        });
+    }
+});
+
+router.get('/stats/customer/outstanding/:id', middleware.auth.loggedIn(), function (req, res, next) {
+    let id = parseInt(req.params.id);
+    utility.customer.fetchOustanding(id).then(outstanding => {
+        res.json({outstanding});
+    }).catch(err => {
+        console.log(err);
+        res.status(500).send("Server error");
+    });
+});
+
+
+
 module.exports = router;

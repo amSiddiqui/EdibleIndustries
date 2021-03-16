@@ -5,5 +5,5 @@ $(function () {
         ],
         "order": [[0, 'desc']]
     });
-    
+    console.log("Customer script loaded");
 });

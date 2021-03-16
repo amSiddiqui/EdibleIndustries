@@ -112,5 +112,35 @@ $(function() {
         billing_table.draw();
     });
 
+    $.get("/api/customer/rented/"+customer_id, function(data) {
+        $("#jars-rented-text").html(data.rented)
+    }).fail(function(err) {
+        console.log("Err", err);
+        $("#jars-rented-text").html("N/A");
+    });
+
+    $.get("/api/stats/customer/sale/"+customer_id+"?date="+current_month, function(data) {
+        $("#month-sale-text").html(data.total);
+    }).fail(function(err) {
+        console.log("Err", err);
+        $("#month-sale-text").html("N/A");
+    }); 
+
+    $.get("/api/stats/customer/sale/"+customer_id+"?total=true", function(data) {
+        $("#total-sale-text").html(data.total);
+    }).fail(function(err) {
+        console.log("Err", err);
+        $("#total-sale-text").html("N/A");
+    });
+
+    $.get("/api/stats/customer/outstanding/"+customer_id, function(data) {
+        if (data.outstanding == '0') {
+            $("#outstanding-text").removeClass('has-text-danger');
+        }
+        $("#outstanding-text").html(data.outstanding);
+    }).fail(function(err) {
+        console.log(err);
+        $("#outstanding-text").html("N/A");
+    });
 
 });

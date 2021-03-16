@@ -822,6 +822,59 @@ module.exports = {
                 }
             }
             return rented;
+        },
+        month_sale: async (id, date, total = false) => {
+            var customer = await models.Customer.findByPk(id);
+            if (total) {
+                var bills = await customer.getBills();
+                var total = 0;
+                bills.forEach(bill => {
+                    total += bill.total;
+                });
+                return numeral(total).format('0,0.00');
+            }
+            var np_date = new NepaliDate(date);
+            
+            var dt = np_date.toJsDate();
+            while (true) {
+                dt.setDate(dt.getDate() + 1);
+                var np = new NepaliDate(dt);
+                if (np.getDate() == 1) break;
+            }
+            dt.setDate(dt.getDate() - 1);
+            var month_start = new NepaliDate(date).toJsDate();
+            var month_end = dt;
+            var bills = await customer.getBills({
+                where: {
+                    createdAt: {
+                        [Op.lte]: month_end,
+                        [Op.gte]: month_start
+                    }
+                }
+            });
+            var total = 0;
+            bills.forEach(bill => {
+                total += bill.total;
+            });
+            return numeral(total).format('0,0.00');
+
+        },
+        fetchOustanding: async (id) => {
+            var customer = await models.Customer.findByPk(id);
+            var total = 0;
+            var bills = await customer.getBills({
+                where: {
+                    [Op.or]: {
+                        paid: false,
+                        payment_method: 'Credit'
+                    }
+                }
+            });
+
+            bills.forEach(bill => {
+                total += bill.total;
+            });
+            return numeral(total).format('0,0.00');
         }
     },
     billing: {
