@@ -1425,6 +1425,7 @@ module.exports = {
             var monthName = new NepaliDate(today).format('MMMM', 'np');
             var yearName = new NepaliDate(today).format('YYYY', 'np');
             var dt = new Date();
+            dt.setHours(0, 0 ,0, 0);
             while (true) {
                 var np = new NepaliDate(dt);
                 if (np.getDate() == 1) break;
