@@ -143,4 +143,14 @@ $(function() {
         $("#outstanding-text").html("N/A");
     });
 
+    $("#month-sale").on('change', function() {
+        var dt = $(this).val();
+        $.get("/api/stats/customer/sale/"+customer_id+"?date="+dt, function(data) {
+            $("#month-sale-text").html(data.total);
+        }).fail(function(err) {
+            console.log("Err", err);
+            $("#month-sale-text").html("N/A");
+        }); 
+    });
+
 });
