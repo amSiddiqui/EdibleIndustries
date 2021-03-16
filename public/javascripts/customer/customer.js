@@ -145,6 +145,7 @@ $(function() {
 
     $("#month-sale").on('change', function() {
         var dt = $(this).val();
+        $("#month-sale-text").html('...');
         $.get("/api/stats/customer/sale/"+customer_id+"?date="+dt, function(data) {
             $("#month-sale-text").html(data.total);
         }).fail(function(err) {
