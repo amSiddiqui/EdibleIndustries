@@ -203,6 +203,9 @@
                         <% for(let i = 0; i < ledger_entries.length; i++) { var entry = ledger_entries[i];%>
                         <tr onmouseover="showBill(this);" onmouseleave="hideBill(this);">
                             <td><%= entry.id %>
+                                <% if(entry.type == 'deposit') { %>
+                                    Bills Paid
+                                <% } %>
                                 <div style="display: none" class="bill_tracks">
                                     <ul>
                                         <% for (let j = 0; j < entry.bills.length; j++) { var bill = entry.bills[j]; %>
@@ -212,8 +215,9 @@
                                 </div>
                             </td>
                             <td><%= entry.type %></td>
+                            <td><%= entry.nepali_date %></td>
                             <td><%= entry.credit === null ? '': entry.credit.toFixed(2); %></td>
-                            <td><%= entry.debit === null ? '': entry.debit.toFixed(2); %></td>
+                            <td class="<% if(entry.debit !== null){ %>has-text-danger<% } %>"><%= entry.debit === null ? '': entry.debit.toFixed(2); %></td>
                         </tr>
                         <% } %>
                     </tbody>
@@ -324,7 +328,7 @@
                     <div class="column">
                         <div class="field">
                             <label for="deposit-amount" class="label">Amount</label>
-                            <input type="number" min="0" step="any" required class="input">
+                            <input type="number" name="amount" min="0" step="any" required class="input">
                         </div>
                     </div>
                 </div>

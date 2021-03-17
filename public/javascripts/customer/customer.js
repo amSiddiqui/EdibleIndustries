@@ -155,6 +155,10 @@ $(function() {
         closeOnDateSelect: true,
     });
 
+    $('#record_date').nepaliDatePicker({
+        dateFormat: '%d/%m/%y',
+        closeOnDateSelect: true,
+    });
     
     var ledger_table =  $("#ledger-table").DataTable({        
         "order": [[0, 'desc']],

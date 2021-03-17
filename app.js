@@ -86,7 +86,7 @@ db.sequelize.authenticate()
     console.log("Connected to database successfully");
   })
   .catch(err => {
-    console.error("An error occured while connecting ", err);
+    console.error("An error occurred while connecting ", err);
     process.exit(1);
   });
 
@@ -95,20 +95,19 @@ console.log("Current Environment: ", process.env.ENV);
 
 // Initializing models
 const models = require('./models/Models');
+const utility = require('./modules/utility');
 
 // Sync DB and seed
 
-var do_seed = false;
-
-// db.sequelize.sync({
-//   alter: true
-// }).then(() => {
-//   if (do_seed)
-//     require('./modules/seed')(true, false);
-//   console.log("Database synchronized");
-// }).catch(err => {
-//   console.log("Error while synchronizing data: ", err);
-// });
+db.sequelize.sync({
+  alter: true
+}).then(() => {
+  utility.misc.syncCustomerLedger().then(() => {
+    console.log("Database synchronized");
+  }).catch(err => {throw err;});
+}).catch(err => {
+  console.log("Error while synchronizing data: ", err);
+});
 
 
 

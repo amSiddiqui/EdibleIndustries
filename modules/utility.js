@@ -1264,6 +1264,15 @@ module.exports = {
         },
         pay: async (id, bd) => {
             const bill = await models.Bill.findByPk(id);
+            const customer = await bill.getCustomer();
+            const entry = await models.CustomerLedger.create({
+                type: 'deposit',
+                credit: bill.total,
+                debit: null,
+                date: bd
+            });
+            await entry.setCustomer(customer);
+            await entry.addBill(bill);
             bill.paid = true;
             bill.payment_method = 'Cash';
             bill.paidOn = bd;
@@ -1718,6 +1727,34 @@ module.exports = {
                     user_type: null
                 }
             });
+        },
+        syncCustomerLedger: async () => {
+            var customers = await models.Customer.findAll();
+            var totalCustomer = customers.length;
+            for (let i = 0; i < customers.length; i++) {
+                console.log(`${i}/${totalCustomer}`);
+                var customer = customers[i];
+                var bills = await customer.getBills();
+                for (let j = 0; j < bills.length; j++) {
+                    const bill = bills[j];
+                    if (bill.payment_method === 'Free') {
+                        continue;
+                    }
+                    var debit = bill.total;
+                    var credit = null;
+                    if (bill.payment_method === 'Cash') {
+                        credit = bill.total;
+                    }
+                    var entry = await models.CustomerLedger.create({
+                        type: 'Sale',
+                        credit,
+                        debit,
+                        date: bill.createdAt
+                    });
+                    await entry.addBill(bill);
+                    await entry.setCustomer(customer);
+                }
+            }
         },
         checkPermission: (req, res, message="User does not have permission to access the page") => {
             if (req.session.user_type === 'Admin') {
