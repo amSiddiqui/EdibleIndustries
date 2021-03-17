@@ -589,6 +589,34 @@ InventoryRecord.belongsTo(Warehouse);
 Warehouse.hasMany(Bill);
 Bill.belongsTo(Warehouse);
 
+
+const CustomerLedger = db.sequelize.define('customer_ledger', {
+    id: {
+        type: db.Sequelize.INTEGER.UNSIGNED,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    type: {
+        type: db.Sequelize.ENUM,
+        values: ['Sale', 'Deposit']
+    },
+    credit: {
+        type: db.Sequelize.DOUBLE,
+        allowNull: true
+    },
+    debit: {
+        type: db.Sequelize.DOUBLE,
+    },
+    date: {
+        type: db.Sequelize.DATE
+    }
+});
+
+Customer.hasMany(CustomerLedger);
+CustomerLedger.belongsTo(Customer);
+
+CustomerLedger.hasMany(Bill);
+
 module.exports = {
     User,
     Inventory,

@@ -52,12 +52,41 @@ function fetchAndUpdateReport() {
             $("#report-message").removeClass('has-text-success');
         }
     }).fail(function(err) {
-        console.log("Some error occured");
+        console.log("Some error occurred");
         console.log(err);
     });
 }
 
 $(function () {
+
+    // Check if fragment in the url is present
+    if (window.location.hash) {
+        var hsh = window.location.hash;
+        switch(hsh) {
+            case "#history":
+                resetTabs();
+                $("#history-tabs-link").addClass('is-active');
+                $("#history-tab").show();
+                break;
+            case "#reports":
+                resetTabs();
+                $("#reports-tabs-link").addClass('is-active');
+                $("#reports-tab").show();
+                break;
+            case "#bills":
+                resetTabs();
+                $("#bill-tabs-link").addClass('is-active');
+                $("#bill-tab").show();
+                break;
+            case "#batches":
+                resetTabs();
+                $("#batches-tabs-link").addClass('is-active');
+                $("#batches-tab").show();
+                break;
+        }
+    }
+
+
     $(".add-inventory-record").on('click', function () {
         $('#add-inventory-record-modal').addClass('is-active');
     });
@@ -65,24 +94,28 @@ $(function () {
         resetTabs();
         $(this).addClass('is-active');
         $("#history-tab").show();
+        window.location.hash = "history";
     });
 
     $("#reports-tabs-link").on('click', function () {
         resetTabs();
         $(this).addClass('is-active');
         $("#reports-tab").show();
+        window.location.hash = "reports";
     });
 
     $("#batches-tabs-link").on('click', function () {
         resetTabs();
         $(this).addClass('is-active');
         $("#batches-tab").show();
+        window.location.hash = "batches";
     });
 
     $("#bill-tabs-link").on('click', function () {
         resetTabs();
         $(this).addClass('is-active');
         $("#bill-tab").show();
+        window.location.hash = "bills";
     });
 
     $('#from_date_billing').nepaliDatePicker({
@@ -115,23 +148,10 @@ $(function () {
         }
     );
 
-    $('#billing-table thead tr').clone(true).appendTo( '#billing-table thead' );
-    $('#billing-table thead tr:eq(1) th').each( function (i) {
-        var title = $(this).text();
-        $(this).html( '<input type="text" style="width: 100%; padding: 3px; box-sizing: border-box;" class="input is-small" placeholder="Search '+title+'" />' );
- 
-        $( 'input', this ).on( 'keyup change', function () {
-            if ( billingTable.column(i).search() !== this.value ) {
-                billingTable
-                    .column(i)
-                    .search( this.value )
-                    .draw();
-            }
-        } );
-    } );
+    
 
     
-    var billing_table = $("#billing-table").DataTable({
+    var billingTable = $("#billing-table").DataTable({
         "columnDefs": [{
             "width": "3%",
             "targets": 0
@@ -182,10 +202,25 @@ $(function () {
     });
 
     $("#from_date_billing, #to_date_billing").on('change', function() {
-        billing_table.draw();
+        billingTable.draw();
     });
 
-    $("#history-table").DataTable({
+    $('#billing-table thead tr').clone(true).appendTo( '#billing-table thead' );
+    $('#billing-table thead tr:eq(1) th').each( function (i) {
+        var title = $(this).text();
+        $(this).html( '<input type="text" style="width: 100%; padding: 3px; box-sizing: border-box;" class="input is-small" placeholder="Search '+title+'" />' );
+ 
+        $( 'input', this ).on( 'keyup change', function () {
+            if ( billingTable.column(i).search() !== this.value ) {
+                billingTable
+                    .column(i)
+                    .search( this.value )
+                    .draw();
+            }
+        } );
+    } );
+
+    var historyTable = $("#history-table").DataTable({
         "footerCallback": function (row, data, start, end, display) {
             var api = this.api();
             var intVal = function (i) {
@@ -227,6 +262,22 @@ $(function () {
             $(api.column(5).footer()).html('Re. '+costTotal);
         }
     });
+
+    
+    $('#history-table thead tr').clone(true).appendTo( '#history-table thead' );
+    $('#history-table thead tr:eq(1) th').each( function (i) {
+        var title = $(this).text();
+        $(this).html( '<input type="text" style="width: 100%; padding: 3px; box-sizing: border-box;" class="input is-small" placeholder="Search '+title+'" />' );
+ 
+        $( 'input', this ).on( 'keyup change', function () {
+            if ( historyTable.column(i).search() !== this.value ) {
+                historyTable
+                    .column(i)
+                    .search( this.value )
+                    .draw();
+            }
+        } );
+    } );
 
 
     $("#add-batch-button").on('click', function () {

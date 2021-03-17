@@ -7,6 +7,7 @@ const fs = require('fs');
 const helpers = require('../modules/helpers');
 const utility = require('../modules/utility');
 const NepaliDate = require('nepali-date-converter');
+const numeral = require('numeral');
 
 
 router.get('/image', middleware.auth.loggedIn(), function (req, res, next) {
@@ -453,12 +454,23 @@ router.get('/stats/customer/sale/:id', middleware.auth.loggedIn(), function (req
 
 router.get('/stats/customer/outstanding/:id', middleware.auth.loggedIn(), function (req, res, next) {
     let id = parseInt(req.params.id);
-    utility.customer.fetchOustanding(id).then(outstanding => {
+    utility.customer.fetchOutstanding(id).then(outstanding => {
         res.json({outstanding});
     }).catch(err => {
         console.log(err);
         res.status(500).send("Server error");
     });
+});
+
+router.get('/stats/customer/balance/:id', middleware.auth.loggedIn(), function (req, res, next) {
+    let id = parseInt(req.params.id);
+    utility.ledger.getBalance(id).then(balance => {
+        formatted = numeral(balance).format('0,0.00');
+        res.json({balance, formatted});
+    }).catch(err => {
+        console.log(err);
+        res.status(500).send("Server error");
+    })
 });
 
 

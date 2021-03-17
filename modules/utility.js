@@ -859,7 +859,7 @@ module.exports = {
             return numeral(total).format('0,0.00');
 
         },
-        fetchOustanding: async (id) => {
+        fetchOutstanding: async (id) => {
             var customer = await models.Customer.findByPk(id);
             var total = 0;
             var bills = await customer.getBills({
@@ -1124,6 +1124,22 @@ module.exports = {
             if (user != null) {
                 bill.setUser(user);
             }
+            if (bill.payment_method != 'Free') {
+                var credit = null;
+                var debit = bill.total;
+                if (bill.payment_method === 'Cash') {
+                    credit = bill.total;
+                }
+                var customer_ledger = await models.CustomerLedger.create({
+                    type: 'Sale',
+                    credit, 
+                    debit,
+                    date: bill_date
+                });
+                await customer_ledger.addBill(bill);
+                await customer_ledger.setCustomer(customer);
+            }
+
             await bill.save();
             return bill.id;
         },
@@ -1380,6 +1396,71 @@ module.exports = {
                 warehouse.setPost_office(post_office);
             }
             await warehouse.save();
+        }
+    },
+    ledger: {
+        fetchAllEntry: async (customer_id) => {
+            const customer = await models.Customer.findByPk(customer_id);
+            var entries = await customer.getCustomer_ledgers({
+                
+                include: [{model: models.Bill}]
+            });
+            return entries;
+        },
+        addEntry: async (customer_id, entry_data) => {
+            // Only adds Deposit entries
+            const customer = await models.Customer.findByPk(customer_id);
+            if (entry_data.type != 'Deposit') {
+                return null;
+            }
+
+            var ledgerEntry = await models.CustomerLedger.create(entry_data);
+
+            // Find all unpaid bills oldest first
+            var unpaid = await customer.getBills({
+                where: {
+                    [Op.or]: [
+                        {paid: false},
+                        {payment_method: 'Credit'}
+                    ],
+                    createdAt: {
+                        [Op.lte]: entry_data.date
+                    }
+                },
+                order: [
+                    ['id', 'DESC']
+                ]                
+            });
+
+            await ledgerEntry.setCustomer(customer);
+
+            var total = 0;
+            for (var i = 0; i < unpaid.length; i++) {
+                var b = unpaid[i];
+                total += b.total;
+                if (total > entry_data.credit) {
+                    break;
+                }else {
+                    unpaid[i].paid = true;
+                    unpaid[i].payment_method = 'Cash';
+                    await unpaid[i].save();
+                    await ledgerEntry.addBill(unpaid[i]);
+                }
+            }
+        },
+        getBalance: async (customer_id) => {
+            const customer = await models.Customer.findByPk(customer_id);
+            var entries = await customer.getCustomer_ledgers();
+            var balance = 0.;
+            entries.forEach(ent => {
+                if (ent.credit !== null ) {
+                    balance += ent.credit;
+                }
+                if (ent.debit !== null) {
+                    balance -= ent.debit;
+                }
+            });
+            return balance;
         }
     },
     misc: {

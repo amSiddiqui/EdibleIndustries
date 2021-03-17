@@ -24,7 +24,7 @@ const MemoryStore = require('memorystore')(session);
 
 const app = express();
 
-// Set Defautl timezone
+// Set Default timezone
 process.env.TZ = 'Asia/Kathmandu';
 
 // view engine setup
@@ -100,15 +100,15 @@ const models = require('./models/Models');
 
 var do_seed = false;
 
-// db.sequelize.sync({
-//   alter: true
-// }).then(() => {
-//   if (do_seed)
-//     require('./modules/seed')(true, false);
-//   console.log("Database synchronized");
-// }).catch(err => {
-//   console.log("Error while synchronizing data: ", err);
-// });
+db.sequelize.sync({
+  alter: true
+}).then(() => {
+  if (do_seed)
+    require('./modules/seed')(true, false);
+  console.log("Database synchronized");
+}).catch(err => {
+  console.log("Error while synchronizing data: ", err);
+});
 
 
 

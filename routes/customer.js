@@ -362,6 +362,47 @@ router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
 
 });
 
+router.post('/:id/deposit',middleware.auth.loggedIn(), function(req, res, next) {
+  let id = parseInt(req.params.id);
+  var date = req.body.date;
+  var amount = req.body.amount;
+  if (date === undefined || amount === undefined) {
+    req.flash('flash_message', 'Wrong inputs, try again');
+    req.flash('flash_color', 'danger');
+    res.redirect('/customer/'+id+'#ledger');
+    return;
+  }
+  var bd = new Date();
+  if (date.length !== 0) {
+    date = utility.misc.toEnglishDate(date);
+    bd = new NepaliDate(date).toJsDate();
+  }
+  date = bd;
+  amount = parseFloat(amount);
+  if (isNaN(amount)) {
+    req.flash('flash_message', 'Wrong inputs, try again');
+    req.flash('flash_color', 'danger');
+    res.redirect('/customer/'+id+'#ledger');
+  }
+  var deposit_data = {
+    type: 'Deposit',
+    credit: amount,
+    debit: null,
+    date: date
+  };
+  utility.ledger.addEntry(id, deposit_data).then(() => {
+    req.flash('flash_message', 'Successfully deposited amount');
+    req.flash('flash_color', 'success');
+    res.redirect('/customer/'+id+'#ledger');
+  }).catch(err => {
+    console.log(err);
+    req.flash('flash_message', 'Server error, try again later');
+    req.flash('flash_color', 'danger');
+    res.redirect('/customer/'+id+'#ledger');
+  });
+  
+});
+
 router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   let id = parseInt(req.params.id);
   var breadcrumbs = [{
@@ -388,6 +429,17 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     data.flash_message = flash_message;
     data.flash_color = flash_color;
   }
+
+  var last_5_dates = [];
+  var dt = new Date();
+  for (let i = 0; i < 5; i++) {
+    var np = new NepaliDate(dt);
+    last_5_dates.push(np)
+    dt.setDate(dt.getDate() - 1);
+  }
+  
+  data.last_5_dates = last_5_dates;
+
 
   var month_data = [];
   var today_np = new NepaliDate(new Date());
@@ -454,8 +506,12 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
           }
         }
         data.bills = bills;
+        return utility.ledger.fetchAllEntry(id);
+      }).then(entries => {
+        data.ledger_entries = entries;
         res.render('customer/customer', data);
-      }).catch(err => {
+      }).
+      catch(err => {
         console.log(err);
         req.flash('flash_message', 'Database Error. Please try again later.');
         req.flash('flash_color', 'danger');

@@ -86,6 +86,7 @@
             <li class="tab-link is-active" id="rates-tabs-link"><a>Rates</a></li>
             <li class="tab-link" id="bill-tabs-link"><a>Bills</a></li>
             <li class="tab-link" id="records-tabs-link"><a>Reports</a></li>
+            <li class="tab-link" id="ledger-tabs-link"><a>Ledger</a></li>
         </ul>
     </div>
 
@@ -167,6 +168,61 @@
         </div>
     </div>
 
+    <div class="tab-content" id="ledger-tab" style="display: none;">
+        <div class="columns">
+            <div class="column">
+                <div class="columns">
+                    <div class="column">
+                        <h1 class="title is-3">Ledger</h1>
+                    </div>
+                    <div class="column is-3">
+                        <h1 class="title is-3">
+                            <span style="font-size: 1.2rem">Balance: </span><span id="balance-text"></span>
+                        </h1>
+                    </div>
+                    <div class="column is-2">
+                        <button class="button is-rounded is-success" id="deposit-button">
+                            <span class="icon is-small">
+                                <i class="fas fa-plus fa-xs"></i>
+                            </span>
+                            <span>Deposit</span>
+                        </button>
+                    </div>
+                </div>
+                <table id="ledger-table" class="table is-striped is-hoverable" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Type</th>
+                            <th>Date</th>
+                            <th>Credit</th>
+                            <th>Debit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% for(let i = 0; i < ledger_entries.length; i++) { var entry = ledger_entries[i];%>
+                        <tr onmouseover="showBill(this);" onmouseleave="hideBill(this);">
+                            <td><%= entry.id %>
+                                <div style="display: none" class="bill_tracks">
+                                    <ul>
+                                        <% for (let j = 0; j < entry.bills.length; j++) { var bill = entry.bills[j]; %>
+                                        <li><%=bill.track_id%></li>
+                                        <% } %>
+                                    </ul>
+                                </div>
+                            </td>
+                            <td><%= entry.type %></td>
+                            <td><%= entry.credit === null ? '': entry.credit.toFixed(2); %></td>
+                            <td><%= entry.debit === null ? '': entry.debit.toFixed(2); %></td>
+                        </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
 
     <div class="tab-content" id="bill-tab" style="display: none;">
         <div class="columns">
@@ -228,6 +284,63 @@
 
 
 </div>
+
+
+<div class="modal" id="deposit-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Deposit</p>
+            <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+            <form action="/customer/<%=customer.id%>/deposit" method="POST">
+                <div class="columns">
+                    <% if(check_perm()){ %>
+                    <div class="column">
+                        <div class="field">
+                            <div class="control">
+                                <label for="record_date" class="label">Date</label>
+                                <input type="text" class="input" required id="record_date" name="date">
+                            </div>
+                        </div>
+                    </div>
+                    <% }else{ %>
+                    <div class="column">
+                        <div class="field">
+                            <div class="control">
+                                <label for="record_date" class="label">Date</label>
+                                <div class="select">
+                                    <select name="date" id="record_date">
+                                        <% for(let i = 0; i < last_5_dates.length; i++){ var d = last_5_dates[i] %>
+                                            <option value="<%=d.format("DD/MM/YYYY");%>"><%=d%></option>
+                                        <% } %>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <% } %>
+                    <div class="column">
+                        <div class="field">
+                            <label for="deposit-amount" class="label">Amount</label>
+                            <input type="number" min="0" step="any" required class="input">
+                        </div>
+                    </div>
+                </div>
+                <div class="field is-grouped is-grouped-right">
+                    <div class="control">
+                        <button class="button is-rounded is-success">Add</button>
+                    </div>
+                    <div class="control">
+                        <button type="button" class="button close-modal is-rounded is-light">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+
 
 <script>
     var totals_bills = parseInt("<%=bills.length%>");

@@ -203,7 +203,7 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     var flash_message = req.flash('flash_message');
     var flash_color = req.flash('flash_color');
 
-    var tdata = {
+    var tData = {
       inventory: inv,
       dependency: 'inventory/inventory-item.js',
       recordsExists: inv.inventory_records.length !== 0,
@@ -214,7 +214,7 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     };
     data = {
       ...data,
-      ...tdata
+      ...tData
     }
     
     var last_5_dates = [];

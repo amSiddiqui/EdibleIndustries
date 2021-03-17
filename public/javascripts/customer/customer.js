@@ -3,72 +3,72 @@ function resetTabs() {
     $(".tab-content").hide();
 }
 
+function showBill(element) {
+    $(element).find('.bill_tracks').show();
+}
+
+function hideBill(element) {
+    $(element).find('.bill_tracks').hide();
+}
+
 $(function() {
+
+    // Check if fragment in the url is present
+    if (window.location.hash) {
+        var hsh = window.location.hash;
+        switch(hsh) {
+            case "#rates":
+                resetTabs();
+                $("#rates-tabs-link").addClass('is-active');
+                $("#rates-tab").show();
+                break;
+            case "#records":
+                resetTabs();
+                $("#records-tabs-link").addClass('is-active');
+                $("#records-tab").show();
+                break;
+            case "#bills":
+                resetTabs();
+                $("#bill-tabs-link").addClass('is-active');
+                $("#bill-tab").show();
+                break;
+            case "#ledger":
+                resetTabs();
+                $("#ledger-tabs-link").addClass('is-active');
+                $("#ledger-tab").show();
+                break;
+        }
+    }
+
     $("#rates-tabs-link").on('click', function() {
         resetTabs();
         $(this).addClass('is-active');
         $("#rates-tab").show();
+        window.location.hash = "rates";
     });
 
     $("#records-tabs-link").on('click', function() {
         resetTabs();
         $(this).addClass('is-active');
         $("#records-tab").show();
+        window.location.hash = "records";
     });
 
     $("#bill-tabs-link").on('click', function() {
         resetTabs();
         $(this).addClass('is-active');
         $("#bill-tab").show();
+        window.location.hash = "bills";
     });
-
-    $('#billing-table thead tr').clone(true).appendTo( '#billing-table thead' );
-    $('#billing-table thead tr:eq(1) th').each( function (i) {
-        var title = $(this).text();
-        $(this).html( '<input type="text" style="width: 100%; padding: 3px; box-sizing: border-box;" class="input is-small" placeholder="Search '+title+'" />' );
- 
-        $( 'input', this ).on( 'keyup change', function () {
-            if ( billingTable.column(i).search() !== this.value ) {
-                billingTable
-                    .column(i)
-                    .search( this.value )
-                    .draw();
-            }
-        } );
-    } );
-
     
-    $.fn.dataTable.ext.search.push(
-        function(settings, data, dataIndex) {
-            if (settings.nTable.id !== 'billing-table') return true;
-
-            var min_date = $("#from_date_billing").val();
-            if (!validDate(min_date)) {
-                min_date = "0/0/0";
-            }
-            var max_date = $("#to_date_billing").val();
-            if (!validDate(max_date)){
-                max_date = "99/99/9999";
-            }
-            var date = data[1];
-            min_date = convertNepaliToEnglish(min_date);
-            max_date = convertNepaliToEnglish(max_date);
-            date = convertNepaliToEnglish(date);
-            return dateInRange(date, min_date, max_date);
-        }
-    );
-    
-    $('#from_date_billing').nepaliDatePicker({
-        dateFormat: '%d/%m/%y',
-        closeOnDateSelect: true,
+    $("#ledger-tabs-link").on('click', function() {
+        resetTabs();
+        $(this).addClass('is-active');
+        $("#ledger-tab").show();
+        window.location.hash = "ledger";
     });
 
-    $('#to_date_billing').nepaliDatePicker({
-        dateFormat: '%d/%m/%y',
-        closeOnDateSelect: true,
-    });
-
-    var billing_table =  $("#billing-table").DataTable({
+    var billingTable =  $("#billing-table").DataTable({
         "columnDefs": [
             { "width": "3%", "targets": 0 },
         ],
@@ -108,8 +108,80 @@ $(function() {
         }
     });
 
+    $('#billing-table thead tr').clone(true).appendTo( '#billing-table thead' );
+    $('#billing-table thead tr:eq(1) th').each( function (i) {
+        var title = $(this).text();
+        $(this).html( '<input type="text" style="width: 100%; padding: 3px; box-sizing: border-box;" class="input is-small" placeholder="Search '+title+'" />' );
+ 
+        $( 'input', this ).on( 'keyup change', function () {
+            if ( billingTable.column(i).search() !== this.value ) {
+                billingTable
+                    .column(i)
+                    .search( this.value )
+                    .draw();
+            }
+        } );
+    } );
+
+
+    
+    $.fn.dataTable.ext.search.push(
+        function(settings, data, dataIndex) {
+            if (settings.nTable.id !== 'billing-table') return true;
+
+            var min_date = $("#from_date_billing").val();
+            if (!validDate(min_date)) {
+                min_date = "0/0/0";
+            }
+            var max_date = $("#to_date_billing").val();
+            if (!validDate(max_date)){
+                max_date = "99/99/9999";
+            }
+            var date = data[1];
+            min_date = convertNepaliToEnglish(min_date);
+            max_date = convertNepaliToEnglish(max_date);
+            date = convertNepaliToEnglish(date);
+            return dateInRange(date, min_date, max_date);
+        }
+    );
+    
+    $('#from_date_billing').nepaliDatePicker({
+        dateFormat: '%d/%m/%y',
+        closeOnDateSelect: true,
+    });
+
+    $('#to_date_billing').nepaliDatePicker({
+        dateFormat: '%d/%m/%y',
+        closeOnDateSelect: true,
+    });
+
+    
+    var ledger_table =  $("#ledger-table").DataTable({        
+        "order": [[0, 'desc']],
+    });
+
+    $("#deposit-button").on('click', function() {
+        $("#deposit-modal").addClass('is-active');
+    });
+
+    
+    $('#ledger-table thead tr').clone(true).appendTo( '#ledger-table thead' );
+    $('#ledger-table thead tr:eq(1) th').each( function (i) {
+        var title = $(this).text();
+        $(this).html( '<input type="text" style="width: 100%; padding: 3px; box-sizing: border-box;" class="input is-small" placeholder="Search '+title+'" />' );
+ 
+        $( 'input', this ).on( 'keyup change', function () {
+            if ( ledger_table.column(i).search() !== this.value ) {
+                ledger_table
+                    .column(i)
+                    .search( this.value )
+                    .draw();
+            }
+        } );
+    } );
+
     $("#from_date_billing, #to_date_billing").on('change', function() {
-        billing_table.draw();
+        billingTable.draw();
     });
 
     $.get("/api/customer/rented/"+customer_id, function(data) {
@@ -152,6 +224,19 @@ $(function() {
             console.log("Err", err);
             $("#month-sale-text").html("N/A");
         }); 
+    });
+
+
+    $.get("/api/stats/customer/balance/"+customer_id, function(data) {
+        if (data.balance < 0) {
+            $("#balance-text").addClass('has-text-danger');    
+        } else if (data.balance > 0) {
+            $("#balance-text").addClass('has-text-success');    
+        }
+        $("#balance-text").html(data.formatted);
+    }).fail(err => {
+        console.log(err);
+        $("#balance-text").html('N/A');
     });
 
 });
