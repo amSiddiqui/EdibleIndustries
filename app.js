@@ -99,15 +99,13 @@ const utility = require('./modules/utility');
 
 // Sync DB and seed
 
-db.sequelize.sync({
-  alter: true
-}).then(() => {
-  utility.misc.syncCustomerLedger().then(() => {
-    console.log("Database synchronized");
-  }).catch(err => {throw err;});
-}).catch(err => {
-  console.log("Error while synchronizing data: ", err);
-});
+// db.sequelize.sync({
+//   alter: true
+// }).then(() => {
+//   console.log("Database synchronized");
+// }).catch(err => {
+//   console.log("Error while synchronizing data: ", err);
+// });
 
 
 
