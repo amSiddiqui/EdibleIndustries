@@ -23,7 +23,7 @@ router.post('/batch/:id', middleware.auth.loggedIn(), function (req, res, next) 
     res.redirect('/inventory/'+id);
   }).catch(err => {
     console.log(err);
-    req.flash('flash_message', 'Error adding batch, try agina later');
+    req.flash('flash_message', 'Error adding batch, try again later');
     req.flash('flash_color', 'danger');
     res.redirect('/inventory/'+id);
   });

@@ -511,7 +511,6 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
         for (let i = 0; i < entries.length; i++) {
           entries[i].nepali_date = new NepaliDate(entries[i].date).format("DD/MM/YYYY");
         }
-        console.log(entries[0]);
         data.ledger_entries = entries;
         res.render('customer/customer', data);
       }).

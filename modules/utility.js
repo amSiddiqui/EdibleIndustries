@@ -1,5 +1,6 @@
 const models = require('../models/Models');
 const NepaliDate = require('nepali-date-converter');
+const fs = require('fs');
 var _ = require('lodash');
 var numeral = require('numeral');
 
@@ -17,6 +18,29 @@ function getMethods(obj) {
     return result;
 }
 
+function getFormattedTime(ms) {
+    if (ms < 1000) {
+        return ms+'ms';
+    } else {
+        ms = ms / 1000;
+        return ms.toFixed(3) + 's';
+    }
+}
+
+function logTime(__startTime, msg) {
+    var __endTime = new Date().getTime();
+    var __totalTime = getFormattedTime(__endTime - __startTime.getTime());
+    fs.appendFile(log_file, getFormattedDate(__startTime)+' : '+msg+' : '+__totalTime+'\n', err => {
+        if (err) {
+            console.log("Error writing to log file");
+            console.log(err);
+        }
+    });
+}
+
+function getFormattedDate(d) {
+    return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
+}
 
 const {
     Op
@@ -25,6 +49,8 @@ const {
     sequelize
 } = require('./database');
 const e = require('express');
+
+const log_file = 'logs/utility_time.log';
 
 
 function toNumberFloat(num) {
@@ -166,6 +192,7 @@ module.exports = {
 
     inventory: {
         createInventory: async (data) => {
+            var _startTime = new Date();
             var inventory = await models.Inventory.create({
                 name: data.name,
                 description: data.description,
@@ -182,9 +209,12 @@ module.exports = {
                     quantity: q
                 });
             }
+            if (process.env === 'development')
+                logTime(_startTime, 'inventory.createInventory()');
             return inventory;
         },
         fetchInventory: async (id, w_id=-1) => {
+            var _startTime = new Date();
             var warehouse = await models.Warehouse.findByPk(w_id);
             if (warehouse === null) 
                 warehouse = await models.Warehouse.findOne({where: {isPrimary: true}});
@@ -211,6 +241,9 @@ module.exports = {
                     include: [{
                         model: models.InventoryBatch
                     }]
+                }, {
+                    model: models.BillTransaction,
+                    include: [{model: models.Bill}]
                 }]
             });
             
@@ -222,18 +255,16 @@ module.exports = {
 
             for (let i = 0; i < inv.inventory_records.length; i++) { var record = inv.inventory_records[i];
                 if (record.type == 'sold') {
-                    var txn = await record.getBill_transaction({
-                        include: [{
-                            model: models.Bill
-                        }]
-                    });
+                    var txn = record.bill_transaction;
                     inv.inventory_records[i].bill_id = txn.bill.track_id;
                 }
             }
-            
+            if (process.env === 'development')
+                logTime(_startTime, 'inventory.fetchInventory()');
             return inv;
         },
         updateInventory: async (id, data) => {
+            var _startTime = new Date();
             var inv = await models.Inventory.findByPk(id);
             if (data.inventory === '') {
                 inv.image = '/images/warehouse.svg';
@@ -245,6 +276,8 @@ module.exports = {
             inv.type = data.type;
             inv.cost = data.cost;
             await inv.save();
+            if (process.env === 'development')
+                logTime(_startTime, 'inventory.updateInventory()');
             return true;
         },
         deleteInventory: async (id) => {
@@ -254,6 +287,7 @@ module.exports = {
         },
         fetchAllInventory: async (id=-1) => {
             // Load warehouse
+            var _startTime = new Date();
             var warehouse = await models.Warehouse.findByPk(id);
             if (warehouse === null) {
                 warehouse = await models.Warehouse.findOne({where: {isPrimary: true}});
@@ -272,7 +306,8 @@ module.exports = {
                 inv.in_stock = res.in_stock;
                 inv.total = res.total;
             }
-
+            if (process.env === 'development')
+                logTime(_startTime, 'inventory.fetchAllInventory()');
             return inventories;
         
         },
@@ -286,6 +321,7 @@ module.exports = {
             });
         },
         fetchAllInventoryIdWithRecord: async (limit_date, w_id = -1) => {
+            var _startTime = new Date();
             var warehouse = await models.Warehouse.findByPk(w_id);
             if (warehouse === null) {
                 warehouse = await models.Warehouse.findOne({where: {isPrimary: true}});
@@ -315,6 +351,8 @@ module.exports = {
                 inventories[i].in_stock = res.in_stock;
                 inventories[i].total = res.total;
             }
+            if (process.env === 'development')
+                logTime(_startTime, 'inventory.fetchAllInventoryIdWithRecord()');
             return inventories;
         },
         fetchBatches: (id) => {
@@ -343,7 +381,8 @@ module.exports = {
             await batch.destroy();
             return true;
         },
-        addRecord: async (id, data, user_email, w_id=-1) => {            
+        addRecord: async (id, data, user_email, w_id=-1) => {    
+            var _startTime = new Date();        
             var warehouse = await models.Warehouse.findByPk(w_id);
             if (warehouse === null) {
                 warehouse = await models.Warehouse.findOne({where: {isPrimary: true}});
@@ -386,8 +425,11 @@ module.exports = {
             await inventory_record.setInventory(inventory);
             await inventory_record.setUser(user);
             await inventory_record.save();
+            if (process.env === 'development')
+                logTime(_startTime, 'inventory.addRecord()');
         },
         editRecord: async (id, data) => {
+            var _startTime = new Date();
             var inventory_record = await models.InventoryRecord.findByPk(id);
             var batch = await models.InventoryBatch.findByPk(data.batch_id);
             var batch_value = data.value;
@@ -406,16 +448,22 @@ module.exports = {
             await inventory_batch_record.save();
 
             var inventory_id = await inventory_record.getInventory();
+            if (process.env === 'development')
+                logTime(_startTime, 'inventory.editRecord()');
             return inventory_id.id;
         },
         deleteRecord: async (id) => {
+            var _startTime = new Date();
             var record = await models.InventoryRecord.findByPk(id);
             var batch_record = await record.getInventory_batch_record();
             await batch_record.destroy();
             await record.destroy();
+            if (process.env === 'development')
+                logTime(_startTime, 'inventory.deleteRecord()');
             return true;
         },
         fetchBills: async (id, user_email, w_id = -1) => {
+            var _startTime = new Date();
             var warehouse = await models.Warehouse.findByPk(w_id);
             if (warehouse === null) {
                 warehouse = await models.Warehouse.findOne({where: {isPrimary: true}});
@@ -435,6 +483,9 @@ module.exports = {
                                 include: [{
                                     model: models.Inventory
                                 }]
+                            }, {
+                                model: models.BillTransaction,
+                                as: 'return'
                             }]
                         },
                         {
@@ -455,6 +506,9 @@ module.exports = {
                                 model: models.InventoryRecord,
                                 include: [{
                                     model: models.Inventory
+                                }, {
+                                    model: models.BillTransaction,
+                                    as: 'return'
                                 }]
                             }]
                         },
@@ -474,6 +528,8 @@ module.exports = {
             }
             
             var inv_bills = [];
+            
+            
             for (let i = 0; i < bills.length; i++) {
                 const bill = bills[i];
                 const transactions = bill.bill_transactions;
@@ -486,14 +542,14 @@ module.exports = {
                     }
                 }
             }
-            
+            console.log(inv_bills[0].bill_transactions[0]);
             for (let j = 0; j < inv_bills.length; j++) {
                 var rented = false;
                 var bill = inv_bills[j];
                 for (let i = 0; i < bill.bill_transactions.length; i++) {
                     const tr = bill.bill_transactions[i];
                     if (tr.type == 'rented') {
-                        const returns = await tr.getReturn();
+                        const returns =  tr.return;
                         var total_return = _.sumBy(returns, (o) => o.quantity);
                         if (total_return < tr.quantity) {
                             rented = true;
@@ -503,7 +559,8 @@ module.exports = {
                 }
                 inv_bills[j].rented = rented;
             }
-
+            if (process.env === 'development')
+                logTime(_startTime, 'inventory.fetchBills()');
             return inv_bills;
         },
         fetchReport: async (id, start, end) => {
@@ -879,6 +936,7 @@ module.exports = {
     },
     billing: {
         fetchAll: async (user_email) => {
+            var _startTime = new Date();
             if (typeof user_email === 'undefined') {
                 console.log("User email not provided");
             }
@@ -892,7 +950,11 @@ module.exports = {
                 bills = await models.Bill.findAll({
                     include: [
                         {
-                            model: models.BillTransaction
+                            model: models.BillTransaction,
+                            include: [{
+                                model: models.BillTransaction,
+                                as: 'return'
+                            }]
                         },
                         {
                             model: models.Customer,
@@ -910,7 +972,11 @@ module.exports = {
                 bills = await models.Bill.findAll({
                     include: [
                         {
-                            model: models.BillTransaction
+                            model: models.BillTransaction,
+                            include: [{
+                                model: models.BillTransaction,
+                                as: 'return'
+                            }]
                         },
                         {
                             model: models.Customer,
@@ -935,7 +1001,7 @@ module.exports = {
                 for (let i = 0; i < bill.bill_transactions.length; i++) {
                     const tr = bill.bill_transactions[i];
                     if (tr.type == 'rented') {
-                        const returns = await tr.getReturn();
+                        const returns = tr.return;
                         var total_return = _.sumBy(returns, (o) => o.quantity);
                         if (total_return < tr.quantity) {
                             rented = true;
@@ -945,6 +1011,8 @@ module.exports = {
                 }
                 bills[j].rented = rented;
             }
+            if (process.env === 'development')
+                logTime(_startTime, 'billing.fetchAll()');
             return bills;
         },
         fetch: (id) => {
@@ -1000,6 +1068,7 @@ module.exports = {
         getBillNo: async (date = new Date()) => {
             // if current month == 3 then bill no in category 2077/78/0001
             // if current month == 2 then bill no in category 2076/77/0001
+            var _startTime = new Date();
             var nepali_today = new NepaliDate(date);
             var month = nepali_today.getMonth();
             var year = nepali_today.getYear();
@@ -1035,9 +1104,12 @@ module.exports = {
                 last_no = last_no.padStart(5, 0);
                 bill_no = bill_no + last_no;
             }
+            if (process.env === 'development')
+                logTime(_startTime, 'billing.getBillNo()');
             return bill_no;
         },
         createFull: async (customer_id, data, transactions, userEmail, w_id=-1) => {
+            var _startTime = new Date();
             var warehouse = await models.Warehouse.findByPk(w_id);
             if (warehouse === null) {
                 warehouse = await models.Warehouse.findOne({where: {isPrimary: true}});
@@ -1141,9 +1213,12 @@ module.exports = {
             }
 
             await bill.save();
+            if (process.env === 'development')
+                logTime(_startTime, 'billing.createFull()');
             return bill.id;
         },
         edit_bill: async (id, data, body) => {
+            var _startTime = new Date();
             var bill = await models.Bill.findByPk(id);
             var customer = await models.Customer.findByPk(data.customer);
             await bill.setCustomer(customer);
@@ -1194,6 +1269,8 @@ module.exports = {
             total = total + data.tax_value - data.discount_value;
             bill.total = total;
             await bill.save();
+            if (process.env === 'development')
+                logTime(_startTime, 'billing.edit_bill()');
         },
         areItemsRented: async (id) => {
             const bill = await models.Bill.findByPk(id, {
@@ -1232,6 +1309,7 @@ module.exports = {
             return rented;
         },
         addReturn: async (tr_id, inv_id, q, bill_id, user_email, date) => {
+            var _startTime = new Date();
             q = toNumber(q);
             const inv = await models.Inventory.findByPk(inv_id);
             const user = await models.User.findOne({
@@ -1261,6 +1339,8 @@ module.exports = {
             await bill_transac.save();
             await tr.save();
             await inv_record.save();
+            if (process.env === 'development')
+                logTime(_startTime, 'billing.addReturn()');
         },
         pay: async (id, bd) => {
             const bill = await models.Bill.findByPk(id);
@@ -1563,6 +1643,8 @@ module.exports = {
         },
         insertInventoryRecord: insertInventoryRecord,
         getStats: async () => {
+            var __startTime = new Date();
+
             var data = {}
             var today = new Date();
             var monthName = new NepaliDate(today).format('MMMM', 'np');
@@ -1719,6 +1801,7 @@ module.exports = {
                 unpaid[j].rented = rented;
             }
             data.unpaid = unpaid;
+            logTime(__startTime, 'misc.getStats()');
             return data;
         },
         fixUserType: async () => {
