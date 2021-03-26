@@ -542,7 +542,6 @@ module.exports = {
                     }
                 }
             }
-            console.log(inv_bills[0].bill_transactions[0]);
             for (let j = 0; j < inv_bills.length; j++) {
                 var rented = false;
                 var bill = inv_bills[j];
@@ -1464,7 +1463,6 @@ module.exports = {
                         }
                     }
                 });
-                console.log(res);
             }
             return res !== null;
         },
@@ -1815,7 +1813,6 @@ module.exports = {
             var customers = await models.Customer.findAll();
             var totalCustomer = customers.length;
             for (let i = 0; i < customers.length; i++) {
-                console.log(`${i}/${totalCustomer}`);
                 var customer = customers[i];
                 var bills = await customer.getBills();
                 for (let j = 0; j < bills.length; j++) {
