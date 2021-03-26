@@ -1679,7 +1679,36 @@ module.exports = {
             var transactions = await models.BillTransaction.findAll({
                 where: {
                     type: 'rented'
-                }
+                },
+                include: [{
+                    model: models.BillTransaction,
+                    as: 'return'
+                }, {
+                    model: models.Bill,
+                    include: [
+                        {
+                            model: models.BillTransaction,
+                            include: [
+                                {
+                                    model: models.InventoryRecord,
+                                    include: [
+                                        {
+                                            model: models.Inventory
+                                        }
+                                    ]
+                                }, {
+                                    model: models.BillTransaction,
+                                    as: 'return'
+                                }
+                            ]
+                        },
+                        {
+                            model: models.Customer
+                        },{
+                            model: models.User
+                        }
+                    ]
+                }]
             });
             
             var bills = [];
@@ -1688,42 +1717,21 @@ module.exports = {
                 const tr = transactions[j];
                 total_rented += tr.quantity;
                 var rented = tr.quantity;
-                const returns = await tr.getReturn();
+                const returns = tr.return;
                 for (let k = 0; k < returns.length; k++) {
                     const r = returns[k];
                     total_rented -= r.quantity;
                     rented -= r.quantity;
                 }
                 if (rented > 0){
-                    var bill = await tr.getBill({
-                        include: [
-                            {
-                                model: models.BillTransaction,
-                                include: [
-                                    {
-                                        model: models.InventoryRecord,
-                                        include: [
-                                            {
-                                                model: models.Inventory
-                                            }
-                                        ]
-                                    }
-                                ]
-                            },
-                            {
-                                model: models.Customer
-                            },{
-                                model: models.User
-                            }
-                        ]
-                    });
+                    var bill = tr.bill;
                     var bill_rented = 0;
                     var txns = bill.bill_transactions;
                     for (let j = 0; j < txns.length; j++) {
                         var txn = txns[j];
                         if (txn.type == 'rented') {
                             bill_rented += txn.quantity;
-                            var returns_rented = await txn.getReturn(); 
+                            var returns_rented = txn.return; 
                             var total_return = _.sumBy(returns_rented, (o) => o.quantity);
                             bill_rented -= total_return;
                         }
@@ -1752,6 +1760,9 @@ module.exports = {
                                         model: models.Inventory
                                     }
                                 ]
+                            }, {
+                                model: models.BillTransaction,
+                                as: 'return'
                             }
                         ]
                     },
@@ -1774,7 +1785,7 @@ module.exports = {
                 for (let k = 0; k < bill.bill_transactions.length; k++) {
                     const tr = bill.bill_transactions[k];
                     if (tr.type == 'rented') {
-                        const returns = await tr.getReturn();
+                        const returns = tr.return;
                         var total_return = _.sumBy(returns, (o) => o.quantity);
                         if (total_return < tr.quantity) {
                             rented = true;
