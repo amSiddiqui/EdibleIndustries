@@ -209,8 +209,7 @@ module.exports = {
                     quantity: q
                 });
             }
-            if (process.env === 'development')
-                logTime(_startTime, 'inventory.createInventory()');
+            logTime(_startTime, 'inventory.createInventory()');
             return inventory;
         },
         fetchInventory: async (id, w_id=-1) => {
@@ -259,8 +258,7 @@ module.exports = {
                     inv.inventory_records[i].bill_id = txn.bill.track_id;
                 }
             }
-            if (process.env === 'development')
-                logTime(_startTime, 'inventory.fetchInventory()');
+            logTime(_startTime, 'inventory.fetchInventory()');
             return inv;
         },
         updateInventory: async (id, data) => {
@@ -276,8 +274,7 @@ module.exports = {
             inv.type = data.type;
             inv.cost = data.cost;
             await inv.save();
-            if (process.env === 'development')
-                logTime(_startTime, 'inventory.updateInventory()');
+            logTime(_startTime, 'inventory.updateInventory()');
             return true;
         },
         deleteInventory: async (id) => {
@@ -306,8 +303,7 @@ module.exports = {
                 inv.in_stock = res.in_stock;
                 inv.total = res.total;
             }
-            if (process.env === 'development')
-                logTime(_startTime, 'inventory.fetchAllInventory()');
+            logTime(_startTime, 'inventory.fetchAllInventory()');
             return inventories;
         
         },
@@ -351,8 +347,7 @@ module.exports = {
                 inventories[i].in_stock = res.in_stock;
                 inventories[i].total = res.total;
             }
-            if (process.env === 'development')
-                logTime(_startTime, 'inventory.fetchAllInventoryIdWithRecord()');
+            logTime(_startTime, 'inventory.fetchAllInventoryIdWithRecord()');
             return inventories;
         },
         fetchBatches: (id) => {
@@ -425,8 +420,7 @@ module.exports = {
             await inventory_record.setInventory(inventory);
             await inventory_record.setUser(user);
             await inventory_record.save();
-            if (process.env === 'development')
-                logTime(_startTime, 'inventory.addRecord()');
+            logTime(_startTime, 'inventory.addRecord()');
         },
         editRecord: async (id, data) => {
             var _startTime = new Date();
@@ -448,8 +442,7 @@ module.exports = {
             await inventory_batch_record.save();
 
             var inventory_id = await inventory_record.getInventory();
-            if (process.env === 'development')
-                logTime(_startTime, 'inventory.editRecord()');
+            logTime(_startTime, 'inventory.editRecord()');
             return inventory_id.id;
         },
         deleteRecord: async (id) => {
@@ -458,8 +451,7 @@ module.exports = {
             var batch_record = await record.getInventory_batch_record();
             await batch_record.destroy();
             await record.destroy();
-            if (process.env === 'development')
-                logTime(_startTime, 'inventory.deleteRecord()');
+            logTime(_startTime, 'inventory.deleteRecord()');
             return true;
         },
         fetchBills: async (id, user_email, w_id = -1) => {
@@ -558,8 +550,7 @@ module.exports = {
                 }
                 inv_bills[j].rented = rented;
             }
-            if (process.env === 'development')
-                logTime(_startTime, 'inventory.fetchBills()');
+            logTime(_startTime, 'inventory.fetchBills()');
             return inv_bills;
         },
         fetchReport: async (id, start, end) => {
@@ -1010,8 +1001,7 @@ module.exports = {
                 }
                 bills[j].rented = rented;
             }
-            if (process.env === 'development')
-                logTime(_startTime, 'billing.fetchAll()');
+            logTime(_startTime, 'billing.fetchAll()');
             return bills;
         },
         fetch: (id) => {
@@ -1103,8 +1093,7 @@ module.exports = {
                 last_no = last_no.padStart(5, 0);
                 bill_no = bill_no + last_no;
             }
-            if (process.env === 'development')
-                logTime(_startTime, 'billing.getBillNo()');
+            logTime(_startTime, 'billing.getBillNo()');
             return bill_no;
         },
         createFull: async (customer_id, data, transactions, userEmail, w_id=-1) => {
@@ -1212,8 +1201,7 @@ module.exports = {
             }
 
             await bill.save();
-            if (process.env === 'development')
-                logTime(_startTime, 'billing.createFull()');
+            logTime(_startTime, 'billing.createFull()');
             return bill.id;
         },
         edit_bill: async (id, data, body) => {
@@ -1268,8 +1256,7 @@ module.exports = {
             total = total + data.tax_value - data.discount_value;
             bill.total = total;
             await bill.save();
-            if (process.env === 'development')
-                logTime(_startTime, 'billing.edit_bill()');
+            logTime(_startTime, 'billing.edit_bill()');
         },
         areItemsRented: async (id) => {
             const bill = await models.Bill.findByPk(id, {
@@ -1338,8 +1325,7 @@ module.exports = {
             await bill_transac.save();
             await tr.save();
             await inv_record.save();
-            if (process.env === 'development')
-                logTime(_startTime, 'billing.addReturn()');
+            logTime(_startTime, 'billing.addReturn()');
         },
         pay: async (id, bd) => {
             const bill = await models.Bill.findByPk(id);
