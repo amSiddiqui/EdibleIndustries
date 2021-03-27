@@ -442,6 +442,29 @@ module.exports = {
             await inventory_batch_record.save();
 
             var inventory_id = await inventory_record.getInventory();
+
+            // Check if record type is transferred
+            if (inventory_record.type === 'transferred') {
+                // Find the received record
+                if (typeof id !== 'number') {
+                    id = parseInt(id);
+                }
+                var received_record = await models.InventoryRecord.findByPk(id+1);
+                received_record.value = batch_value * batch.quantity;
+                received_record.recordDate = data.created;
+                received_record.cost = data.cost;
+                await received_record.save();
+                var received_batch_record = await batch.createInventory_batch_record({
+                    type: received_record.type,
+                    value: batch_value,
+                    createdAt: data.created
+                });
+                var old_record = await received_record.getInventory_batch_record();
+                await old_record.destroy();
+                await received_record.setInventory_batch_record(received_batch_record);
+                await received_batch_record.save();
+            }
+
             logTime(_startTime, 'inventory.editRecord()');
             return inventory_id.id;
         },
@@ -449,6 +472,15 @@ module.exports = {
             var _startTime = new Date();
             var record = await models.InventoryRecord.findByPk(id);
             var batch_record = await record.getInventory_batch_record();
+            if (record.type === 'transferred') {
+                if (typeof id !== 'number') id = parseInt(id);
+                var rec_record = await models.InventoryRecord.findByPk(id+1);
+                if (rec_record.type === 'received') {
+                    var batch_record_r = await rec_record.getInventory_batch_record();
+                    await batch_record_r.destroy();
+                    await rec_record.destroy();
+                }
+            }
             await batch_record.destroy();
             await record.destroy();
             logTime(_startTime, 'inventory.deleteRecord()');

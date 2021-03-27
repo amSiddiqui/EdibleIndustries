@@ -162,7 +162,7 @@
                             <td><%=toNepaliDate(record.recordDate);%></td>
                             <% if(check_perm()) { %>
                             <td>
-                                <% if(record.type == 'discarded' || record.type == 'purchased' || record.type == 'manufactured') { %>
+                                <% if(record.type == 'discarded' || record.type == 'purchased' || record.type == 'manufactured' || record.type == 'transferred') { %>
                                 <div class="field  is-grouped">
                                     <div class="control">
                                         <button
@@ -171,7 +171,7 @@
                                             '<%=record.type%>',
                                             '<%=record.cost%>',
                                             '<%=record.inventory_batch_record.inventory_batch.id%>',
-                                            '<%=record.value%>',
+                                            '<%=record.value / record.inventory_batch_record.inventory_batch.quantity %>',
                                             '<%=record.id%>'
                                         );"
                                         class="record-edit-button type-edit-button has-text-info"><i
