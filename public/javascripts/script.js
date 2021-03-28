@@ -84,6 +84,42 @@ function convertNepaliToEnglish(date) {
     return engDate;
 }
 
+function convertEnglishToNepali(date) {
+    var numbers = {
+        '1': '१',
+        '2': '२',
+        '3': '३',
+        '4': '४',
+        '5': '५',
+        '6': '६',
+        '7': '७',
+        '8': '८',
+        '9': '९',
+        '0': '०',
+        '१': '१',
+        '२': '२',
+        '३': '३',
+        '४': '४',
+        '५': '५',
+        '६': '६',
+        '७': '७',
+        '८': '८',
+        '९': '९',
+        '०': '०',
+    };
+    var engDate = '';
+    for (let i = 0; i < date.length; i++) {
+        const d = date[i];
+        if (d == '/') {
+            engDate += '/'
+        } else {
+            engDate += numbers[d];
+        }
+    }
+    return engDate;
+}
+
+
 function compareDate(self, other) {
     var self_comp = self.split("/");
     var other_comp = other.split("/");

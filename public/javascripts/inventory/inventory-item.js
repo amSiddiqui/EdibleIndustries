@@ -23,7 +23,8 @@ function recordEdit(
     record_id
 ) {
     $("#edit-inventory-type").val(type);
-    $("#edit_record_date").val(date);
+    var nepali_date = convertEnglishToNepali(date);
+    $("#edit_record_date").val(nepali_date);
     $("#edit_inventory_cost").val(cost);
     $("#edit-inv-batch").val(packing);
     $("#edit-quantity").val(quantity);
@@ -340,7 +341,7 @@ $(function () {
         closeOnDateSelect: true
     });
 
-    $('#edit_record_date').nepaliDatePicker({
+    $('input#edit_record_date').nepaliDatePicker({
         dateFormat: '%d/%m/%y',
         closeOnDateSelect: true
     });
