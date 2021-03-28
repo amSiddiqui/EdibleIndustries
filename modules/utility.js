@@ -502,9 +502,11 @@ module.exports = {
                 bills = await warehouse.getBills({
                     include: [{
                             model: models.BillTransaction,
-                            include: [{
+                            include: [
+                            {
                                 model: models.InventoryRecord,
-                                include: [{
+                                include: [
+                                {
                                     model: models.Inventory
                                 }]
                             }, {
@@ -526,14 +528,15 @@ module.exports = {
                 bills = await warehouse.getBills({
                     include: [{
                             model: models.BillTransaction,
-                            include: [{
+                            include: [
+                            {
                                 model: models.InventoryRecord,
                                 include: [{
                                     model: models.Inventory
-                                }, {
-                                    model: models.BillTransaction,
-                                    as: 'return'
                                 }]
+                            }, {
+                                model: models.BillTransaction,
+                                as: 'return'
                             }]
                         },
                         {
