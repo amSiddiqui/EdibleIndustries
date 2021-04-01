@@ -88,50 +88,7 @@ $(function () {
             $(api.column(4).footer()).html('Re. '+costTotal);
         }
     });
-    removeSearchResult();
-    $.get('/api/all-bills', function (data) {
-        if (data.status == 'success') {
-            const bills = data.bills;
-
-            function searchBills(obj) {
-                $('#bill-dropdown-menu .dropdown-content').empty();
-                $("#bill-dropdown-menu").show();
-                var query = $(obj).val();
-                var result = [];
-                if (query.length > 0) {
-                    for (let i = 0; i < bills.length; i++) {
-                        const bill = bills[i];
-                        if (bill.detail.search(query) >= 0) {
-                            result.push(bill);
-                            if (result.length > 5) break;
-                        }
-                    }
-                    if (result.length == 0) {
-                        var res = $('<a href="#" class="dropdown-item">No Match</a>');
-                        $('#bill-dropdown-menu .dropdown-content').append(res);
-                    } else {
-
-                        for (let i = 0; i < result.length - 1; i++) {
-                            let r = result[i];
-                            var res = $('<a href="/billing/' + r.id + '" class="dropdown-item is-capitalized">' + r.detail + '</a><hr class="dropdown-divider">');
-                            $('#bill-dropdown-menu .dropdown-content').append(res);
-                        }
-                        let r = result[result.length - 1];
-                        var res = $('<a href="/billing/' + r.id + '" class="dropdown-item is-capitalized">' + r.detail + '</a>');
-                        $('#bill-dropdown-menu .dropdown-content').append(res);
-                    }
-                }
-            }
-            $("#bill-search").on('focus', function () {
-                searchBills(this);
-            });
-            $("#bill-search").on('keyup', function () {
-                searchBills(this);
-            });
-        }
-    }).fail(function (err) {
-        console.log(err);
-    });
+    
 
     $("#month-sale").on('change', function() {
         var dt = $(this).val();

@@ -1663,7 +1663,15 @@ module.exports = {
         insertInventoryRecord: insertInventoryRecord,
         getStats: async () => {
             var __startTime = new Date();
-
+            // Data to be output
+            // Current month name
+            // Bill total
+            // Current year name
+            // total assets
+            // Outstanding revenue
+            // Total rented items
+            // All rented bills
+            // All unpaid bills
             var data = {}
             var today = new Date();
             var monthName = new NepaliDate(today).format('MMMM', 'np');
@@ -1697,9 +1705,10 @@ module.exports = {
                 var res = await calculateTotalInventory(inv_id.id, new Date());
                 total_asset += inv_id.cost * res.total;
             }
-
+            
             data.formatted_asset = numeral(total_asset).format('0,0.00');
-
+            
+            console.time('unpaid_total');
             // Outstanding Revenue
             var outstanding = await models.Bill.sum('total' ,{
                 where: {
@@ -1708,129 +1717,67 @@ module.exports = {
             });
 
             data.formatted_outstanding = numeral(outstanding).format('0,0.00');
-
+            console.timeEnd('unpaid_total');
             var total_rented = 0;
 
-            var transactions = await models.BillTransaction.findAll({
-                where: {
-                    type: 'rented'
-                },
-                include: [{
-                    model: models.BillTransaction,
-                    as: 'return'
-                }, {
-                    model: models.Bill,
-                    include: [
-                        {
-                            model: models.BillTransaction,
-                            include: [
-                                {
-                                    model: models.InventoryRecord,
-                                    include: [
-                                        {
-                                            model: models.Inventory
-                                        }
-                                    ]
-                                }, {
-                                    model: models.BillTransaction,
-                                    as: 'return'
-                                }
-                            ]
-                        },
-                        {
-                            model: models.Customer
-                        },{
-                            model: models.User
-                        }
-                    ]
-                }]
-            });
-            
-            var bills = [];
-            var bill_ids = [];
-            for (let j = 0; j < transactions.length; j++) {
-                const tr = transactions[j];
-                total_rented += tr.quantity;
-                var rented = tr.quantity;
-                const returns = tr.return;
-                for (let k = 0; k < returns.length; k++) {
-                    const r = returns[k];
-                    total_rented -= r.quantity;
-                    rented -= r.quantity;
-                }
-                if (rented > 0){
-                    var bill = tr.bill;
-                    var bill_rented = 0;
-                    var txns = bill.bill_transactions;
-                    for (let j = 0; j < txns.length; j++) {
-                        var txn = txns[j];
-                        if (txn.type == 'rented') {
-                            bill_rented += txn.quantity;
-                            var returns_rented = txn.return; 
-                            var total_return = _.sumBy(returns_rented, (o) => o.quantity);
-                            bill_rented -= total_return;
-                        }
-                    }
-                    bill.bill_rented = bill_rented;
-
-                    if (!bill_ids.includes(bill.id))  {
-                        bills.push(bill);
-                        bill_ids.push(bill.id);
-                    }
-                }
-            }
-            data.formatted_rented = numeral(total_rented).format('0,0');
-            data.bills = bills;
-
-            // Unpaid Bills
-            var unpaid = await models.Bill.findAll({
+            var all_bills = await models.Bill.findAll({
                 include: [
                     {
                         model: models.BillTransaction,
                         include: [
                             {
-                                model: models.InventoryRecord,
-                                include: [
-                                    {
-                                        model: models.Inventory
-                                    }
-                                ]
-                            }, {
                                 model: models.BillTransaction,
                                 as: 'return'
                             }
                         ]
                     },
                     {
-                        model: models.Customer,
-                        include: [
-                            {
-                                model: models.CustomerType
-                            }
-                        ]
+                        model: models.Customer
+                    }, 
+                    {
+                        model: models.User
                     }
                 ],
                 where: {
-                    paid: false
+                    [Op.or]: [
+                        {paid: false},
+                        {'$bill_transactions.type$': 'rented'}
+                    ]
                 }
             });
-            for (let j = 0; j < unpaid.length; j++) {
-                const bill = unpaid[j];
-                var rented = false;
-                for (let k = 0; k < bill.bill_transactions.length; k++) {
-                    const tr = bill.bill_transactions[k];
-                    if (tr.type == 'rented') {
-                        const returns = tr.return;
-                        var total_return = _.sumBy(returns, (o) => o.quantity);
-                        if (total_return < tr.quantity) {
-                            rented = true;
-                            break;
+            
+            var bills = [];
+            var unpaid = [];
+            var total_rented = 0;
+            for (let i = 0; i < all_bills.length; i++) {
+                var bill = all_bills[i];
+                if (!bill.paid) {
+                    unpaid.push(bill);
+                }
+                var rented = 0;
+                for (let j = 0; j < bill.bill_transactions.length; j++) {
+                    var txn = bill.bill_transactions[j];
+                    if (txn.type === 'rented') {
+                        rented += txn.quantity;
+                        var returns = txn.return;
+                        for (let k = 0; k < returns.length; k++) {
+                            var r = returns[k];
+                            rented -= r.quantity;
+                        }
+                        if (rented > 0) {
+                            total_rented += rented;
+                            bill.bill_rented = rented;
+                            bills.push(bill);
                         }
                     }
                 }
-                unpaid[j].rented = rented;
             }
+            
+            data.formatted_rented = numeral(total_rented).format('0,0');
+            data.bills = bills;
+            
             data.unpaid = unpaid;
+            
             logTime(__startTime, 'misc.getStats()');
             return data;
         },
