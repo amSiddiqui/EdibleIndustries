@@ -1708,7 +1708,6 @@ module.exports = {
             
             data.formatted_asset = numeral(total_asset).format('0,0.00');
             
-            console.time('unpaid_total');
             // Outstanding Revenue
             var outstanding = await models.Bill.sum('total' ,{
                 where: {
@@ -1717,7 +1716,6 @@ module.exports = {
             });
 
             data.formatted_outstanding = numeral(outstanding).format('0,0.00');
-            console.timeEnd('unpaid_total');
             var total_rented = 0;
 
             var all_bills = await models.Bill.findAll({

@@ -10,15 +10,15 @@ const Sequelize = require('sequelize'),
              idle: 10000
          },
          timezone: '+05:30',
-         logging: msg => {
-            fs.appendFile('logs/sequelize_query.log', new Date().toDateString()+'\n'+msg+'\n\n', err => {
-                if (err) {
-                    console.log("Logging sequelize query failed");
-                    console.log(err);
-                }
-            });
-         },
-        //  logging: false,
+        //  logging: msg => {
+        //     fs.appendFile('logs/sequelize_query.log', new Date().toDateString()+'\n'+msg+'\n\n', err => {
+        //         if (err) {
+        //             console.log("Logging sequelize query failed");
+        //             console.log(err);
+        //         }
+        //     });
+        //  },
+         logging: false,
     });
 
 module.exports = {
