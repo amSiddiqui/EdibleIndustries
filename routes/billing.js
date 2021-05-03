@@ -7,7 +7,6 @@ var router = express.Router();
 const fs = require('fs');
 
 router.get('/api/bills', middleware.auth.loggedIn(), function (req, res, next) {
-  console.log("Bills fetch API request made");
   var today = new Date();
   var user_email = req.session.email;
   var data = {
@@ -16,7 +15,6 @@ router.get('/api/bills', middleware.auth.loggedIn(), function (req, res, next) {
       'message': ''
   };
   utility.billing.fetchAll(user_email).then(bills => {
-      console.log("Bills fetched from db");
       for (let i = 0; i < bills.length; i++) {
           const bill = bills[i];
           var total_sold = 0;
@@ -62,7 +60,6 @@ router.get('/api/bills', middleware.auth.loggedIn(), function (req, res, next) {
           bill_data['bill_id'] = bill.id;
           data.data.push(bill_data);
       }
-      console.log("BIlls processed and data sent");
       res.json(data);
   }).catch(function(err) {
       console.log(err);
@@ -121,7 +118,6 @@ router.get('/add', middleware.auth.loggedIn(), function (req, res, next) {
     return utility.warehouse.fetchWarehouses();
   }).
   then(warehouses => {
-    console.log("All warehouses retrieved");
     data.warehouses = warehouses;
     res.render('billing/add', data);
   }).
@@ -343,7 +339,6 @@ router.delete('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   
   let id = parseInt(req.params.id);
   utility.billing.deleteBill(id).then(function () {
-    console.log(`Bill with id ${id} was deleted`);
     req.flash('flash_message', 'Bill successfully deleted');
     req.flash('flash_color', 'success');
     res.redirect('/billing');

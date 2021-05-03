@@ -165,18 +165,13 @@ $(function () {
                 var found = false;
                 currentCustomerData.customer.inventory_batches.forEach(batch => {
                     if (batch.id == inv_id) {
-                        inv_rate = batch.cutomer_rate.rate;
+                        inv_rate = batch.customer_rate.rate;
                         found = true;
                     }
                 });
                 // If customer rate is not found find its default rate
                 if (!found) {
-                    let current_customer_type = null;
-                    currentCustomerData.customer_type.forEach(ty => {
-                        if (ty.id == currentCustomerData.customer.customer_type.id) {
-                            current_customer_type = ty;
-                        }
-                    });
+                    let current_customer_type = currentCustomerData.customer_type;
 
                     current_customer_type.inventory_batches.forEach(b => {
                         if (b.id == inv_id) {
@@ -212,7 +207,6 @@ $(function () {
         }
         var template = $("#inventory-item-template").html();
         var inventory_key = $(this).attr('data-value');
-        console.log("Inventory Key: ", inventory_key);
         var row = $(template).clone();
         var inventory_rate = 0;
         var inventory = null;
@@ -250,15 +244,10 @@ $(function () {
             if (batch.id === defaultBatch.id) customer_b = batch;
         });
 
-        if (typeof customer_b !== 'undefined' || customer_b !== null) {
+        if (customer_b !== null) {
             inventory_rate = customer_b.customer_rate.rate;
         }else{
-            let current_customer_type = null;
-            currentCustomerData.customer_type.forEach(ty => {
-                if (ty.id == currentCustomerData.customer.customer_type.id) {
-                    current_customer_type = ty;
-                }
-            });
+            let current_customer_type = currentCustomerData.customer_type;
 
             current_customer_type.inventory_batches.forEach(b => {
                 if (b.id == defaultBatch.id) {
@@ -307,7 +296,7 @@ $(function () {
                 }
             });
 
-            if (defaultRate == null) {
+            if (defaultRate === null) {
                 currentCustomerData.customer_type.inventory_batches.forEach(batch => {
                     if (batch.id == id) {
                         defaultRate = batch.customer_type_rate.rate;
@@ -315,7 +304,7 @@ $(function () {
                 });
             }
 
-            if (defaultRate == null) {
+            if (defaultRate === null) {
                 defaultRate = 0;
             }
 
@@ -490,8 +479,6 @@ $(function () {
         $.post('/api/bill-no', {bill_date: bill_date}, function(data) {
             if (data.status == 'success') {
                 $("#track_id").val(data.bill_no);
-                console.log("Bill number updated");
-                console.log(data);
             }else{
                 console.log("Bill number update error");
                 console.log(data);
@@ -511,7 +498,6 @@ $(function () {
         updateTotal();
         $.get('/api/inventories?date='+bill_date+'&warehouse='+warehouse, function (data) {
             inventories = data.inventories;
-            console.log(inventories);
             $(".list-group").empty();
             inventories.forEach(function(inv) {
                 var list_group_item = $(`
