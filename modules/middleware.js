@@ -11,16 +11,14 @@ module.exports = {
         },
         loggedIn: (redirect = '/auth/login') => {
             return (req, res, next) => {
-                res.redirect(redirect);
-                return;
-                // if (!req.session.loggedin) {
-                //     if (typeof process.env.ENV !== 'undefined' && process.env.ENV == 'development')
-                //         next();
-                //     else
-                //         res.redirect(redirect);
-                // }else{
-                //     next();
-                // }
+                if (!req.session.loggedin) {
+                    if (typeof process.env.ENV !== 'undefined' && process.env.ENV == 'development')
+                        next();
+                    else
+                        res.redirect(redirect);
+                }else{
+                    next();
+                }
             }
         },     
     }
