@@ -615,6 +615,7 @@ Customer.hasMany(CustomerLedger);
 CustomerLedger.belongsTo(Customer);
 
 CustomerLedger.hasMany(Bill);
+Bill.belongsTo(CustomerLedger);
 
 module.exports = {
     User,

@@ -70,10 +70,10 @@ router.get('/customer-type/:id', middleware.auth.loggedIn(), function (req, res,
     console.log(customer_type);
     customer_data = {
       name: customer_type.name,
-      inventorie_batches: []
+      inventory_batches: []
     }
     customer_type.inventory_batches.forEach(batch => {
-      customer_data.inventorie_batches.push({
+      customer_data.inventory_batches.push({
         id: batch.id,
         customer_type_rate: {
           rate: batch.customer_type_rate.rate
@@ -158,13 +158,13 @@ router.get('/customer-type', middleware.auth.loggedIn(), function (req, res, nex
       res.render('customer/types', data);
     }).catch(err => {
       console.log(err);
-      req.flash('flash_message', 'Error opening customer-type, try agina later');
+      req.flash('flash_message', 'Error opening customer-type, try again later');
       req.flash('flash_color', 'danger');
       res.redirect('/customer');
     });
   }).catch(err => {
     console.log(err);
-    req.flash('flash_message', 'Error opening customer-type, try agina later');
+    req.flash('flash_message', 'Error opening customer-type, try again later');
     req.flash('flash_color', 'danger');
     res.redirect('/customer');
   });
@@ -314,8 +314,8 @@ router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
             let rate = 0;
             for (let i = 0; i < customer.inventories.length; i++) {
               const inventory = customer.inventories[i];
-              for (let j = 0; j < inventory.inventorie_batches.length; j++) {
-                const batch = inventory.inventorie_batches[j];
+              for (let j = 0; j < inventory.inventory_batches.length; j++) {
+                const batch = inventory.inventory_batches[j];
                 if (batch.id == batch_id) {
                   return batch.customer_rate.rate;
                 }

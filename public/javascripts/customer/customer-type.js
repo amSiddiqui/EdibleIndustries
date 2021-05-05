@@ -64,7 +64,7 @@ $(function() {
                 const form = $("#edit-customer-type-modal form");
                 form.attr('action', '/customer/customer-type/'+id+'?_method=PUT');
                 form.find("input[type='number']").val('');
-                data.customer_type.inventorie_batches.forEach(batch => {
+                data.customer_type.inventory_batches.forEach(batch => {
                     form.find("input[name='batch-"+batch.id+"']").val(batch.customer_type_rate.rate);
                 });
                 $("#edit-customer-type-modal").addClass('is-active');

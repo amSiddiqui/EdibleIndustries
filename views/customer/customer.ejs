@@ -195,12 +195,13 @@
                             <th>ID</th>
                             <th>Type</th>
                             <th>Date</th>
-                            <th>Credit</th>
                             <th>Debit</th>
+                            <th>Credit</th>
+                            <th>Balance</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <% for(let i = 0; i < ledger_entries.length; i++) { var entry = ledger_entries[i];%>
+                        <% var balance = 0; for(let i = 0; i < ledger_entries.length; i++) { var entry = ledger_entries[i]; if (entry.credit !== null) { balance += entry.credit; } if (entry.debit !== null) { balance -= entry.debit; }  %>
                         <tr onmouseover="showBill(this);" onmouseleave="hideBill(this);">
                             <td><%= entry.id %>
                                 <% if(entry.type == 'deposit') { %>
@@ -218,6 +219,7 @@
                             <td><%= entry.nepali_date %></td>
                             <td><%= entry.credit === null ? '': entry.credit.toFixed(2); %></td>
                             <td class="<% if(entry.debit !== null){ %>has-text-danger<% } %>"><%= entry.debit === null ? '': entry.debit.toFixed(2); %></td>
+                            <td><%= balance.toFixed(2); %></td>
                         </tr>
                         <% } %>
                     </tbody>

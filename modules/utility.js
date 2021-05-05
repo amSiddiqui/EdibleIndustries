@@ -133,6 +133,21 @@ async function calculateTotalInventory(inv_id, end_date, warehouse_id=1) {
     };
 } 
 
+async function getCustomerBalance(customer_id) {
+    const customer = await models.Customer.findByPk(customer_id);
+    var entries = await customer.getCustomer_ledgers();
+    var balance = 0.;
+    entries.forEach(ent => {
+        if (ent.credit !== null ) {
+            balance += ent.credit;
+        }
+        if (ent.debit !== null) {
+            balance -= ent.debit;
+        }
+    });
+    return balance;
+}
+
 
 module.exports = {
     user: {
@@ -798,10 +813,10 @@ module.exports = {
             await models.CustomerRate.bulkCreate(rates);
             return customer.id;
         },
-        addInventoryRate: (cutomer_id, inventory_id, rate) => {
+        addInventoryRate: (customer_id, inventory_id, rate) => {
             return models.CustomerRate.create({
                 inventoryId: inventory_id,
-                cutomerId: cutomer_id,
+                customerId: customer_id,
                 rate
             });
         },
@@ -1146,7 +1161,7 @@ module.exports = {
             var grand_total = 0.0;
             for (let k = 0; k < transactions.length; k++) {
                 const transaction = transactions[k];
-                var btch = await models.InventoryBatch.findByPk(transaction.id);
+                var batch = await models.InventoryBatch.findByPk(transaction.id);
                 for (let i = 0; i < transaction.rate.length; i++) {
                     transactions[k].rate[i] = toNumberFloat(transactions[k].rate[i]);
                     transactions[k].quantity[i] = toNumberFloat(transactions[k].quantity[i]);
@@ -1204,14 +1219,14 @@ module.exports = {
                         inv_record.setUser(user);
                     }
                     await inv_record.save();
-                    const bill_transac = await models.BillTransaction.create({
+                    const bill_transaction = await models.BillTransaction.create({
                         quantity: transaction.quantity[j],
                         rate: transaction.rate[j],
                         type: type
                     });
-                    bill_transac.setInventory_record(inv_record);
-                    bill_transac.setBill(bill);
-                    await bill_transac.save();
+                    bill_transaction.setInventory_record(inv_record);
+                    bill_transaction.setBill(bill);
+                    await bill_transaction.save();
                 }
             }
             bill.setCustomer(customer);
@@ -1225,9 +1240,18 @@ module.exports = {
                 if (bill.payment_method === 'Cash') {
                     credit = bill.total;
                 }
+                if (bill.payment_method === 'Credit') {
+                    var balance = getCustomerBalance(customer_id);
+                    if (balance >= debit) {
+                        bill.paid = true;
+                        bill.payment_method = "Cash";
+                        await bill.save();
+                    }
+                }
+
                 var customer_ledger = await models.CustomerLedger.create({
                     type: 'Sale',
-                    credit, 
+                    credit,
                     debit,
                     date: bill_date
                 });
@@ -1291,6 +1315,14 @@ module.exports = {
             total = total + data.tax_value - data.discount_value;
             bill.total = total;
             await bill.save();
+
+            var ledger = await bill.getCustomer_ledger();
+            ledger.debit = total;
+            if (bill.paid) {
+                ledger.credit = total;
+            }
+            ledger.save();
+
             logTime(_startTime, 'billing.edit_bill()');
         },
         areItemsRented: async (id) => {
@@ -1344,20 +1376,20 @@ module.exports = {
                 recordDate: date
             });
             const tr = await models.BillTransaction.findByPk(tr_id);
-            const bill_transac = await models.BillTransaction.create({
+            const bill_transaction = await models.BillTransaction.create({
                 quantity: q,
                 type: 'returned',
                 createdAt: date
             });
             const bill = await models.Bill.findByPk(bill_id);
             const warehouse = await bill.getWarehouse();
-            bill_transac.setInventory_record(inv_record);
+            bill_transaction.setInventory_record(inv_record);
             inv_record.setInventory(inv);
             await inv_record.setWarehouse(warehouse);
             inv_record.setUser(user);
-            tr.addReturn(bill_transac);
-            bill_transac.setBill(bill);
-            await bill_transac.save();
+            tr.addReturn(bill_transaction);
+            bill_transaction.setBill(bill);
+            await bill_transaction.save();
             await tr.save();
             await inv_record.save();
             logTime(_startTime, 'billing.addReturn()');
@@ -1510,7 +1542,6 @@ module.exports = {
         fetchAllEntry: async (customer_id) => {
             const customer = await models.Customer.findByPk(customer_id);
             var entries = await customer.getCustomer_ledgers({
-                
                 include: [{model: models.Bill}]
             });
             return entries;
@@ -1556,20 +1587,7 @@ module.exports = {
                 }
             }
         },
-        getBalance: async (customer_id) => {
-            const customer = await models.Customer.findByPk(customer_id);
-            var entries = await customer.getCustomer_ledgers();
-            var balance = 0.;
-            entries.forEach(ent => {
-                if (ent.credit !== null ) {
-                    balance += ent.credit;
-                }
-                if (ent.debit !== null) {
-                    balance -= ent.debit;
-                }
-            });
-            return balance;
-        }
+        getBalance: getCustomerBalance
     },
     misc: {
         zones: (data) => {
@@ -1812,6 +1830,7 @@ module.exports = {
                     await entry.setCustomer(customer);
                 }
             }
+            console.log("Customer ledger utility complete");
         },
         checkPermission: (req, res, message="User does not have permission to access the page") => {
             if (req.session.user_type === 'Admin') {

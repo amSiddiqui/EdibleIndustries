@@ -120,3 +120,5 @@ uploads/tmp/*
 uploads/*.*
 
 logs/
+
+.vscode

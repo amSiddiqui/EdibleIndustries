@@ -1,10 +1,11 @@
 {
   "name": "edible-manager",
-  "version": "0.0.0",
+  "version": "1.12.0",
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "sass": "node-sass --watch public/sass -o public/stylesheets/"
+    "sass": "node-sass --watch public/sass -o public/stylesheets/",
+    "minify": "minify public/stylesheets/style.css > public/stylesheets/style.min.css"
   },
   "dependencies": {
     "compression": "^1.7.4",
