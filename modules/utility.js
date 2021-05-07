@@ -1567,7 +1567,7 @@ module.exports = {
                     }
                 },
                 order: [
-                    ['id', 'DESC']
+                    ['id', 'ASC']
                 ]                
             });
 

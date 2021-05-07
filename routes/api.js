@@ -465,7 +465,13 @@ router.get('/stats/customer/outstanding/:id', middleware.auth.loggedIn(), functi
 router.get('/stats/customer/balance/:id', middleware.auth.loggedIn(), function (req, res, next) {
     let id = parseInt(req.params.id);
     utility.ledger.getBalance(id).then(balance => {
-        formatted = numeral(balance).format('0,0.00');
+        let unsigned_bal = (balance > 0) ? balance : -balance;
+        formatted = numeral(unsigned_bal).format('0,0.00');
+        if (balance > 0) {
+            formatted = formatted + " Dr";
+        } else if (balance < 0) {
+            formatted = formatted + " Cr";
+        }
         res.json({balance, formatted});
     }).catch(err => {
         console.log(err);
