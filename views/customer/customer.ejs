@@ -317,8 +317,8 @@
                             <div class="control">
                                 <label for="record_date" class="label">Date</label>
                                 <div class="select">
-                                    <select name="date" id="record_date">
-                                        <% for(let i = 0; i < last_5_dates.length; i++){ var d = last_5_dates[i] %>
+                                    <select name="date">
+                                        <% for(let i = 0; i < last_5_dates.length; i++){ var d = last_5_dates[i]; %>
                                             <option value="<%=d.format("DD/MM/YYYY");%>"><%=d%></option>
                                         <% } %>
                                     </select>

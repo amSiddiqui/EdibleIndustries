@@ -432,14 +432,13 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
 
   var last_5_dates = [];
   var dt = new Date();
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 6; i++) {
     var np = new NepaliDate(dt);
-    last_5_dates.push(np)
+    last_5_dates.push(np);
     dt.setDate(dt.getDate() - 1);
   }
   
   data.last_5_dates = last_5_dates;
-
 
   var month_data = [];
   var today_np = new NepaliDate(new Date());
