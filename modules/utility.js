@@ -1552,6 +1552,12 @@ module.exports = {
             if (entry_data.type != 'Deposit') {
                 return null;
             }
+            let current_balance = getCustomerBalance(customer_id);
+            let total_balance = entry.credit;
+            
+            if (customer_balance > 0) {
+                total_balance += current_balance;
+            }
 
             var ledgerEntry = await models.CustomerLedger.create(entry_data);
 
@@ -1577,7 +1583,7 @@ module.exports = {
             for (var i = 0; i < unpaid.length; i++) {
                 var b = unpaid[i];
                 total += b.total;
-                if (total > entry_data.credit) {
+                if (total > total_balance) {
                     break;
                 }else {
                     unpaid[i].paid = true;

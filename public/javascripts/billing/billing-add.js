@@ -154,6 +154,13 @@ $(function () {
             console.log(err);
         });
 
+        $.get('/api/stats/customer/balance/'+id, function(data) {
+            $("#total-balance").find('strong').html(data.formatted);
+            $("#total-balance").show();
+        }).fail(function(err) {
+            console.log(err);
+        });
+
 
         $.get('/api/customer/' + id, function (data) {
             currentCustomerData = data;
