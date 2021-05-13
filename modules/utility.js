@@ -1553,9 +1553,9 @@ module.exports = {
                 return null;
             }
             let current_balance = await getCustomerBalance(customer_id);
-            let total_balance = entry.credit;
+            let total_balance = entry_data.credit;
             
-            if (customer_balance > 0) {
+            if (current_balance > 0) {
                 total_balance += current_balance;
             }
 
