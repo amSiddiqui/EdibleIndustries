@@ -1241,7 +1241,7 @@ module.exports = {
                     credit = bill.total;
                 }
                 if (bill.payment_method === 'Credit') {
-                    var balance = getCustomerBalance(customer_id);
+                    var balance = await getCustomerBalance(customer_id);
                     if (balance >= debit) {
                         bill.paid = true;
                         bill.payment_method = "Cash";
@@ -1552,7 +1552,7 @@ module.exports = {
             if (entry_data.type != 'Deposit') {
                 return null;
             }
-            let current_balance = getCustomerBalance(customer_id);
+            let current_balance = await getCustomerBalance(customer_id);
             let total_balance = entry.credit;
             
             if (customer_balance > 0) {
