@@ -1425,6 +1425,8 @@ module.exports = {
                     },
                 ]
             });
+
+            var ledger = await bill.getCustomer_ledger();
             
             for (let i = 0; i < bill.bill_transactions.length; i++) {
                 const tr = bill.bill_transactions[i];
@@ -1437,6 +1439,7 @@ module.exports = {
                 await tr.inventory_record.destroy();
                 await tr.destroy();
             } 
+            await ledger.destroy();
             await bill.destroy();
         }
     },
