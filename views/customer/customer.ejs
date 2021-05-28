@@ -207,9 +207,11 @@
                                 <% if(entry.type == 'deposit') { %>
                                     Bills Paid
                                 <% } %>
+                                <% if(entry.bill) { %>
                                 <div style="display: none" class="bill_tracks">
                                     <a href="/bill/<%=entry.bill.id%>"><%=entry.bill.track_id%></a>
                                 </div>
+                                <% } %>
                             </td>
                             <td><%= entry.type %></td>
                             <td><%= entry.nepali_date %></td>
