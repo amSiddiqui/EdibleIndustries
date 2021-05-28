@@ -614,8 +614,8 @@ const CustomerLedger = db.sequelize.define('customer_ledger', {
 Customer.hasMany(CustomerLedger);
 CustomerLedger.belongsTo(Customer);
 
-CustomerLedger.hasMany(Bill);
-Bill.belongsTo(CustomerLedger);
+Bill.hasMany(CustomerLedger);
+CustomerLedger.belongsTo(Bill);
 
 module.exports = {
     User,

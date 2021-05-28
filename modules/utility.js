@@ -1255,7 +1255,7 @@ module.exports = {
                     debit,
                     date: bill_date
                 });
-                await customer_ledger.addBill(bill);
+                await customer_ledger.setBill(bill);
                 await customer_ledger.setCustomer(customer);
             }
 
@@ -1316,12 +1316,16 @@ module.exports = {
             bill.total = total;
             await bill.save();
 
-            var ledger = await bill.getCustomer_ledger();
-            ledger.debit = total;
-            if (bill.paid) {
-                ledger.credit = total;
+            var ledgers = await bill.getCustomer_ledgers();
+            for (let ledger of ledgers) {
+                if (ledger.type === 'Sale') {
+                    ledger.debit = total;
+                    if (bill.paid) {
+                        ledger.credit = total;
+                    }
+                    ledger.save();
+                }
             }
-            ledger.save();
 
             logTime(_startTime, 'billing.edit_bill()');
         },
@@ -1404,7 +1408,7 @@ module.exports = {
                 date: bd
             });
             await entry.setCustomer(customer);
-            await entry.addBill(bill);
+            await entry.setBill(bill);
             bill.paid = true;
             bill.payment_method = 'Cash';
             bill.paidOn = bd;
@@ -1426,7 +1430,7 @@ module.exports = {
                 ]
             });
 
-            var ledger = await bill.getCustomer_ledger();
+            var ledgers = await bill.getCustomer_ledgers();
             
             for (let i = 0; i < bill.bill_transactions.length; i++) {
                 const tr = bill.bill_transactions[i];
@@ -1439,7 +1443,9 @@ module.exports = {
                 await tr.inventory_record.destroy();
                 await tr.destroy();
             } 
-            await ledger.destroy();
+            for (let ledger of ledgers) {
+                await ledger.destroy();
+            }
             await bill.destroy();
         }
     },
@@ -1592,7 +1598,7 @@ module.exports = {
                     unpaid[i].paid = true;
                     unpaid[i].payment_method = 'Cash';
                     await unpaid[i].save();
-                    await ledgerEntry.addBill(unpaid[i]);
+                    await ledgerEntry.setBill(unpaid[i]);
                 }
             }
         },
@@ -1835,7 +1841,7 @@ module.exports = {
                         debit,
                         date: bill.createdAt
                     });
-                    await entry.addBill(bill);
+                    await entry.setBill(bill);
                     await entry.setCustomer(customer);
                 }
             }

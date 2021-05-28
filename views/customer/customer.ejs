@@ -208,11 +208,7 @@
                                     Bills Paid
                                 <% } %>
                                 <div style="display: none" class="bill_tracks">
-                                    <ul>
-                                        <% for (let j = 0; j < entry.bills.length; j++) { var bill = entry.bills[j]; %>
-                                        <li><%=bill.track_id%></li>
-                                        <% } %>
-                                    </ul>
+                                    <a href="/bill/<%=entry.bill.id%>"><%=entry.bill.track_id%></a>
                                 </div>
                             </td>
                             <td><%= entry.type %></td>
