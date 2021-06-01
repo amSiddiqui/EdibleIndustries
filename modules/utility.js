@@ -1322,6 +1322,8 @@ module.exports = {
                     ledger.debit = total;
                     if (bill.paid) {
                         ledger.credit = total;
+                    } else {
+                        ledger.credit = 0;
                     }
                     ledger.save();
                 }
