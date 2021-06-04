@@ -251,9 +251,10 @@ router.get('/check-item-rented/:id', middleware.auth.loggedIn(), function (req, 
     });
 });
 
+// TODO: Function broken as dates not provided
 router.get('/all-bills', middleware.auth.loggedIn(), function (req, res, next) {
     var user_email = req.session.email;
-    utility.billing.fetchAll(user_email).then(function (bills) {
+    utility.billing.fetchAll(user_email, new Date(), new Date()).then(function (bills) {
         var bill_query = [];
         bills.forEach(bill => {
             if (bill.customer.organization.length == 0) {
@@ -479,6 +480,22 @@ router.get('/stats/customer/balance/:id', middleware.auth.loggedIn(), function (
     })
 });
 
+router.get('/analytics/inflow', middleware.auth.loggedIn(), function(req, res, next) {
+    if (!req.query.start || !req.query.end) {
+        res.status(403).json({status: "error", message: "Please provide start and end date"});
+        return;
+    }
+
+    let start = new Date(req.query.start);
+    let end = new Date(req.query.end);
+
+    utility.analytics.fetchCashInflow(start, end).then(data => {
+        res.json({status: "success", data});
+    }).catch(err => {
+        console.log(err);
+        res.status(500).json({status: "error", message: "Something went wrong, try again later", err: err});
+    });
+});
 
 
 module.exports = router;

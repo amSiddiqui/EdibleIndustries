@@ -4,13 +4,22 @@
 <!-- DataTable Bulma -->
 <!-- Select 2 -->
 <!-- Nepali date picker -->
+
+<script src="/javascripts/lib/jquery.min.js"></script>
+<script src="/javascripts/lib/fontawesome.min.js"></script>
+<script src="/javascripts/lib/nepali.datepicker.min.js"></script>
 <script src="/javascripts/lib/dependencies.min.js"></script>
 <% if (typeof autocomplete !== 'undefined' && autocomplete) { %>
     
 <% } %>
 <script src="/javascripts/script.js"></script>
 <% if (typeof dependency !== 'undefined') { %>
-    <script src="/javascripts/<%=dependency %>"></script>
+    <script type="module" src="/javascripts/<%=dependency %>"></script>
+<% } %>
+<% if (typeof dependencies !== 'undefined') { %>
+    <% for (let dep of dependencies) { %>
+        <script src="/javascripts/<%=dep %>"></script>
+    <% } %>
 <% } %>
 </body>
 </html>

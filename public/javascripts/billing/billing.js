@@ -1,3 +1,11 @@
+const today_np = new NepaliDate(new Date());
+const month_start_np = new NepaliDate(
+    today_np.getYear(),
+    today_np.getMonth(),
+    1
+);
+
+
 $(() => {
     $("#records-table").DataTable({
         "order": [
@@ -30,13 +38,13 @@ $(() => {
     } );
 
     $('#from_date').nepaliDatePicker({
-        dateFormat: '%d/%m/%y',
-        closeOnDateSelect: true,
+        dateFormat: 'DD/MM/YYYY',
+        disableAfter: today_np.format("YYYY-MM-DD")
     });
 
     $('#to_date').nepaliDatePicker({
-        dateFormat: '%d/%m/%y',
-        closeOnDateSelect: true,
+        dateFormat: 'DD/MM/YYYY',
+        disableAfter: today_np.format("YYYY-MM-DD")
     });
 
     $.fn.dataTable.ext.search.push(
@@ -125,11 +133,8 @@ $(() => {
                 .column(5, { search:'applied' })
                 .data()
                 .reduce(function (a, b) {
-                    console.log(a);
                     return a + b.value;
                 }, 0);
-                
-            
             
             var total = api
                 .column(6, { search:'applied' })

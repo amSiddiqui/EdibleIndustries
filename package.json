@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
+    "dev": "node-dev ./bin/www",
     "sass": "node-sass --watch public/sass -o public/stylesheets/",
     "minify": "minify public/stylesheets/style.css > public/stylesheets/style.min.css"
   },
@@ -26,13 +27,14 @@
     "mysql": "^2.18.1",
     "mysql2": "^2.2.5",
     "nepali-date-converter": "^3.3.0",
-    "node-sass": "^4.14.1",
     "numeral": "^2.0.6",
     "select2": "^4.0.13",
     "sequelize": "^6.3.5"
   },
   "devDependencies": {
     "bulma": "^0.9.1",
+    "node-dev": "^7.0.0",
+    "node-sass": "^6.0.0",
     "nodemon": "^2.0.5"
   }
 }

@@ -4,6 +4,15 @@ const fs = require('fs');
 var _ = require('lodash');
 var numeral = require('numeral');
 
+const {
+    Op
+} = require('sequelize');
+const {
+    sequelize
+} = require('./database');
+const e = require('express');
+
+
 function getMethods(obj) {
     var result = [];
     for (var id in obj) {
@@ -41,15 +50,6 @@ function logTime(__startTime, msg) {
 function getFormattedDate(d) {
     return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
 }
-
-const {
-    Op
-} = require('sequelize');
-const {
-    sequelize
-} = require('./database');
-const e = require('express');
-
 const log_file = 'logs/utility_time.log';
 
 
@@ -102,10 +102,10 @@ async function calculateTotalInventory(inv_id, end_date, warehouse_id=1) {
     var inventory = await models.Inventory.findByPk(inv_id);
     var records = await inventory.getInventory_records({
         where: {
-            recordDate: {
-                [Op.lte]: end_date
-            },
-            warehouse_id: warehouse_id
+            [Op.and]: [
+                sequelize.where( sequelize.fn('date', sequelize.col('record_date')), Op.lte, end_date.toJSON().substring(0, 10)),
+                {warehouse_id: warehouse_id}
+            ]
         },
         order: [
             ['recordDate']
@@ -243,7 +243,7 @@ module.exports = {
             });
             var records = await inv.getInventory_records({
                 order: [
-                    [sequelize.col('recordDate')]
+                    [sequelize.col('record_date')]
                 ],
                 where: {
                     warehouse_id: warehouse.id
@@ -943,10 +943,10 @@ module.exports = {
             var month_end = dt;
             var bills = await customer.getBills({
                 where: {
-                    createdAt: {
-                        [Op.lte]: month_end,
-                        [Op.gte]: month_start
-                    }
+                    [Op.and]: [
+                        sequelize.where( sequelize.fn('date', sequelize.col('createdAt')), Op.lte, month_start.toJSON().substring(0, 10)),
+                        sequelize.where( sequelize.fn('date', sequelize.col('createdAt')), Op.gte, month_end.toJSON().substring(0, 10)),
+                    ]
                 }
             });
             var total = 0;
@@ -975,7 +975,7 @@ module.exports = {
         }
     },
     billing: {
-        fetchAll: async (user_email) => {
+        fetchAll: async (user_email, start, end) => {
             var _startTime = new Date();
             if (typeof user_email === 'undefined') {
                 console.log("User email not provided");
@@ -988,6 +988,12 @@ module.exports = {
             var bills = [];
             if (user.user_type === 'Admin') {
                 bills = await models.Bill.findAll({
+                    where: {
+                        [Op.and]: [
+                            sequelize.where(sequelize.fn('date', sequelize.col('bill.createdAt')), Op.lte, end.toJSON().substring(0, 10)),
+                            sequelize.where(sequelize.fn('date', sequelize.col('bill.createdAt')), Op.gte, start.toJSON().substring(0, 10)),
+                        ]
+                    },
                     include: [
                         {
                             model: models.BillTransaction,
@@ -1010,6 +1016,12 @@ module.exports = {
                 });
             }else{
                 bills = await models.Bill.findAll({
+                    where: {
+                        [Op.and]: [
+                            sequelize.where(sequelize.fn('date', sequelize.col('bill.createdAt')), Op.lte, end.toJSON().substring(0, 10)),
+                            sequelize.where(sequelize.fn('date', sequelize.col('bill.createdAt')), Op.gte, start.toJSON().substring(0, 10)),
+                        ]
+                    },
                     include: [
                         {
                             model: models.BillTransaction,
@@ -1606,6 +1618,27 @@ module.exports = {
         },
         getBalance: getCustomerBalance
     },
+    analytics: {
+
+        fetchCashInflow: async (start, end) => {
+            const entries = await models.CustomerLedger.findAll({
+                attribute: ['debit'],
+                where: {
+                    [Op.and]: [
+                        sequelize.where(sequelize.fn('date', sequelize.col('date')), Op.lte, end.toJSON().substring(0, 10)),
+                        sequelize.where(sequelize.fn('date', sequelize.col('date')), Op.gte, start.toJSON().substring(0, 10)),
+                    ]
+                }
+            });
+
+            let total = _.sumBy(entries, i => i.debit);
+
+            let formatted = numeral(total).format('0,0');
+
+            return {total, formatted};
+        }
+
+    },
     misc: {
         zones: (data) => {
             return models.Zone.create(data);
@@ -1649,10 +1682,10 @@ module.exports = {
             var month_end = dt;
             var total = await models.Bill.sum('total' ,{
                 where: {
-                    createdAt: {
-                        [Op.lte]: month_end,
-                        [Op.gte]: month_start
-                    }
+                    [Op.and]: [
+                        sequelize.where( sequelize.fn('date', sequelize.col('createdAt')), Op.lte, month_end.toJSON().substring(0, 10)),
+                        sequelize.where( sequelize.fn('date', sequelize.col('createdAt')), Op.lte, month_start.toJSON().substring(0, 10))
+                    ]
                 }
             });
             return numeral(total).format('0,0.00');
@@ -1720,11 +1753,7 @@ module.exports = {
             }
             data.monthName = monthName;
             var total = await models.Bill.sum('total' ,{
-                where: {
-                    createdAt: {
-                        [Op.gte]: dt
-                    }
-                }
+                where:  sequelize.where( sequelize.fn('date', sequelize.col('createdAt')), Op.gte, dt.toJSON().substring(0, 10))
             });
             
             data.total = total;

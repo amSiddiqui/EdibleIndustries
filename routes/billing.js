@@ -9,12 +9,30 @@ const fs = require('fs');
 router.get('/api/bills', middleware.auth.loggedIn(), function (req, res, next) {
   var today = new Date();
   var user_email = req.session.email;
+
+  let start_js = req.query.start;
+  let end_js = req.query.end;
+
+  if (!start_js || !end_js) {
+    const today_np = new NepaliDate(new Date());
+    const month_start_np = new NepaliDate(
+        today_np.getYear(),
+        today_np.getMonth(),
+        1
+    );
+    start_js = today_np.toJsDate();
+    end_js = month_start_np.toJsDate();
+  } else {
+    start_js = new Date(start_js);
+    end_js = new Date(end_js);
+  }
+
   var data = {
       data: [],
       'type': 'success',
       'message': ''
   };
-  utility.billing.fetchAll(user_email).then(bills => {
+  utility.billing.fetchAll(user_email, start_js, end_js).then(bills => {
       for (let i = 0; i < bills.length; i++) {
           const bill = bills[i];
           var total_sold = 0;
@@ -429,7 +447,7 @@ router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
     }
   ];
   var data = {
-    dependency: 'billing/billing.js',
+    dependencies: ["lib/nepali-date-converter.umd.js", 'billing/billing.js'],
     breadcrumbs
   };
   var flash_message = req.flash('flash_message');

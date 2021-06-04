@@ -7,9 +7,9 @@
   <title>Edible Industries</title>
   <link rel="stylesheet" href="/stylesheets/filepond.min.css">
   <link type="text/css" href="/stylesheets/filepond-plugin-image-preview.css" rel="stylesheet">
-  <link rel="stylesheet" href="/stylesheets/style.min.css">
+  <link rel="stylesheet" href="/stylesheets/style.css">
   <link rel="stylesheet" href="/stylesheets/select2.min.css">
-  <link rel="stylesheet" href="/stylesheets/nepaliDatePicker.min.css">
+  <link rel="stylesheet" href="/stylesheets/nepali.datepicker.min.css">
   <link rel="stylesheet" href="/stylesheets/bulma-tooltip.min.css">
   <link rel="stylesheet" href="/stylesheets/dataTables.bulma.min.css">
 
@@ -52,9 +52,11 @@
           <a href="/warehouse" class="navbar-item">
             Warehouse
           </a>
+          <% if (check_perm()) { %>
           <a href="/records" class="navbar-item">
             Reports
           </a>
+          <% } %>
         </div>
 
         <div class="navbar-end">
