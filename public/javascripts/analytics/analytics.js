@@ -5,13 +5,12 @@ const month_start_np = new NepaliDate(
     1
 );
 
-
 function initCashInflow(start_js, end_js) {
     // Get this month cash inflow
     $.ajax({
         type: "GET",
         url: "/api/analytics/inflow",
-        data: { start: start_js.toISOString(), end: end_js.toISOString()},
+        data: { start: start_js.toISOString(), end: end_js.toISOString() },
         success: function (res) {
             anime({
                 targets: "#cash-inflow-value",
@@ -29,10 +28,75 @@ function initCashInflow(start_js, end_js) {
     });
 }
 
+var cashInflowChart = null;
+
+function initCashInflowChart(res) {
+    const labels = [];
+    const data_points = [];
+    for(let i = res.data.length - 1; i >= 0; i--) {
+        let data_point = res.data[i];
+        labels.push(data_point.name);
+        data_points.push(data_point.value.total);
+    }
+    const data = {
+        labels: labels,
+        datasets: [{
+            label: 'Cash Inflow',
+            data: data_points,
+            fill: false,
+            borderColor: 'rgb(75, 192, 192)',
+            tension: 0.1
+        }]
+    };
+
+    // Chart js
+    var ctx = document.getElementById("cash-inflow-chart");
+    cashInflowChart = new Chart(ctx, {
+        type: 'line',
+        data: data,
+    });
+    
+}
 
 $(() => {
+    var cashInflowChartData = null;
+    
+    $.ajax({
+        type: "GET",
+        url: `/api/analytics/inflow/chart`,
+        success: function (res) {
+            if (res.status === 'success') {
+                cashInflowChartData = res;
+            } else {
+                warn("Charts cannot be show at the moment");
+            }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.log(jqXHR);
+            warn("Charts cannot be shown at the moment");
+        },
+    });
 
-    const formatted_date = month_start_np.format("MMMM", "np") + ", " + today_np.getYear();
+
+    function updateCashInflow() {
+        let end = $("#to_date_cash_inflow").val();
+        let start = $("#from_date_cash_inflow").val();
+        let start_np = new NepaliDate(start);
+        let start_js = start_np.toJsDate();
+        let end_np = new NepaliDate(end);
+        let end_js = end_np.toJsDate();
+
+        $("#cash-inflow-date").html(
+            start_np.format("DD MMMM, YYYY", "np") +
+            " &rarr; " +
+            end_np.format("DD MMMM, YYYY", "np")
+        );
+
+        initCashInflow(start_js, end_js);
+    }
+
+    const formatted_date =
+        month_start_np.format("MMMM", "np") + ", " + today_np.getYear();
     $("#cash-inflow-date").html(formatted_date);
     let start_js = month_start_np.toJsDate();
     let end_js = today_np.toJsDate();
@@ -43,40 +107,29 @@ $(() => {
     $("#from_date_cash_inflow").nepaliDatePicker({
         dateFormat: "DD/MM/YYYY",
         disableAfter: today_np.format("YYYY-MM-DD"),
-        onChange: function() {
-            let end = $("#to_date_cash_inflow").val();
-            let start = $("#from_date_cash_inflow").val();
-            let start_np = new NepaliDate(start);
-            let start_js = start_np.toJsDate();
-            let end_np = new NepaliDate(end);
-            let end_js = end_np.toJsDate();
-
-            $("#cash-inflow-date").html(start_np.format("DD MMMM, YYYY", "np")+" &rarr; "+ end_np.format("DD MMMM, YYYY", "np"));
-
-            initCashInflow(start_js, end_js);
-        }
+        onChange: updateCashInflow,
     });
 
     $("#from_date_cash_inflow").val(month_start_np.format("DD/MM/YYYY"));
 
+    $("#from_date_cash_inflow + .clear-button").off("click");
+    $("#from_date_cash_inflow + .clear-button").on("click", function () {
+        $("#from_date_cash_inflow").val(month_start_np.format("DD/MM/YYYY"));
+        updateCashInflow();
+    });
+
     $("#to_date_cash_inflow").nepaliDatePicker({
         dateFormat: "DD/MM/YYYY",
         disableAfter: today_np.format("YYYY-MM-DD"),
-        onChange: function() {
-            let end = $("#to_date_cash_inflow").val();
-            let start = $("#from_date_cash_inflow").val();
-            let start_np = new NepaliDate(start);
-            let start_js = start_np.toJsDate();
-            let end_np = new NepaliDate(end);
-            let end_js = end_np.toJsDate();
-
-            $("#cash-inflow-date").html(start_np.format("DD MMMM, YYYY", "np")+" &rarr; "+ end_np.format("DD MMMM, YYYY", "np"));
-
-            initCashInflow(start_js, end_js);
-        }
+        onChange: updateCashInflow,
     });
 
     $("#to_date_cash_inflow").val(today_np.format("DD/MM/YYYY"));
+    $("#to_date_cash_inflow + .clear-button").off("click");
+    $("#to_date_cash_inflow + .clear-button").on("click", function () {
+        $("#to_date_cash_inflow").val(today_np.format("DD/MM/YYYY"));
+        updateCashInflow();
+    });
 
     const card_1_click = function () {
         anime({
@@ -88,7 +141,7 @@ $(() => {
         anime({
             targets: "#analytics-card-4 .box",
             opacity: 0,
-            duration: 100,
+            duration: 200,
         });
 
         anime({
@@ -105,6 +158,7 @@ $(() => {
             duration: 300,
             easing: "easeInOutQuad",
         }).finished.then(() => {
+
             $("#analytics-card-1 .card-close-button")
                 .show()
                 .css("display", "inline-flex");
@@ -133,6 +187,8 @@ $(() => {
             });
 
             $("#card-date-select-region").show();
+
+            initCashInflowChart(cashInflowChartData);
         });
     };
 
@@ -153,6 +209,12 @@ $(() => {
             duration: 300,
             easing: "easeInOutQuad",
         }).finished.then(() => {
+
+            if (cashInflowChart !== null) {
+                cashInflowChart.destroy();
+                cashInflowChart = null;
+            }
+
             $("#analytics-card-1 .card-close-button").hide();
             $("#analytics-card-1").on("click", card_1_click);
             $("#analytics-card-1 #cash-flow-small").css({
@@ -184,4 +246,5 @@ $(() => {
             easing: "easeInOutQuad",
         }).finished.then(() => { });
     });
+
 });

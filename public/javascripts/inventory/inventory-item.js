@@ -119,15 +119,7 @@ $(function () {
         window.location.hash = "bills";
     });
 
-    $('#from_date_billing').nepaliDatePicker({
-        dateFormat: '%d/%m/%y',
-        closeOnDateSelect: true,
-    });
 
-    $('#to_date_billing').nepaliDatePicker({
-        dateFormat: '%d/%m/%y',
-        closeOnDateSelect: true,
-    });
 
     $.fn.dataTable.ext.search.push(
         function(settings, data, dataIndex) {
@@ -202,9 +194,17 @@ $(function () {
         }
     });
 
-    $("#from_date_billing, #to_date_billing").on('change', function() {
-        billingTable.draw();
+    
+    $('#from_date_billing').nepaliDatePicker({
+        dateFormat: 'DD/MM/YYYY',
+        onChange: () => {billingTable.draw();}
     });
+
+    $('#to_date_billing').nepaliDatePicker({
+        dateFormat: 'DD/MM/YYYY',
+        onChange: () => {billingTable.draw();}
+    });
+
 
     $('#billing-table thead tr').clone(true).appendTo( '#billing-table thead' );
     $('#billing-table thead tr:eq(1) th').each( function (i) {
@@ -337,13 +337,11 @@ $(function () {
 
 
     $('input#record_date').nepaliDatePicker({
-        dateFormat: '%d/%m/%y',
-        closeOnDateSelect: true
+        dateFormat: 'DD/MM/YYYY',
     });
 
     $('input#edit_record_date').nepaliDatePicker({
-        dateFormat: '%d/%m/%y',
-        closeOnDateSelect: true
+        dateFormat: 'DD/MM/YYYY',
     });
 
     $("#type").on('change', function() {
@@ -368,13 +366,11 @@ $(function () {
 
     // Reports Script
     $("#report-date-from").nepaliDatePicker({
-        dateFormat: '%d/%m/%y',
-        closeOnDateSelect: true
+        dateFormat: 'DD/MM/YYYY',
     });
 
     $("#report-date-to").nepaliDatePicker({
-        dateFormat: '%d/%m/%y',
-        closeOnDateSelect: true
+        dateFormat: 'DD/MM/YYYY',
     });
 
     fetchAndUpdateReport();

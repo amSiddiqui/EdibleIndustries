@@ -8,7 +8,7 @@ const helpers = require('../modules/helpers');
 const utility = require('../modules/utility');
 const NepaliDate = require('nepali-date-converter');
 const numeral = require('numeral');
-
+const _ = require('lodash');
 
 router.get('/image', middleware.auth.loggedIn(), function (req, res, next) {
     var load = req.query.load;
@@ -480,6 +480,50 @@ router.get('/stats/customer/balance/:id', middleware.auth.loggedIn(), function (
     })
 });
 
+
+router.get('/analytics/inflow/chart', middleware.auth.loggedIn(), function (req, res, next) {
+    let today_np = new NepaliDate(new Date());
+    let np = today_np;
+    let promises = [];
+    let dates = [];
+    for (let i = 0; i < 12; i++) {
+        let current_month = np.getMonth();
+        // This month last date
+        let next_month_start = new NepaliDate(np.getYear(), np.getMonth() + 1, 1).toJsDate();
+        if (current_month === 11) {
+            next_month_start = new NepaliDate(np.getYear()+1, 0, 1).toJsDate();
+        }
+        next_month_start.setDate(next_month_start.getDate() - 1);
+        let np_last_date = new NepaliDate(next_month_start);
+
+        // This month first date
+        let np_first_date = new NepaliDate(np.getYear(), np.getMonth(), 1);
+
+        dates.push({id: i, name: np.format("MMMM", "np")});
+
+        // Set current np as 1 Year back
+        promises.push(utility.analytics.fetchCashInflow(np_first_date.toJsDate(), np_last_date.toJsDate()).then(val => {
+            return {id: i, value: val};
+        }));
+
+        let new_np = new NepaliDate(np.getYear(), np.getMonth() - 1, np.getDate());
+        if (np.getMonth() === 0) {
+            new_np = new NepaliDate(np.getYear() - 1, 11, np.getDate());
+        }
+        np = new_np;
+    }
+    Promise.all(promises).then(values => {
+        _.sortedIndexBy(values, (obj) => obj.id);
+        for (let i = 0; i < values.length; i++) {
+            values[i]['name'] = dates[i]['name'];
+        }
+        res.json({status: "success", data: values});
+    }).catch(err => {
+        console.log(err);
+        res.json({status: "failed"});
+    });
+});
+
 router.get('/analytics/inflow', middleware.auth.loggedIn(), function(req, res, next) {
     if (!req.query.start || !req.query.end) {
         res.status(403).json({status: "error", message: "Please provide start and end date"});
@@ -496,6 +540,8 @@ router.get('/analytics/inflow', middleware.auth.loggedIn(), function(req, res, n
         res.status(500).json({status: "error", message: "Something went wrong, try again later", err: err});
     });
 });
+
+
 
 
 module.exports = router;

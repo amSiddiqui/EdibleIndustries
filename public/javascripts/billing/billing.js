@@ -1,9 +1,17 @@
+
 const today_np = new NepaliDate(new Date());
-const month_start_np = new NepaliDate(
+var month_start_np = new NepaliDate(
     today_np.getYear(),
-    today_np.getMonth(),
-    1
+    today_np.getMonth() - 1,
+    today_np.getDate()
 );
+if (today_np.getMonth() === 0) {
+    month_start_np = new NepaliDate(
+        today_np.getYear() - 1,
+        11,
+        today_np.getDate()
+    );
+}
 
 
 $(() => {
@@ -34,18 +42,8 @@ $(() => {
                     .search( this.value )
                     .draw();
             }
-        } );
+        });
     } );
-
-    $('#from_date').nepaliDatePicker({
-        dateFormat: 'DD/MM/YYYY',
-        disableAfter: today_np.format("YYYY-MM-DD")
-    });
-
-    $('#to_date').nepaliDatePicker({
-        dateFormat: 'DD/MM/YYYY',
-        disableAfter: today_np.format("YYYY-MM-DD")
-    });
 
     $.fn.dataTable.ext.search.push(
         function(settings, data, dataIndex) {
@@ -68,7 +66,7 @@ $(() => {
 
     var billingTable = $("#billing-table").DataTable({
         "ajax": {
-            "url": "/billing/api/bills",
+            "url": `/billing/api/bills?start=${month_start_np.toJsDate().toISOString()}&end=${today_np.toJsDate().toISOString()}`,
             'dataSrc': 'data'
         },
         "processing": true,
@@ -152,19 +150,53 @@ $(() => {
         }
     });
 
-    $("#from_date, #to_date").on('change', function() {
-        billingTable.draw();
+    function updateDataTable() {
+        let start_js = new NepaliDate($("#from_date").val()).toJsDate();
+        let end_js = new NepaliDate($("#to_date").val()).toJsDate();
+        billingTable.ajax.url(`/billing/api/bills?start=${start_js.toISOString()}&end=${end_js.toISOString()}`).load();
+    }
+
+
+    if ($("#return_date").length)
+        $('#return_date').nepaliDatePicker({
+            dateFormat: 'DD/MM/YYYY',
+        });
+
+    if ($("#pay_date").length)
+        $('#pay_date').nepaliDatePicker({
+            dateFormat: 'DD/MM/YYYY',
+        });
+
+
+    
+    $('#from_date').nepaliDatePicker({
+        dateFormat: 'DD/MM/YYYY',
+        disableAfter: today_np.format("YYYY-MM-DD"),
+        onChange: updateDataTable
     });
 
-    $('#return_date').nepaliDatePicker({
-        dateFormat: '%d/%m/%y',
-        closeOnDateSelect: true,
+    $("#from_date").val( month_start_np.format("DD/MM/YYYY"));
+    
+    $("#from_date + .clear-button").off("click");
+    $("#from_date + .clear-button").on("click", function() {
+        $("#from_date").val( month_start_np.format("DD/MM/YYYY"));
+        updateDataTable();
     });
 
-    $('#pay_date').nepaliDatePicker({
-        dateFormat: '%d/%m/%y',
-        closeOnDateSelect: true,
+    $('#to_date').nepaliDatePicker({
+        dateFormat: 'DD/MM/YYYY',
+        disableAfter: today_np.format("YYYY-MM-DD"),
+        onChange: updateDataTable
     });
+
+    $("#to_date").val( today_np.format("DD/MM/YYYY") );
+
+    $("#to_date + .clear-button").off("click");
+    $("#to_date + .clear-button").on("click", function() {
+        $("#to_date").val( today_np.format("DD/MM/YYYY"));
+        updateDataTable();
+    });
+
 });
 
 function returnItem(obj) {

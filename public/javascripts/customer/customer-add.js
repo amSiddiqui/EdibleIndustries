@@ -238,7 +238,6 @@ $(function () {
     });
 
     $('#date-added').nepaliDatePicker({
-        dateFormat: '%d/%m/%y',
-        closeOnDateSelect: true,
+        dateFormat: 'DD/MM/YYYY',
     });
 });

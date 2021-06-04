@@ -11,6 +11,7 @@ router.get("/", middleware.auth.loggedIn(), function (req, res, next) {
     dependencies: [
       "lib/anime.min.js",
       "lib/nepali-date-converter.umd.js",
+      "lib/chart.min.js",
       "analytics/analytics.js",
     ],
   };

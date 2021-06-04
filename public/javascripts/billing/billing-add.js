@@ -453,46 +453,44 @@ $(function () {
     });
 
     $('#due_date').nepaliDatePicker({
-        dateFormat: '%d/%m/%y',
-        closeOnDateSelect: true,
+        dateFormat: 'DD/MM/YYYY',
     });
 
     $('input#bill_date').nepaliDatePicker({
-        dateFormat: '%d/%m/%y',
-        closeOnDateSelect: true,
-    });
-
-    $("#bill_date").on('change', function() {
-        var bill_date = $(this).val();
-        $("#inventory-table-body").empty();
-        updateTotal();
-
-        $.get('/api/inventories?date='+bill_date+'&warehouse='+warehouse, function (data) {
-            inventories = data.inventories;
-            $(".list-group").empty();
-            inventories.forEach(function(inv) {
-                var list_group_item = $(`
-                <a href="#" data-value="${inv.id}"
-                                class="panel-block list-group-item">${inv.name} (In Stock: ${inv.in_stock})</a>
-                `);
-                $(".list-group").append(list_group_item); 
-            });
-            $(".list-group-item").on('click', list_group_item_event);
-
-        }).fail(function (err) {
-            console.log(err);
-            window.location.href = '/billing';
-        });
-        $.post('/api/bill-no', {bill_date: bill_date}, function(data) {
-            if (data.status == 'success') {
-                $("#track_id").val(data.bill_no);
-            }else{
-                console.log("Bill number update error");
-                console.log(data);
+        dateFormat: 'DD/MM/YYYY',
+        onChange: function() {
+            var bill_date = $('input#bill_date').val();
+            $("#inventory-table-body").empty();
+            updateTotal();
+    
+            $.get('/api/inventories?date='+bill_date+'&warehouse='+warehouse, function (data) {
+                inventories = data.inventories;
+                $(".list-group").empty();
+                inventories.forEach(function(inv) {
+                    var list_group_item = $(`
+                    <a href="#" data-value="${inv.id}"
+                                    class="panel-block list-group-item">${inv.name} (In Stock: ${inv.in_stock})</a>
+                    `);
+                    $(".list-group").append(list_group_item); 
+                });
+                $(".list-group-item").on('click', list_group_item_event);
+    
+            }).fail(function (err) {
+                console.log(err);
                 window.location.href = '/billing';
-            }
-        });
+            });
+            $.post('/api/bill-no', {bill_date: bill_date}, function(data) {
+                if (data.status == 'success') {
+                    $("#track_id").val(data.bill_no);
+                }else{
+                    console.log("Bill number update error");
+                    console.log(data);
+                    window.location.href = '/billing';
+                }
+            });
+        }
     });
+
 
     $("#warehouse").on('change', function() {
         console.log("Warehouse changed");

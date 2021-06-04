@@ -145,20 +145,23 @@ $(function() {
         }
     );
     
-    $('#from_date_billing').nepaliDatePicker({
-        dateFormat: '%d/%m/%y',
-        closeOnDateSelect: true,
-    });
+    if ($("#from_date_billing").length)
+        $('#from_date_billing').nepaliDatePicker({
+            dateFormat: 'DD/MM/YYYY',
+            closeOnDateSelect: true,
+        });
 
-    $('#to_date_billing').nepaliDatePicker({
-        dateFormat: '%d/%m/%y',
-        closeOnDateSelect: true,
-    });
+    if ($("#to_date_billing").length)
+        $('#to_date_billing').nepaliDatePicker({
+            dateFormat: 'DD/MM/YYYY',
+            closeOnDateSelect: true,
+        });
 
-    $('#record_date').nepaliDatePicker({
-        dateFormat: '%d/%m/%y',
-        closeOnDateSelect: true,
-    });
+    if ($("#record_date").length)
+        $('#record_date').nepaliDatePicker({
+            dateFormat: 'DD/MM/YYYY',
+            closeOnDateSelect: true,
+        });
     
     var ledger_table =  $("#ledger-table").DataTable({        
         "order": [[0, 'desc']],
