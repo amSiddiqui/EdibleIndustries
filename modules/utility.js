@@ -3,6 +3,8 @@ const NepaliDate = require('nepali-date-converter');
 const fs = require('fs');
 var _ = require('lodash');
 var numeral = require('numeral');
+const NodeCache = require( "node-cache" );
+const utilityCache = new NodeCache({useClones: false, ttl: 172800});
 
 const {
     Op
@@ -1159,6 +1161,11 @@ module.exports = {
             return bill_no;
         },
         createFull: async (customer_id, data, transactions, userEmail, w_id=-1) => {
+
+            if (utilityCache.has('stats')) {
+                utilityCache.del('stats');
+            }
+
             var _startTime = new Date();
             var warehouse = await models.Warehouse.findByPk(w_id);
             if (warehouse === null) {
@@ -1276,6 +1283,10 @@ module.exports = {
             return bill.id;
         },
         edit_bill: async (id, data, body) => {
+            if (utilityCache.has('stats')) {
+                utilityCache.del('stats');
+            }
+
             var _startTime = new Date();
             var bill = await models.Bill.findByPk(id);
             var customer = await models.Customer.findByPk(data.customer);
@@ -1380,6 +1391,11 @@ module.exports = {
             return rented;
         },
         addReturn: async (tr_id, inv_id, q, bill_id, user_email, date) => {
+            if (utilityCache.has('stats')) {
+                utilityCache.del('stats');
+            }
+
+
             var _startTime = new Date();
             q = toNumber(q);
             const inv = await models.Inventory.findByPk(inv_id);
@@ -1413,6 +1429,9 @@ module.exports = {
             logTime(_startTime, 'billing.addReturn()');
         },
         pay: async (id, bd) => {
+            if (utilityCache.has('stats')) {
+                utilityCache.del('stats');
+            }
             const bill = await models.Bill.findByPk(id);
             const customer = await bill.getCustomer();
             const entry = await models.CustomerLedger.create({
@@ -1429,6 +1448,10 @@ module.exports = {
             await bill.save();
         },
         deleteBill: async (id) => {
+            if (utilityCache.has('stats')) {
+                utilityCache.del('stats');
+            }
+
             const bill = await models.Bill.findByPk(id, {
                 include: [{
                         model: models.BillTransaction,
@@ -1730,6 +1753,11 @@ module.exports = {
         },
         insertInventoryRecord: insertInventoryRecord,
         getStats: async () => {
+
+            if (utilityCache.has('stats')) {
+                return utilityCache.get('stats');
+            }
+
             var __startTime = new Date();
             // Data to be output
             // Current month name
@@ -1841,6 +1869,8 @@ module.exports = {
             data.unpaid = unpaid;
             
             logTime(__startTime, 'misc.getStats()');
+
+            utilityCache.set('stats', data);
             return data;
         },
         fixUserType: async () => {
