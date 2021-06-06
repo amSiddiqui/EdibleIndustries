@@ -29,6 +29,10 @@ function getMethods(obj) {
     return result;
 }
 
+function getSqlDate(d) {
+    return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+}
+
 function getFormattedTime(ms) {
     if (ms < 1000) {
         return ms+'ms';
@@ -105,7 +109,7 @@ async function calculateTotalInventory(inv_id, end_date, warehouse_id=1) {
     var records = await inventory.getInventory_records({
         where: {
             [Op.and]: [
-                sequelize.where( sequelize.fn('date', sequelize.col('record_date')), Op.lte, end_date.toJSON().substring(0, 10)),
+                sequelize.where( sequelize.fn('date', sequelize.col('record_date')), Op.lte, getSqlDate(end_date)),
                 {warehouse_id: warehouse_id}
             ]
         },
@@ -946,8 +950,8 @@ module.exports = {
             var bills = await customer.getBills({
                 where: {
                     [Op.and]: [
-                        sequelize.where( sequelize.fn('date', sequelize.col('createdAt')), Op.lte, month_start.toJSON().substring(0, 10)),
-                        sequelize.where( sequelize.fn('date', sequelize.col('createdAt')), Op.gte, month_end.toJSON().substring(0, 10)),
+                        sequelize.where( sequelize.fn('date', sequelize.col('createdAt')), Op.lte, getSqlDate(month_start)),
+                        sequelize.where( sequelize.fn('date', sequelize.col('createdAt')), Op.gte, getSqlDate(month_end)),
                     ]
                 }
             });
@@ -992,8 +996,8 @@ module.exports = {
                 bills = await models.Bill.findAll({
                     where: {
                         [Op.and]: [
-                            sequelize.where(sequelize.fn('date', sequelize.col('bill.createdAt')), Op.lte, end.toJSON().substring(0, 10)),
-                            sequelize.where(sequelize.fn('date', sequelize.col('bill.createdAt')), Op.gte, start.toJSON().substring(0, 10)),
+                            sequelize.where(sequelize.fn('date', sequelize.col('bill.createdAt')), Op.lte, getSqlDate(end)),
+                            sequelize.where(sequelize.fn('date', sequelize.col('bill.createdAt')), Op.gte, getSqlDate(start)),
                         ]
                     },
                     include: [
@@ -1020,8 +1024,8 @@ module.exports = {
                 bills = await models.Bill.findAll({
                     where: {
                         [Op.and]: [
-                            sequelize.where(sequelize.fn('date', sequelize.col('bill.createdAt')), Op.lte, end.toJSON().substring(0, 10)),
-                            sequelize.where(sequelize.fn('date', sequelize.col('bill.createdAt')), Op.gte, start.toJSON().substring(0, 10)),
+                            sequelize.where(sequelize.fn('date', sequelize.col('bill.createdAt')), Op.lte, getSqlDate(end)),
+                            sequelize.where(sequelize.fn('date', sequelize.col('bill.createdAt')), Op.gte, getSqlDate(start)),
                         ]
                     },
                     include: [
@@ -1648,8 +1652,8 @@ module.exports = {
                 attribute: ['debit'],
                 where: {
                     [Op.and]: [
-                        sequelize.where(sequelize.fn('date', sequelize.col('date')), Op.lte, end.toJSON().substring(0, 10)),
-                        sequelize.where(sequelize.fn('date', sequelize.col('date')), Op.gte, start.toJSON().substring(0, 10)),
+                        sequelize.where(sequelize.fn('date', sequelize.col('date')), Op.lte, getSqlDate(end)),
+                        sequelize.where(sequelize.fn('date', sequelize.col('date')), Op.gte, getSqlDate(start)),
                     ]
                 }
             });
@@ -1706,8 +1710,8 @@ module.exports = {
             var total = await models.Bill.sum('total' ,{
                 where: {
                     [Op.and]: [
-                        sequelize.where( sequelize.fn('date', sequelize.col('createdAt')), Op.lte, month_end.toJSON().substring(0, 10)),
-                        sequelize.where( sequelize.fn('date', sequelize.col('createdAt')), Op.lte, month_start.toJSON().substring(0, 10))
+                        sequelize.where( sequelize.fn('date', sequelize.col('createdAt')), Op.lte, getSqlDate(month_end)),
+                        sequelize.where( sequelize.fn('date', sequelize.col('createdAt')), Op.lte, getSqlDate(month_start))
                     ]
                 }
             });
@@ -1781,7 +1785,7 @@ module.exports = {
             }
             data.monthName = monthName;
             var total = await models.Bill.sum('total' ,{
-                where:  sequelize.where( sequelize.fn('date', sequelize.col('createdAt')), Op.gte, dt.toJSON().substring(0, 10))
+                where:  sequelize.where( sequelize.fn('date', sequelize.col('createdAt')), Op.gte, getSqlDate(dt))
             });
             
             data.total = total;

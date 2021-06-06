@@ -39,7 +39,7 @@ router.delete('/batch/:id', middleware.auth.loggedIn(), function (req, res, next
     res.redirect('/inventory/'+id);
   }).catch(err => {
     console.log(err);
-    req.flash('flash_message', 'Error deleting batch, try agina later');
+    req.flash('flash_message', 'Error deleting batch, try again later');
     req.flash('flash_color', 'danger');
     res.redirect('/inventory/'+id);
   });
@@ -59,7 +59,7 @@ router.put('/batch/:id', middleware.auth.loggedIn(), function (req, res, next) {
     res.redirect('/inventory/'+id);
   }).catch(err => {
     console.log(err);
-    req.flash('flash_message', 'Error editing batch, try agina later');
+    req.flash('flash_message', 'Error editing batch, try again later');
     req.flash('flash_color', 'danger');
     res.redirect('/inventory/'+id);
   });
@@ -79,7 +79,7 @@ router.delete('/record/:id', middleware.auth.loggedIn(), function (req, res, nex
     res.redirect('/inventory/'+id);
   }).catch(err => {
     console.log(err);
-    req.flash('flash_message', 'Error deleting record, try agina later');
+    req.flash('flash_message', 'Error deleting record, try again later');
     req.flash('flash_color', 'danger');
     res.redirect('/inventory/'+id);
   });
@@ -156,9 +156,26 @@ router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
     res.render('inventory/edit', data);
   }).catch(err => {
     console.log(err);
-    req.flash('flash_message', 'Error editing inventory, try agina later');
+    req.flash('flash_message', 'Error editing inventory, try again later');
     req.flash('flash_color', 'danger');
     res.redirect('/inventory');
+  });
+});
+
+router.get('/api/:id/bills', middleware.auth.loggedIn(), function (req, res, next) {
+  let id = parseInt(req.params.id);
+  var user_email = req.session.email;
+  var w_id = req.query.warehouse;
+  if (w_id === undefined) {
+    w_id = -1;
+  } else {
+    w_id = parseInt(w_id);
+    w_id = isNaN(w_id) ? -1 : w_id;
+  }
+  utility.inventory.fetchBills(id, user_email, w_id).then(() => {
+
+  }).catch(err => {
+
   });
 });
 
@@ -290,7 +307,7 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   }).
   catch(err => {
     console.log(err);
-    req.flash('flash_message', 'Error opening inventory, try agina later');
+    req.flash('flash_message', 'Error opening inventory, try again later');
     req.flash('flash_color', 'danger');
     res.redirect('/inventory');
   });

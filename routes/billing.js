@@ -112,7 +112,7 @@ router.get('/add', middleware.auth.loggedIn(), function (req, res, next) {
   }
   ];
   var data = {
-    dependency: 'billing/billing-add.js',
+    dependencies: ["lib/nepali-date-converter.umd.js", 'billing/billing-add.js'],
     breadcrumbs
   };
   var flash_message = req.flash('flash_message');
@@ -177,7 +177,7 @@ router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
   }
   ];
   var data = {
-    dependency: 'billing/billing-edit.js',
+    dependencies: ["lib/nepali-date-converter.umd.js", 'billing/billing-edit.js'],
     breadcrumbs
   };
   var flash_message = req.flash('flash_message');
@@ -298,7 +298,7 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   }
   ];
   var data = {
-    dependency: 'billing/billing.js',
+    dependencies: ["lib/nepali-date-converter.umd.js", 'billing/billing.js'],
     breadcrumbs
   };
   var flash_message = req.flash('flash_message');

@@ -142,8 +142,6 @@ $(function () {
     );
 
     
-
-    
     var billingTable = $("#billing-table").DataTable({
         "columnDefs": [{
             "width": "3%",
