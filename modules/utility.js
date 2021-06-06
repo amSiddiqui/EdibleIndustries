@@ -30,7 +30,9 @@ function getMethods(obj) {
 }
 
 function getSqlDate(d) {
-    return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+    let formatted = new Intl.DateTimeFormat('en-GB', {timeZone: process.env.TZ, month: '2-digit', day: "2-digit", year: "numeric"}).format(d);
+    let parts = formatted.split("/");
+    return parts[2] + "-" + parts[1] + "-" + parts[0];
 }
 
 function getFormattedTime(ms) {
@@ -982,6 +984,7 @@ module.exports = {
     },
     billing: {
         fetchAll: async (user_email, start, end) => {
+            
             var _startTime = new Date();
             if (typeof user_email === 'undefined') {
                 console.log("User email not provided");
@@ -1557,7 +1560,6 @@ module.exports = {
                     }
                 });
             } else {
-                console.log("Checking with id too");
                 res = await models.Warehouse.findOne({
                     where: {
                         name,

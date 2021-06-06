@@ -13,6 +13,7 @@ router.get('/api/bills', middleware.auth.loggedIn(), function (req, res, next) {
   let start_js = req.query.start;
   let end_js = req.query.end;
 
+
   if (!start_js || !end_js) {
 
     const today_np = new NepaliDate(new Date());
@@ -36,7 +37,6 @@ router.get('/api/bills', middleware.auth.loggedIn(), function (req, res, next) {
   }
   start_js = new Date(start_js);
   end_js = new Date(end_js);
-
   var data = {
     data: [],
     'type': 'success',
