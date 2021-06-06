@@ -192,12 +192,13 @@ $(function () {
         }
     });
 
-    
+    if ($("#from_date_billing").length)
     $('#from_date_billing').nepaliDatePicker({
         dateFormat: 'DD/MM/YYYY',
         onChange: () => {billingTable.draw();}
     });
 
+    if ($("#to_date_billing").length)
     $('#to_date_billing').nepaliDatePicker({
         dateFormat: 'DD/MM/YYYY',
         onChange: () => {billingTable.draw();}
@@ -333,11 +334,12 @@ $(function () {
         $("#total-quant").val(total);
     });
 
-
+    if($("input#record_date").length)
     $('input#record_date').nepaliDatePicker({
         dateFormat: 'DD/MM/YYYY',
     });
 
+    if($("input#edit_record_date").length)
     $('input#edit_record_date').nepaliDatePicker({
         dateFormat: 'DD/MM/YYYY',
     });
@@ -363,10 +365,12 @@ $(function () {
     });
 
     // Reports Script
+    if($("#report-date-from").length)
     $("#report-date-from").nepaliDatePicker({
         dateFormat: 'DD/MM/YYYY',
     });
 
+    if($("#report-date-to").length)
     $("#report-date-to").nepaliDatePicker({
         dateFormat: 'DD/MM/YYYY',
     });

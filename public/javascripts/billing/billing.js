@@ -168,7 +168,7 @@ $(() => {
         });
 
 
-    
+    if ($("#from_date").length)
     $('#from_date').nepaliDatePicker({
         dateFormat: 'DD/MM/YYYY',
         disableAfter: today_np.format("YYYY-MM-DD"),
@@ -183,6 +183,7 @@ $(() => {
         updateDataTable();
     });
 
+    if ($("#to_date").length)
     $('#to_date').nepaliDatePicker({
         dateFormat: 'DD/MM/YYYY',
         disableAfter: today_np.format("YYYY-MM-DD"),

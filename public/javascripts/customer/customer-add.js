@@ -237,6 +237,7 @@ $(function () {
         $(this).siblings('.help').hide();
     });
 
+    if ($("#date-added").length)
     $('#date-added').nepaliDatePicker({
         dateFormat: 'DD/MM/YYYY',
     });

@@ -104,6 +104,7 @@ $(() => {
 
     $("#test-neapli-date-picker").val(today_np.format("DD/MM/YYYY"));
 
+    if ($("#from_date_cash_inflow").length)
     $("#from_date_cash_inflow").nepaliDatePicker({
         dateFormat: "DD/MM/YYYY",
         disableAfter: today_np.format("YYYY-MM-DD"),
@@ -118,6 +119,7 @@ $(() => {
         updateCashInflow();
     });
 
+    if ($("#to_date_cash_inflow").length)
     $("#to_date_cash_inflow").nepaliDatePicker({
         dateFormat: "DD/MM/YYYY",
         disableAfter: today_np.format("YYYY-MM-DD"),

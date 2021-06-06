@@ -382,10 +382,12 @@ $(function () {
         }
     });
 
+    if ($("#due_date").length)
     $('#due_date').nepaliDatePicker({
         dateFormat: "DD/MM/YYYY",
     });
 
+    if ($("#bill_date").length)
     $('#bill_date').nepaliDatePicker({
         dateFormat: "DD/MM/YYYY",
         onChange: function() {
