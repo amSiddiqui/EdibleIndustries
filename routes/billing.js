@@ -55,19 +55,11 @@ router.get('/api/bills', middleware.auth.loggedIn(), function (req, res, next) {
       bills[i].total_sold = total_sold;
 
       bills[i].nepali_date = new NepaliDate(bill.createdAt).format("DD/MM/YYYY");
-      if (!bill.paid && bill.dueDate != null) {
-        bills[i].nepali_due = new NepaliDate(bill.dueDate).format("DD/MM/YYYY");
-
-        if (bill.dueDate < today) {
-          bills[i].danger = true;
-        } else {
-          bills[i].danger = false;
-        }
-      }
+      
       bill_data = {};
       bill_data['track_id'] = bills[i].track_id;
       bill_data['date'] = bills[i].nepali_date;
-      if (bill.customer.organization.length == 0) {
+      if (bill.customer.organization.length === 0) {
         bill_data['name'] = bill.customer.first_name + ' ' + bill.customer.last_name;
       } else {
         bill_data['name'] = bill.customer.organization;

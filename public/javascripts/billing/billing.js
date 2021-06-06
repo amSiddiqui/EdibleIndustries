@@ -45,25 +45,6 @@ $(() => {
         });
     } );
 
-    $.fn.dataTable.ext.search.push(
-        function(settings, data, dataIndex) {
-            var min_date = $("#from_date").val();
-            if (!validDate(min_date)) {
-                min_date = "0/0/0";
-            }
-            var max_date = $("#to_date").val();
-            if (!validDate(max_date)){
-                max_date = "99/99/9999";
-            }
-            var date = data[1];
-            min_date = convertNepaliToEnglish(min_date);
-            max_date = convertNepaliToEnglish(max_date);
-            date = convertNepaliToEnglish(date);
-            return dateInRange(date, min_date, max_date);
-        }
-    );
-
-
     var billingTable = $("#billing-table").DataTable({
         "ajax": {
             "url": `/billing/api/bills?start=${month_start_np.toJsDate().toISOString()}&end=${today_np.toJsDate().toISOString()}`,
