@@ -13,6 +13,8 @@ const {
     sequelize
 } = require('./database');
 const e = require('express');
+const log_file = 'logs/utility_time.log';
+
 
 
 function getMethods(obj) {
@@ -58,8 +60,6 @@ function logTime(__startTime, msg) {
 function getFormattedDate(d) {
     return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
 }
-const log_file = 'logs/utility_time.log';
-
 
 function toNumberFloat(num) {
     if (typeof num == 'number') return num;
@@ -1913,6 +1913,37 @@ module.exports = {
                 }
             }
             console.log("Customer ledger utility complete");
+        },
+        recalibrateBillNo: async function() {
+            const bills = await models.Bill.findAll({
+                order: [
+                    ['createdAt', 'ASC'],
+                    ['id', 'ASC']
+                ]
+            });
+            let counter = 1;
+            var last_bill_no = ""
+            for (let i = 0; i < bills.length; i++) {
+                var np = new NepaliDate(bills[i].createdAt);
+                var month = np.getMonth();
+                var year = np.getYear();
+                var bill_no = "";
+                
+                if (month <= 2) {
+                    bill_no = (year-1)+"/"+(year%100)+"/";
+                } else {
+                    bill_no = (year)+"/"+((year+1)%100)+"/";
+                }
+                if (last_bill_no != "") {
+                    if (last_bill_no !== bill_no) {
+                        counter = 1;
+                    }
+                }
+                last_bill_no = bill_no;
+                bill_no = bill_no+(counter++ + '').padStart(5, 0);
+                bills[i].track_id = bill_no;
+                bills[i].save();
+            }
         },
         checkPermission: (req, res, message="User does not have permission to access the page") => {
             if (req.session.user_type === 'Admin') {

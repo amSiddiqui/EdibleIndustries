@@ -83,6 +83,13 @@ const db = require('./modules/database');
 db.sequelize.authenticate()
   .then(() => {
     console.log("Connected to database successfully");
+    // Recalibrating Bill nos
+    utility.misc.recalibrateBillNo().then(() => {
+      console.log("Recalibration complete");
+    }).catch(err => {
+      console.error("Failed Recalibration");
+      console.error(err);
+    });
   })
   .catch(err => {
     console.error("An error occurred while connecting ", err);
