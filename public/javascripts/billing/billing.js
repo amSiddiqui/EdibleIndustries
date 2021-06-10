@@ -2,16 +2,9 @@
 const today_np = new NepaliDate(new Date());
 var month_start_np = new NepaliDate(
     today_np.getYear(),
-    today_np.getMonth() - 1,
-    today_np.getDate()
+    today_np.getMonth(),
+    1
 );
-if (today_np.getMonth() === 0) {
-    month_start_np = new NepaliDate(
-        today_np.getYear() - 1,
-        11,
-        today_np.getDate()
-    );
-}
 
 
 $(() => {

@@ -30,7 +30,7 @@
                 <div class="dropdown-menu" id="dropdown-menu" role="menu">
                     <div class="dropdown-content">
                         <% for (let i = 0; i < warehouses.length; i++){ let warehouse = warehouses[i];%>
-                            <a href="#" onclick="changeWarehouse('<%=warehouse.id%>');" class="dropdown-item">
+                            <a href="#" data-id="<%= warehouse.id %>" class="warehouse-select dropdown-item">
                                 <%= warehouse.name %>
                             </a>
                         <% } %>

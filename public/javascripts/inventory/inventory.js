@@ -6,6 +6,12 @@ function changeWarehouse(id) {
 
 
 $(() => {
+
+    $(".warehouse-select").on('click', function() {
+        let id = $(this).attr('data-id');
+        changeWarehouse(id);
+    });
+
     $("#add-inventory-button").on('click', e => {
         $("#add-inventory-modal").toggleClass('is-active');
     });
