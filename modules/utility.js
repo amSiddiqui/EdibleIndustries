@@ -32,9 +32,7 @@ function getMethods(obj) {
 }
 
 function getSqlDate(d) {
-    let formatted = new Intl.DateTimeFormat('en-GB', {timeZone: process.env.TZ, month: '2-digit', day: "2-digit", year: "numeric"}).format(d);
-    let parts = formatted.split("/");
-    return parts[2] + "-" + parts[1] + "-" + parts[0];
+    return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
 }
 
 function getFormattedTime(ms) {
@@ -1753,6 +1751,7 @@ module.exports = {
             return engDate;
         },
         insertInventoryRecord: insertInventoryRecord,
+        getSqlDate: getSqlDate,
         getStats: async () => {
 
             if (utilityCache.has('stats')) {
