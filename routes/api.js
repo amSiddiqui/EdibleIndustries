@@ -340,6 +340,7 @@ router.post('/bill-no', middleware.auth.loggedIn(), function (req, res, next) {
 
 router.get('/billing/last_bill_date', middleware.auth.loggedIn(), function(req, res, next) {
     utility.billing.lastBillDate().then(date => {
+        date.setDate(date.getDate() - 1);
         res.json({date: date.toISOString(), np: new NepaliDate(date).format('DD/MM/YYYY')});
     }).catch(err => {
         res.status(500);
