@@ -1488,6 +1488,14 @@ module.exports = {
                 await ledger.destroy();
             }
             await bill.destroy();
+        },
+        lastBillDate: async () => {
+            let bill = await models.Bill.findOne({
+                order: [
+                    ['createdAt', 'DESC']
+                ]
+            });
+            return bill.createdAt;
         }
     },
     warehouse: {

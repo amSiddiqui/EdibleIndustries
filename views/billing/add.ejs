@@ -19,7 +19,7 @@
                     </div>
                 </div>
             </div>
-            <% if (check_perm()){ %>
+            
             <div class="level-right">
                 <div class="level-item">
                     <div class="field">
@@ -42,36 +42,6 @@
                     </div>
                 </div>
             </div>
-            <% }else{ %>
-            <div class="level-right">
-                <div class="level-item">
-                    <div class="field">
-                        <div class="control">
-                            <label for="bill_date" class="label">Bill Date</label>
-                            <div class="select">
-                                <select name="bill_date" id="bill_date">
-                                    <% for(let i = 0; i < last_5_dates.length; i++){ var d = last_5_dates[i] %>
-                                        <option value="<%=d.format("DD/MM/YYYY");%>"><%=d%></option>
-                                    <% } %>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="level-item">
-                    <div class="field">
-                        <div class="control">
-                            <label for="warehouse" class="label">Warehouse</label>
-                            <div class="select">
-                                <select name="warehouse" id="warehouse">
-
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <% } %>
         </div>
         <div class="columns">
             <div class="column">

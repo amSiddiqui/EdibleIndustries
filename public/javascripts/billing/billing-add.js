@@ -27,7 +27,7 @@ $(function () {
 
     var warehouse = 1;
 
-    $.get('/api/warehouse/all', function(data) {
+    $.get('/api/warehouse/all', function (data) {
         data.warehouses.forEach(w => {
             if (w.isPrimary) warehouse = w.id;
             $("#warehouse").append(`<option value="${w.id}">${w.name}</option>`);
@@ -126,7 +126,7 @@ $(function () {
 
 
     var inventories = null;
-    $.get('/api/inventories?warehouse='+warehouse, function (data) {
+    $.get('/api/inventories?warehouse=' + warehouse, function (data) {
         inventories = data.inventories;
     }).fail(function (err) {
         console.log(err);
@@ -144,20 +144,20 @@ $(function () {
             return;
         }
 
-        
-        $.get('/api/customer/rented/'+id, function(data) {
+
+        $.get('/api/customer/rented/' + id, function (data) {
             if (data.status == 'success') {
                 $("#total-jars-rented").find('strong').html(data.rented);
                 $("#total-jars-rented").show();
             }
-        }).fail(function(err) {
+        }).fail(function (err) {
             console.log(err);
         });
 
-        $.get('/api/stats/customer/balance/'+id, function(data) {
+        $.get('/api/stats/customer/balance/' + id, function (data) {
             $("#total-balance").find('strong').html(data.formatted);
             $("#total-balance").show();
-        }).fail(function(err) {
+        }).fail(function (err) {
             console.log(err);
         });
 
@@ -206,7 +206,7 @@ $(function () {
         $("#select-inventory-item-modal").addClass('is-active');
     });
 
-    var list_group_item_event = function() {
+    var list_group_item_event = function () {
         $("#select-inventory-item-modal").removeClass('is-active');
         if (currentCustomerData === null) {
             warn("Please select a customer");
@@ -225,17 +225,17 @@ $(function () {
             warn("Inventory not found");
             return;
         }
-        
+
 
 
         var in_stock = inventory.in_stock;
-        
+
         var defaultBatch = null;
         for (let i = 0; i < inventory.inventory_batches.length; i++) {
             const batch = inventory.inventory_batches[i];
-            var option = $('<option value="'+batch.id+'">'+batch.name+' ('+batch.quantity+')'+'</option>').clone();
+            var option = $('<option value="' + batch.id + '">' + batch.name + ' (' + batch.quantity + ')' + '</option>').clone();
             if (batch.name == 'Single') {
-                option = $('<option selected value="'+batch.id+'">'+batch.name+' ('+batch.quantity+')'+'</option>').clone()
+                option = $('<option selected value="' + batch.id + '">' + batch.name + ' (' + batch.quantity + ')' + '</option>').clone()
                 defaultBatch = batch;
             }
             row.find('.packing').append(option);
@@ -253,7 +253,7 @@ $(function () {
 
         if (customer_b !== null) {
             inventory_rate = customer_b.customer_rate.rate;
-        }else{
+        } else {
             let current_customer_type = currentCustomerData.customer_type;
 
             current_customer_type.inventory_batches.forEach(b => {
@@ -264,7 +264,7 @@ $(function () {
         }
 
 
-        row.find('.packing').on('change', function() {
+        row.find('.packing').on('change', function () {
             var id = $(this).val();
             var batch = null;
             for (let i = 0; i < inventories.length; i++) {
@@ -283,10 +283,10 @@ $(function () {
             if (typeof q == 'string') {
                 if (q.length == 0) {
                     q = 0;
-                }else{
+                } else {
                     if (isNaN(q)) {
                         q = 0;
-                    }else{
+                    } else {
                         q = parseInt(q);
                     }
                 }
@@ -317,7 +317,7 @@ $(function () {
 
 
             var sub_total = q * defaultRate;
-            
+
             row.find('.rate').val(defaultRate.toFixed(2));
             row.find('.inv-id').html(defaultBatch.id);
             row.find('.inv-type').attr('name', 'inv_type_' + defaultBatch.id + '[]');
@@ -332,14 +332,14 @@ $(function () {
 
         row.find('.inv-id').html(defaultBatch.id);
         row.find('.inv-name').html(inventory.name);
-        
+
         row.find('.inv-type').attr('name', 'inv_type_' + defaultBatch.id + '[]');
         row.find('.rate').val(inventory_rate.toFixed(2));
-        row.find('.inv-type').on('change', function() {
+        row.find('.inv-type').on('change', function () {
             var val = $(this).val();
             if (val == 'sold') {
                 row.find('.rate').val(inventory_rate.toFixed(2));
-            }else if (val == 'rented') {
+            } else if (val == 'rented') {
                 row.find('.rate').val(0.00);
             }
             row.find('.rate').trigger('change');
@@ -418,7 +418,7 @@ $(function () {
         if (customer === null || customer.length === 0) {
             $("#customer").addClass('is-danger');
             $("#customer").siblings('.help').show();
-            $("html, body").animate({ scrollTop: "0" }); 
+            $("html, body").animate({ scrollTop: "0" });
         } else {
             $(this).off();
             $(this).trigger('submit');
@@ -438,7 +438,7 @@ $(function () {
         }
     });
 
-    $("#payment-method").on('change', function() {
+    $("#payment-method").on('change', function () {
         var method = $(this).val();
         if (method === 'Free' || method === 'Cash') {
             $("#due_date_container").hide();
@@ -452,49 +452,63 @@ $(function () {
         }
     });
 
-    if($("#due_date").length)
-    $('#due_date').nepaliDatePicker({
-        dateFormat: 'DD/MM/YYYY',
-    });
+    if ($("#due_date").length)
+        $('#due_date').nepaliDatePicker({
+            dateFormat: 'DD/MM/YYYY',
+        });
 
-    if($("input#bill_date").length)
-    $('input#bill_date').nepaliDatePicker({
-        dateFormat: 'DD/MM/YYYY',
-        onChange: function() {
-            var bill_date = $('input#bill_date').val();
-            $("#inventory-table-body").empty();
-            updateTotal();
-    
-            $.get('/api/inventories?date='+bill_date+'&warehouse='+warehouse, function (data) {
-                inventories = data.inventories;
-                $(".list-group").empty();
-                inventories.forEach(function(inv) {
-                    var list_group_item = $(`
+    $.ajax({
+        type: "GET",
+        url: `/api/billing/last_bill_date`,
+        success: function (data) {
+            console.log(data);
+            if ($("input#bill_date").length)
+                $('input#bill_date').nepaliDatePicker({
+                    dateFormat: 'DD/MM/YYYY',
+                    disableBefore: data.np,
+                    onChange: function () {
+                        var bill_date = $('input#bill_date').val();
+                        $("#inventory-table-body").empty();
+                        updateTotal();
+
+                        $.get('/api/inventories?date=' + bill_date + '&warehouse=' + warehouse, function (data) {
+                            inventories = data.inventories;
+                            $(".list-group").empty();
+                            inventories.forEach(function (inv) {
+                                var list_group_item = $(`
                     <a href="#" data-value="${inv.id}"
                                     class="panel-block list-group-item">${inv.name} (In Stock: ${inv.in_stock})</a>
                     `);
-                    $(".list-group").append(list_group_item); 
+                                $(".list-group").append(list_group_item);
+                            });
+                            $(".list-group-item").on('click', list_group_item_event);
+
+                        }).fail(function (err) {
+                            console.log(err);
+                            window.location.href = '/billing';
+                        });
+                        $.post('/api/bill-no', { bill_date: bill_date }, function (data) {
+                            if (data.status == 'success') {
+                                $("#track_id").val(data.bill_no);
+                            } else {
+                                console.log("Bill number update error");
+                                console.log(data);
+                                window.location.href = '/billing';
+                            }
+                        });
+                    }
                 });
-                $(".list-group-item").on('click', list_group_item_event);
-    
-            }).fail(function (err) {
-                console.log(err);
-                window.location.href = '/billing';
-            });
-            $.post('/api/bill-no', {bill_date: bill_date}, function(data) {
-                if (data.status == 'success') {
-                    $("#track_id").val(data.bill_no);
-                }else{
-                    console.log("Bill number update error");
-                    console.log(data);
-                    window.location.href = '/billing';
-                }
-            });
+        },
+        error: function (jqXHR, statusText, status) {
+            console.log(jqXHR);
+            warn("Something went wrong");
         }
-    });
+    })
 
 
-    $("#warehouse").on('change', function() {
+
+
+    $("#warehouse").on('change', function () {
         console.log("Warehouse changed");
         warehouse = $(this).val();
         var bill_date = $("#bill_date").val();
@@ -503,15 +517,15 @@ $(function () {
         }
         $("#inventory-table-body").empty();
         updateTotal();
-        $.get('/api/inventories?date='+bill_date+'&warehouse='+warehouse, function (data) {
+        $.get('/api/inventories?date=' + bill_date + '&warehouse=' + warehouse, function (data) {
             inventories = data.inventories;
             $(".list-group").empty();
-            inventories.forEach(function(inv) {
+            inventories.forEach(function (inv) {
                 var list_group_item = $(`
                 <a href="#" data-value="${inv.id}"
                                 class="panel-block list-group-item">${inv.name} (In Stock: ${inv.in_stock})</a>
                 `);
-                $(".list-group").append(list_group_item); 
+                $(".list-group").append(list_group_item);
             });
             $(".list-group-item").on('click', list_group_item_event);
 

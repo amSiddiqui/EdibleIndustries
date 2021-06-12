@@ -338,6 +338,16 @@ router.post('/bill-no', middleware.auth.loggedIn(), function (req, res, next) {
     });
 });
 
+router.get('/billing/last_bill_date', middleware.auth.loggedIn(), function(req, res, next) {
+    utility.billing.lastBillDate().then(date => {
+        res.json({date: date.toISOString(), np: new NepaliDate(date).format('DD/MM/YYYY')});
+    }).catch(err => {
+        res.status(500);
+        res.json({status: 'error', message: 'database error'});
+        console.log(err);
+    });
+});
+
 router.post('/warehouse/exists', middleware.auth.loggedIn(), function(req, res, next) {
     // Check if warehousename is provided
     if (typeof req.body.name === 'undefined') {
