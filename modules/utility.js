@@ -3,8 +3,8 @@ const NepaliDate = require('nepali-date-converter');
 const fs = require('fs');
 var _ = require('lodash');
 var numeral = require('numeral');
-const NodeCache = require( "node-cache" );
-const utilityCache = new NodeCache({useClones: false, ttl: 172800});
+const NodeCache = require("node-cache");
+const utilityCache = new NodeCache({ useClones: false, ttl: 172800 });
 
 const {
     Op
@@ -37,7 +37,7 @@ function getSqlDate(d) {
 
 function getFormattedTime(ms) {
     if (ms < 1000) {
-        return ms+'ms';
+        return ms + 'ms';
     } else {
         ms = ms / 1000;
         return ms.toFixed(3) + 's';
@@ -47,7 +47,7 @@ function getFormattedTime(ms) {
 function logTime(__startTime, msg) {
     var __endTime = new Date().getTime();
     var __totalTime = getFormattedTime(__endTime - __startTime.getTime());
-    fs.appendFile(log_file, getFormattedDate(__startTime)+' : '+msg+' : '+__totalTime+'\n', err => {
+    fs.appendFile(log_file, getFormattedDate(__startTime) + ' : ' + msg + ' : ' + __totalTime + '\n', err => {
         if (err) {
             console.log("Error writing to log file");
             console.log(err);
@@ -56,7 +56,7 @@ function logTime(__startTime, msg) {
 }
 
 function getFormattedDate(d) {
-    return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
+    return d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
 }
 
 function toNumberFloat(num) {
@@ -85,7 +85,7 @@ function getThisMonthStart() {
     return dt;
 }
 
-async function insertInventoryRecord(rec, batch_id='') {
+async function insertInventoryRecord(rec, batch_id = '') {
     var batch = null;
     var batch_value = rec.value;
     if (batch_id !== '') {
@@ -104,13 +104,13 @@ async function insertInventoryRecord(rec, batch_id='') {
     return inventory_record;
 }
 
-async function calculateTotalInventory(inv_id, end_date, warehouse_id=1) {
+async function calculateTotalInventory(inv_id, end_date, warehouse_id = 1) {
     var inventory = await models.Inventory.findByPk(inv_id);
     var records = await inventory.getInventory_records({
         where: {
             [Op.and]: [
-                sequelize.where( sequelize.fn('date', sequelize.col('record_date')), Op.lte, getSqlDate(end_date)),
-                {warehouse_id: warehouse_id}
+                sequelize.where(sequelize.fn('date', sequelize.col('record_date')), Op.lte, getSqlDate(end_date)),
+                { warehouse_id: warehouse_id }
             ]
         },
         order: [
@@ -137,14 +137,14 @@ async function calculateTotalInventory(inv_id, end_date, warehouse_id=1) {
     return {
         total, in_stock
     };
-} 
+}
 
 async function getCustomerBalance(customer_id) {
     const customer = await models.Customer.findByPk(customer_id);
     var entries = await customer.getCustomer_ledgers();
     var balance = 0.;
     entries.forEach(ent => {
-        if (ent.credit !== null ) {
+        if (ent.credit !== null) {
             balance += ent.credit;
         }
         if (ent.debit !== null) {
@@ -152,6 +152,49 @@ async function getCustomerBalance(customer_id) {
         }
     });
     return balance;
+}
+
+async function getBillNo(date = new Date()) {
+    // if current month == 3 then bill no in category 2077/78/0001
+    // if current month == 2 then bill no in category 2076/77/0001
+    var _startTime = new Date();
+    var nepali_today = new NepaliDate(date);
+    var month = nepali_today.getMonth();
+    var year = nepali_today.getYear();
+    var bill_no = "";
+    if (month <= 2) {
+        bill_no = (year - 1) + "/" + (year % 100) + "/";
+    }
+    else {
+        bill_no = (year) + "/" + ((year + 1) % 100) + "/";
+    }
+
+    var last_bill_no = await models.Bill.findOne({
+        where: {
+            track_id: {
+                [Op.like]: bill_no + "%"
+            }
+        },
+        order: [
+            ['id', 'DESC']
+        ]
+    });
+
+    if (last_bill_no == null) {
+        bill_no = bill_no + '00001';
+    }
+    else {
+        var bn = last_bill_no.track_id;
+        var parts = bn.split('/');
+        var last_no = parts[parts.length - 1];
+        last_no = parseInt(last_no);
+        last_no++;
+        last_no = last_no + '';
+        last_no = last_no.padStart(5, 0);
+        bill_no = bill_no + last_no;
+    }
+    logTime(_startTime, 'billing.getBillNo()');
+    return bill_no;
 }
 
 
@@ -233,19 +276,19 @@ module.exports = {
             logTime(_startTime, 'inventory.createInventory()');
             return inventory;
         },
-        fetchInventory: async (id, w_id=-1) => {
+        fetchInventory: async (id, w_id = -1) => {
             var _startTime = new Date();
             var warehouse = await models.Warehouse.findByPk(w_id);
-            if (warehouse === null) 
-                warehouse = await models.Warehouse.findOne({where: {isPrimary: true}});
+            if (warehouse === null)
+                warehouse = await models.Warehouse.findOne({ where: { isPrimary: true } });
             var inv = await models.Inventory.findOne({
                 where: {
                     id
                 },
                 include: [
-                {
-                    model: models.InventoryBatch
-                }]
+                    {
+                        model: models.InventoryBatch
+                    }]
             });
             var records = await inv.getInventory_records({
                 order: [
@@ -256,24 +299,25 @@ module.exports = {
                 },
                 include: [{
                     model: models.User
-                    },{
+                }, {
                     model: models.InventoryBatchRecord,
                     include: [{
                         model: models.InventoryBatch
                     }]
                 }, {
                     model: models.BillTransaction,
-                    include: [{model: models.Bill}]
+                    include: [{ model: models.Bill }]
                 }]
             });
-            
+
             inv.inventory_records = records;
 
             var res = await calculateTotalInventory(inv.id, new Date(), warehouse.id);
             inv.total = res.total;
             inv.in_stock = res.in_stock;
 
-            for (let i = 0; i < inv.inventory_records.length; i++) { var record = inv.inventory_records[i];
+            for (let i = 0; i < inv.inventory_records.length; i++) {
+                var record = inv.inventory_records[i];
                 if (record.type == 'sold') {
                     var txn = record.bill_transaction;
                     inv.inventory_records[i].bill_id = txn.bill.track_id;
@@ -303,14 +347,14 @@ module.exports = {
             await inv.destroy();
             return true;
         },
-        fetchAllInventory: async (id=-1) => {
+        fetchAllInventory: async (id = -1) => {
             // Load warehouse
             var _startTime = new Date();
             var warehouse = await models.Warehouse.findByPk(id);
             if (warehouse === null) {
-                warehouse = await models.Warehouse.findOne({where: {isPrimary: true}});
+                warehouse = await models.Warehouse.findOne({ where: { isPrimary: true } });
             }
-            
+
             var inventories = await models.Inventory.findAll({
                 include: [
                     {
@@ -326,7 +370,7 @@ module.exports = {
             }
             logTime(_startTime, 'inventory.fetchAllInventory()');
             return inventories;
-        
+
         },
         fetchAllInventoryID: () => {
             return models.Inventory.findAll({
@@ -341,11 +385,11 @@ module.exports = {
             var _startTime = new Date();
             var warehouse = await models.Warehouse.findByPk(w_id);
             if (warehouse === null) {
-                warehouse = await models.Warehouse.findOne({where: {isPrimary: true}});
+                warehouse = await models.Warehouse.findOne({ where: { isPrimary: true } });
             }
 
             var inventories = await models.Inventory.findAll({
-                include: [ {
+                include: [{
                     model: models.InventoryBatch
                 }]
             });
@@ -387,7 +431,7 @@ module.exports = {
         },
         editBatch: async (id, data) => {
             var batch = await models.InventoryBatch.findByPk(id);
-            batch.name= data.name;
+            batch.name = data.name;
             batch.quantity = data.quantity;
             await batch.save();
             return true;
@@ -397,11 +441,11 @@ module.exports = {
             await batch.destroy();
             return true;
         },
-        addRecord: async (id, data, user_email, w_id=-1) => {    
-            var _startTime = new Date();        
+        addRecord: async (id, data, user_email, w_id = -1) => {
+            var _startTime = new Date();
             var warehouse = await models.Warehouse.findByPk(w_id);
             if (warehouse === null) {
-                warehouse = await models.Warehouse.findOne({where: {isPrimary: true}});
+                warehouse = await models.Warehouse.findOne({ where: { isPrimary: true } });
             }
             var user = await models.User.findOne({
                 where: {
@@ -434,7 +478,7 @@ module.exports = {
                 await receiveRecord.setWarehouse(receivingWarehouse);
                 await receiveRecord.setInventory(inventory);
                 await receiveRecord.setUser(user);
-                await receiveRecord.save();   
+                await receiveRecord.save();
             }
 
             await inventory_record.setWarehouse(warehouse);
@@ -470,7 +514,7 @@ module.exports = {
                 if (typeof id !== 'number') {
                     id = parseInt(id);
                 }
-                var received_record = await models.InventoryRecord.findByPk(id+1);
+                var received_record = await models.InventoryRecord.findByPk(id + 1);
                 received_record.value = batch_value * batch.quantity;
                 received_record.recordDate = data.created;
                 received_record.cost = data.cost;
@@ -495,7 +539,7 @@ module.exports = {
             var batch_record = await record.getInventory_batch_record();
             if (record.type === 'transferred') {
                 if (typeof id !== 'number') id = parseInt(id);
-                var rec_record = await models.InventoryRecord.findByPk(id+1);
+                var rec_record = await models.InventoryRecord.findByPk(id + 1);
                 if (rec_record.type === 'received') {
                     var batch_record_r = await rec_record.getInventory_batch_record();
                     await batch_record_r.destroy();
@@ -511,7 +555,7 @@ module.exports = {
             var _startTime = new Date();
             var warehouse = await models.Warehouse.findByPk(w_id);
             if (warehouse === null) {
-                warehouse = await models.Warehouse.findOne({where: {isPrimary: true}});
+                warehouse = await models.Warehouse.findOne({ where: { isPrimary: true } });
             }
             var user = await models.User.findOne({
                 where: {
@@ -522,34 +566,34 @@ module.exports = {
             if (user.user_type === 'Admin') {
                 bills = await warehouse.getBills({
                     include: [{
-                            model: models.BillTransaction,
-                            include: [
+                        model: models.BillTransaction,
+                        include: [
                             {
                                 model: models.InventoryRecord,
                                 include: [
-                                {
-                                    model: models.Inventory
-                                }]
+                                    {
+                                        model: models.Inventory
+                                    }]
                             }, {
                                 model: models.BillTransaction,
                                 as: 'return'
                             }]
-                        },
-                        {
-                            model: models.Customer,
-                            include: [{
-                                model: models.CustomerType
-                            }]
-                        },{
-                            model: models.User
-                        }
+                    },
+                    {
+                        model: models.Customer,
+                        include: [{
+                            model: models.CustomerType
+                        }]
+                    }, {
+                        model: models.User
+                    }
                     ]
                 });
-            }else{
+            } else {
                 bills = await warehouse.getBills({
                     include: [{
-                            model: models.BillTransaction,
-                            include: [
+                        model: models.BillTransaction,
+                        include: [
                             {
                                 model: models.InventoryRecord,
                                 include: [{
@@ -559,25 +603,25 @@ module.exports = {
                                 model: models.BillTransaction,
                                 as: 'return'
                             }]
-                        },
-                        {
-                            model: models.Customer,
-                            include: [{
-                                model: models.CustomerType
-                            }]
-                        },{
-                            model: models.User,
-                            where: {
-                                id: user.id
-                            }
+                    },
+                    {
+                        model: models.Customer,
+                        include: [{
+                            model: models.CustomerType
+                        }]
+                    }, {
+                        model: models.User,
+                        where: {
+                            id: user.id
                         }
+                    }
                     ]
                 });
             }
-            
+
             var inv_bills = [];
-            
-            
+
+
             for (let i = 0; i < bills.length; i++) {
                 const bill = bills[i];
                 const transactions = bill.bill_transactions;
@@ -596,7 +640,7 @@ module.exports = {
                 for (let i = 0; i < bill.bill_transactions.length; i++) {
                     const tr = bill.bill_transactions[i];
                     if (tr.type == 'rented') {
-                        const returns =  tr.return;
+                        const returns = tr.return;
                         var total_return = _.sumBy(returns, (o) => o.quantity);
                         if (total_return < tr.quantity) {
                             rented = true;
@@ -829,17 +873,17 @@ module.exports = {
         fetchAllCustomer: () => {
             return models.Customer.findAll({
                 include: [{
-                        model: models.Zone
-                    },
-                    {
-                        model: models.District,
-                    },
-                    {
-                        model: models.PostOffice
-                    },
-                    {
-                        model: models.CustomerType
-                    }
+                    model: models.Zone
+                },
+                {
+                    model: models.District,
+                },
+                {
+                    model: models.PostOffice
+                },
+                {
+                    model: models.CustomerType
+                }
                 ]
             });
         },
@@ -849,23 +893,23 @@ module.exports = {
         fetchCustomer: (id) => {
             return models.Customer.findByPk(id, {
                 include: [{
-                        model: models.Zone
-                    },
-                    {
-                        model: models.District,
-                    },
-                    {
-                        model: models.PostOffice
-                    },
-                    {
-                        model: models.CustomerType
-                    },
-                    {
-                        model: models.InventoryBatch,
-                        include: {
-                            model: models.Inventory
-                        }
+                    model: models.Zone
+                },
+                {
+                    model: models.District,
+                },
+                {
+                    model: models.PostOffice
+                },
+                {
+                    model: models.CustomerType
+                },
+                {
+                    model: models.InventoryBatch,
+                    include: {
+                        model: models.Inventory
                     }
+                }
                 ]
             });
         },
@@ -880,7 +924,7 @@ module.exports = {
                             model: models.Inventory
                         }]
                     }]
-                },{
+                }, {
                     model: models.User
                 }]
             });
@@ -918,7 +962,7 @@ module.exports = {
                     var txn = txns[j];
                     if (txn.type == 'rented') {
                         rented += txn.quantity;
-                        var returns = await txn.getReturn(); 
+                        var returns = await txn.getReturn();
                         var total_return = _.sumBy(returns, (o) => o.quantity);
                         rented -= total_return;
                     }
@@ -937,7 +981,7 @@ module.exports = {
                 return numeral(total).format('0,0.00');
             }
             var np_date = new NepaliDate(date);
-            
+
             var dt = np_date.toJsDate();
             while (true) {
                 dt.setDate(dt.getDate() + 1);
@@ -950,8 +994,8 @@ module.exports = {
             var bills = await customer.getBills({
                 where: {
                     [Op.and]: [
-                        sequelize.where( sequelize.fn('date', sequelize.col('createdAt')), Op.lte, getSqlDate(month_start)),
-                        sequelize.where( sequelize.fn('date', sequelize.col('createdAt')), Op.gte, getSqlDate(month_end)),
+                        sequelize.where(sequelize.fn('date', sequelize.col('createdAt')), Op.lte, getSqlDate(month_start)),
+                        sequelize.where(sequelize.fn('date', sequelize.col('createdAt')), Op.gte, getSqlDate(month_end)),
                     ]
                 }
             });
@@ -982,7 +1026,7 @@ module.exports = {
     },
     billing: {
         fetchAll: async (user_email, start, end) => {
-            
+
             var _startTime = new Date();
             if (typeof user_email === 'undefined') {
                 console.log("User email not provided");
@@ -1021,7 +1065,7 @@ module.exports = {
                         ['id', 'DESC']
                     ]
                 });
-            }else{
+            } else {
                 bills = await models.Bill.findAll({
                     where: {
                         [Op.and]: [
@@ -1053,7 +1097,7 @@ module.exports = {
                     ]
                 });
             }
-            
+
             for (let j = 0; j < bills.length; j++) {
                 var rented = false;
                 var bill = bills[j];
@@ -1076,96 +1120,55 @@ module.exports = {
         fetch: (id) => {
             return models.Bill.findByPk(id, {
                 include: [{
-                        model: models.BillTransaction,
-                        include: [
-                            {
-                                model: models.InventoryRecord,
-                                include: [
+                    model: models.BillTransaction,
+                    include: [
+                        {
+                            model: models.InventoryRecord,
+                            include: [
                                 {
                                     model: models.Inventory,
                                     include: [
-                                    {
-                                        model: models.InventoryBatch,
-                                    }]
+                                        {
+                                            model: models.InventoryBatch,
+                                        }]
                                 }, {
                                     model: models.InventoryBatchRecord,
                                     include: [
-                                    {
-                                        model: models.InventoryBatch,
-                                    }]
+                                        {
+                                            model: models.InventoryBatch,
+                                        }]
                                 }]
-                            },
-                            {
-                                model: models.BillTransaction,
-                                as: 'return'
-                            }
-                        ]
-                    },
-                    {
-                        model: models.Customer,
-                        include: [{
-                                model: models.Zone
-                            },
-                            {
-                                model: models.District,
-                            },
-                            {
-                                model: models.PostOffice
-                            },
-                            {
-                                model: models.CustomerType
-                            }
-                        ]
-                    },
-                    {
-                        model: models.User
-                    }
-                ]
-            });
-        },
-        getBillNo: async (date = new Date()) => {
-            // if current month == 3 then bill no in category 2077/78/0001
-            // if current month == 2 then bill no in category 2076/77/0001
-            var _startTime = new Date();
-            var nepali_today = new NepaliDate(date);
-            var month = nepali_today.getMonth();
-            var year = nepali_today.getYear();
-            var bill_no = "";
-            if (month <= 2) {
-                bill_no = (year-1)+"/"+(year%100)+"/";
-            }
-            else{
-                bill_no = (year)+"/"+((year+1)%100)+"/";
-            }
-
-            var last_bill_no = await models.Bill.findOne({
-                where: {
-                    track_id: {
-                        [Op.like]: bill_no+"%"
-                    }
+                        },
+                        {
+                            model: models.BillTransaction,
+                            as: 'return'
+                        }
+                    ]
                 },
-                order: [
-                    ['id', 'DESC']
+                {
+                    model: models.Customer,
+                    include: [{
+                        model: models.Zone
+                    },
+                    {
+                        model: models.District,
+                    },
+                    {
+                        model: models.PostOffice
+                    },
+                    {
+                        model: models.CustomerType
+                    }
+                    ]
+                },
+                {
+                    model: models.User
+                }
                 ]
             });
-
-            if (last_bill_no == null) {
-                bill_no = bill_no+'00001';
-            }
-            else{
-                var bn = last_bill_no.track_id;
-                var parts = bn.split('/');
-                var last_no = parts[parts.length - 1];
-                last_no = parseInt(last_no);
-                last_no++;
-                last_no = last_no + '';
-                last_no = last_no.padStart(5, 0);
-                bill_no = bill_no + last_no;
-            }
-            logTime(_startTime, 'billing.getBillNo()');
-            return bill_no;
         },
-        createFull: async (customer_id, data, transactions, userEmail, w_id=-1) => {
+        getBillNo: getBillNo,
+        createFull: async (customer_id, data, transactions, userEmail, w_id = -1) => {
 
             if (utilityCache.has('stats')) {
                 utilityCache.del('stats');
@@ -1174,7 +1177,7 @@ module.exports = {
             var _startTime = new Date();
             var warehouse = await models.Warehouse.findByPk(w_id);
             if (warehouse === null) {
-                warehouse = await models.Warehouse.findOne({where: {isPrimary: true}});
+                warehouse = await models.Warehouse.findOne({ where: { isPrimary: true } });
             }
             var customer = await models.Customer.findByPk(customer_id);
             var user = await models.User.findOne({
@@ -1204,9 +1207,10 @@ module.exports = {
             var cost = grand_total - data.discount_value + data.tax_value;
             var bill = null;
             var bill_date = new Date();
-            if (data.bd != null)  {
+            if (data.bd != null) {
                 bill_date = data.bd;
             }
+            data.track_id = await getBillNo(bill_date);
             bill = await models.Bill.create({
                 discount: data.discount_value,
                 discountPercent: data.discount_percent,
@@ -1224,7 +1228,7 @@ module.exports = {
             });
 
             await bill.setWarehouse(warehouse);
-        
+
             for (let i = 0; i < transactions.length; i++) {
                 const transaction = transactions[i];
                 const batch = await models.InventoryBatch.findByPk(transaction.id);
@@ -1236,7 +1240,7 @@ module.exports = {
                         type,
                         value: transaction.quantity[j],
                         recordDate: bill_date
-                    },  transaction.id);
+                    }, transaction.id);
                     inv_record.setWarehouse(warehouse);
                     inv_record.setInventory(inventory);
                     if (user != null) {
@@ -1317,9 +1321,9 @@ module.exports = {
                 var txn = txns[i];
                 if (txn.type === 'returned')
                     continue;
-                var quant =  toNumber(body['quantity-'+txn.id]);
-                var rate = toNumberFloat(body['rate-'+txn.id]);
-                var batch_id = toNumber(body['packing-'+txn.id]);
+                var quant = toNumber(body['quantity-' + txn.id]);
+                var rate = toNumberFloat(body['rate-' + txn.id]);
+                var batch_id = toNumber(body['packing-' + txn.id]);
                 var inv_record = await txn.getInventory_record();
                 var batch_record = await inv_record.getInventory_batch_record();
                 await batch_record.destroy();
@@ -1454,32 +1458,32 @@ module.exports = {
 
             const bill = await models.Bill.findByPk(id, {
                 include: [{
-                        model: models.BillTransaction,
-                        include: [{
-                                model: models.InventoryRecord,
-                            },
-                            {
-                                model: models.BillTransaction,
-                                as: 'return'
-                            }
-                        ]
+                    model: models.BillTransaction,
+                    include: [{
+                        model: models.InventoryRecord,
                     },
+                    {
+                        model: models.BillTransaction,
+                        as: 'return'
+                    }
+                    ]
+                },
                 ]
             });
 
             var ledgers = await bill.getCustomer_ledgers();
-            
+
             for (let i = 0; i < bill.bill_transactions.length; i++) {
                 const tr = bill.bill_transactions[i];
                 if (typeof tr.bill_transactions !== 'undefined' && typeof tr.bill_transactions !== 'null')
                     for (let j = 0; j < tr.bill_transactions.length; j++) {
                         const returns = tr.bill_transactions[j];
-                        await returns.inventory_record.destroy();        
+                        await returns.inventory_record.destroy();
                         await returns.destroy();
                     }
                 await tr.inventory_record.destroy();
                 await tr.destroy();
-            } 
+            }
             for (let ledger of ledgers) {
                 await ledger.destroy();
             }
@@ -1490,15 +1494,15 @@ module.exports = {
         fetchWarehouse: async (id) => {
             return models.Warehouse.findByPk(id, {
                 include: [
-                {
-                    model: models.Zone
-                },
-                {
-                    model: models.District,
-                },
-                {
-                    model: models.PostOffice
-                }]
+                    {
+                        model: models.Zone
+                    },
+                    {
+                        model: models.District,
+                    },
+                    {
+                        model: models.PostOffice
+                    }]
             });
         },
         fetchWarehouses: async () => {
@@ -1517,7 +1521,7 @@ module.exports = {
             }
             return warehouse;
         },
-        addWarehouse: async(warehouseName, addressData) => {
+        addWarehouse: async (warehouseName, addressData) => {
             var res = await models.Warehouse.findOne({
                 where: {
                     name: warehouseName
@@ -1564,7 +1568,7 @@ module.exports = {
             }
             return res !== null;
         },
-        editWarehouse: async(id, warehouseName, addressData) => {
+        editWarehouse: async (id, warehouseName, addressData) => {
             var warehouse = await models.Warehouse.findByPk(id);
             warehouse.name = warehouseName;
             warehouse.address1 = addressData.address1;
@@ -1587,7 +1591,7 @@ module.exports = {
         fetchAllEntry: async (customer_id) => {
             const customer = await models.Customer.findByPk(customer_id);
             var entries = await customer.getCustomer_ledgers({
-                include: [{model: models.Bill}]
+                include: [{ model: models.Bill }]
             });
             return entries;
         },
@@ -1599,7 +1603,7 @@ module.exports = {
             }
             let current_balance = await getCustomerBalance(customer_id);
             let total_balance = entry_data.credit;
-            
+
             if (current_balance > 0) {
                 total_balance += current_balance;
             }
@@ -1610,8 +1614,8 @@ module.exports = {
             var unpaid = await customer.getBills({
                 where: {
                     [Op.or]: [
-                        {paid: false},
-                        {payment_method: 'Credit'}
+                        { paid: false },
+                        { payment_method: 'Credit' }
                     ],
                     createdAt: {
                         [Op.lte]: entry_data.date
@@ -1619,7 +1623,7 @@ module.exports = {
                 },
                 order: [
                     ['id', 'ASC']
-                ]                
+                ]
             });
 
             await ledgerEntry.setCustomer(customer);
@@ -1630,7 +1634,7 @@ module.exports = {
                 total += b.total;
                 if (total > total_balance) {
                     break;
-                }else {
+                } else {
                     unpaid[i].paid = true;
                     unpaid[i].payment_method = 'Cash';
                     await unpaid[i].save();
@@ -1657,7 +1661,7 @@ module.exports = {
 
             let formatted = numeral(total).format('0,0');
 
-            return {total, formatted};
+            return { total, formatted };
         }
 
     },
@@ -1685,14 +1689,14 @@ module.exports = {
         getUserName: async (email) => {
             if (typeof email == 'undefined' || email == null) return 'Admin';
             var user = await models.User.findOne({
-                where: {email}
+                where: { email }
             });
             if (user == null) return 'Admin';
-            return user.first_name+' '+user.last_name;
+            return user.first_name + ' ' + user.last_name;
         },
         month_sale: async (date) => {
             var np_date = new NepaliDate(date);
-            
+
             var dt = np_date.toJsDate();
             while (true) {
                 dt.setDate(dt.getDate() + 1);
@@ -1702,11 +1706,11 @@ module.exports = {
             dt.setDate(dt.getDate() - 1);
             var month_start = new NepaliDate(date).toJsDate();
             var month_end = dt;
-            var total = await models.Bill.sum('total' ,{
+            var total = await models.Bill.sum('total', {
                 where: {
                     [Op.and]: [
-                        sequelize.where( sequelize.fn('date', sequelize.col('createdAt')), Op.lte, getSqlDate(month_end)),
-                        sequelize.where( sequelize.fn('date', sequelize.col('createdAt')), Op.lte, getSqlDate(month_start))
+                        sequelize.where(sequelize.fn('date', sequelize.col('createdAt')), Op.lte, getSqlDate(month_end)),
+                        sequelize.where(sequelize.fn('date', sequelize.col('createdAt')), Op.lte, getSqlDate(month_start))
                     ]
                 }
             });
@@ -1773,17 +1777,17 @@ module.exports = {
             var monthName = new NepaliDate(today).format('MMMM', 'np');
             var yearName = new NepaliDate(today).format('YYYY', 'np');
             var dt = new Date();
-            dt.setHours(0, 0 ,0, 0);
+            dt.setHours(0, 0, 0, 0);
             while (true) {
                 var np = new NepaliDate(dt);
                 if (np.getDate() == 1) break;
                 dt.setDate(dt.getDate() - 1);
             }
             data.monthName = monthName;
-            var total = await models.Bill.sum('total' ,{
-                where:  sequelize.where( sequelize.fn('date', sequelize.col('createdAt')), Op.gte, getSqlDate(dt))
+            var total = await models.Bill.sum('total', {
+                where: sequelize.where(sequelize.fn('date', sequelize.col('createdAt')), Op.gte, getSqlDate(dt))
             });
-            
+
             data.total = total;
             data.formatted_total = numeral(total).format('0,0.00');
             data.yearName = yearName;
@@ -1797,11 +1801,11 @@ module.exports = {
                 var res = await calculateTotalInventory(inv_id.id, new Date());
                 total_asset += inv_id.cost * res.total;
             }
-            
+
             data.formatted_asset = numeral(total_asset).format('0,0.00');
-            
+
             // Outstanding Revenue
-            var outstanding = await models.Bill.sum('total' ,{
+            var outstanding = await models.Bill.sum('total', {
                 where: {
                     paid: false
                 }
@@ -1823,19 +1827,19 @@ module.exports = {
                     },
                     {
                         model: models.Customer
-                    }, 
+                    },
                     {
                         model: models.User
                     }
                 ],
                 where: {
                     [Op.or]: [
-                        {paid: false},
-                        {'$bill_transactions.type$': 'rented'}
+                        { paid: false },
+                        { '$bill_transactions.type$': 'rented' }
                     ]
                 }
             });
-            
+
             var bills = [];
             var unpaid = [];
             var total_rented = 0;
@@ -1862,19 +1866,19 @@ module.exports = {
                     }
                 }
             }
-            
+
             data.formatted_rented = numeral(total_rented).format('0,0');
             data.bills = bills;
-            
+
             data.unpaid = unpaid;
-            
+
             logTime(__startTime, 'misc.getStats()');
 
             utilityCache.set('stats', data);
             return data;
         },
         fixUserType: async () => {
-            await models.User.update({user_type: 'Admin'}, {
+            await models.User.update({ user_type: 'Admin' }, {
                 where: {
                     user_type: null
                 }
@@ -1908,7 +1912,7 @@ module.exports = {
             }
             console.log("Customer ledger utility complete");
         },
-        recalibrateBillNo: async function() {
+        recalibrateBillNo: async function () {
             const bills = await models.Bill.findAll({
                 order: [
                     ['createdAt', 'ASC'],
@@ -1922,11 +1926,11 @@ module.exports = {
                 var month = np.getMonth();
                 var year = np.getYear();
                 var bill_no = "";
-                
+
                 if (month <= 2) {
-                    bill_no = (year-1)+"/"+(year%100)+"/";
+                    bill_no = (year - 1) + "/" + (year % 100) + "/";
                 } else {
-                    bill_no = (year)+"/"+((year+1)%100)+"/";
+                    bill_no = (year) + "/" + ((year + 1) % 100) + "/";
                 }
                 if (last_bill_no != "") {
                     if (last_bill_no !== bill_no) {
@@ -1934,12 +1938,12 @@ module.exports = {
                     }
                 }
                 last_bill_no = bill_no;
-                bill_no = bill_no+(counter++ + '').padStart(5, 0);
+                bill_no = bill_no + (counter++ + '').padStart(5, 0);
                 bills[i].track_id = bill_no;
                 bills[i].save();
             }
         },
-        checkPermission: (req, res, message="User does not have permission to access the page") => {
+        checkPermission: (req, res, message = "User does not have permission to access the page") => {
             if (req.session.user_type === 'Admin') {
                 return true;
             }
