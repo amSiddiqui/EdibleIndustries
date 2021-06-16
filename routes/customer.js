@@ -7,6 +7,38 @@ const {
 } = require('../modules/utility');
 var router = express.Router();
 
+router.put('/ledger', middleware.auth.loggedIn(), function(req, res, next) {
+  if (!utility.misc.checkPermission(req, res))
+    return;
+  let id = req.body.id;
+  let cid = req.body.customer_id;
+  let amount = req.body.amount;
+  let date = req.body.date;
+  let user = req.body.user;
+  let np = new NepaliDate(date);
+  date = np.toJsDate();
+  date.setTime(date.getTime() + 30*60000);
+  utility.ledger.editEntry(id, amount, date, user).then(() => {
+    res.redirect('/customer/'+cid+'#ledger');
+  }).catch(err => {
+    res.redirect('/customer/'+cid+'#ledger');
+    console.log(err);
+  });
+});
+
+router.delete('/ledger/:id', middleware.auth.loggedIn(), function(req, res, next) {
+  if (!utility.misc.checkPermission(req, res))
+    return;
+  let id = req.params.id;
+  let cid = req.body.customer;
+  utility.ledger.deleteEntry(id).then(() => {
+    res.redirect('/customer/'+cid+'#ledger');
+  }).catch(err => {
+    res.redirect('/customer/'+cid+'#ledger');
+    console.log(err);
+  });
+});
+
 router.put('/customer-type/:id', middleware.auth.loggedIn(), function (req, res, next) {
   if (!utility.misc.checkPermission(req, res))
     return;

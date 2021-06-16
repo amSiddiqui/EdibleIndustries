@@ -205,11 +205,12 @@
                         <% var balance = 0; for(let i = 0; i < ledger_entries.length; i++) { var entry = ledger_entries[i]; if (entry.credit !== null) { balance += entry.credit; } if (entry.debit !== null) { balance -= entry.debit; }  %>
                         <tr onmouseover="showBill(this);" onmouseleave="hideBill(this);">
                             <td><%= entry.id %>
-                                <% if(entry.type === 'Deposit') { %>
-                                    Bills Paid
-                                <% } %>
+                                
                                 <% if(entry.bill) { %>
                                 <div style="display: none" class="bill_tracks">
+                                    <% if(entry.type === 'Deposit') { %>
+                                        Bills Paid
+                                    <% } %>
                                     <a href="/bill/<%=entry.bill.id%>"><%=entry.bill.track_id%></a>
                                 </div>
                                 <% } %>
@@ -219,7 +220,7 @@
                             <td><%= entry.credit === null ? '': entry.credit.toFixed(2); %></td>
                             <td class="<% if(entry.debit !== null){ %>has-text-danger<% } %>"><%= entry.debit === null ? '': entry.debit.toFixed(2); %></td>
                             <td><%= balance.toFixed(2); %></td>
-                            <% if(entry.type === 'Deposit') { %>
+                            <% if(entry.type === 'Deposit' && check_perm()) { %>
                                 <td>
                                     <div class="field  is-grouped">
                                         <div class="control">
@@ -227,7 +228,7 @@
                                                 `<%= entry.id %>`,
                                                 `<%= entry.credit %>`,
                                                 `<%= entry.nepali_date %>`,
-                                                `<%= entry.user.id %>`
+                                                `<%= entry.user ? entry.user.id : '' %>`
                                             )"><i class="fas fa-pen"></i></button>
                                         </div>
                                         <div class="control">
@@ -362,6 +363,80 @@
         </section>
     </div>
 </div>
+
+
+<div class="modal" id="ledger-edit-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Edit Ledger</p>
+            <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+            <form action="/customer/ledger?_method=PUT" method="POST">
+                <input type="hidden" id="edit-ledger-id" name="id">
+                <input type="hidden" name="customer_id" value="<%=customer.id%>">
+                <div class="columns">
+                    <div class="column">
+                        <div class="field">
+                            <label for="edit-ledger-amount" class="label">Amount</label>
+                            <input id="edit-ledger-amount" type="number" name="amount" min="0" step="any" required class="input">
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="field">
+                            <div class="control">
+                                <label for="edit-ledger-date" class="label">Date</label>
+                                <input type="text" class="input" required id="edit-ledger-date" name="date">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="edit-ledger-user">Deposit Done By</label>
+                    <div class="select">
+                        <select name="user" id="edit-ledger-user">
+
+                        </select>
+                    </div>
+                </div>
+                <div class="field is-grouped is-grouped-right">
+                    <div class="control">
+                        <button class="button is-rounded is-success">Save</button>
+                    </div>
+                    <div class="control">
+                        <button type="button" class="button close-modal is-rounded is-light">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+
+
+<div class="modal" id="confirm-delete">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Confirm Delete Deposit?</p>
+            <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+            <div class="columns">
+                <div class="column">
+                    <form action="/customer/ledger/?_method=DELETE" method="POST" id="ledger-delete-form">
+                        <button class="button is-danger is-rounded">Delete</button>
+                        <input type="hidden" value="<%=customer.id%>" name="customer" id="">
+                    </form>
+                </div>
+                <div class="column">
+                    <button type="button" class="button is-link is-light is-rounded close-modal">Cancel</button>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
 
 
 <script>

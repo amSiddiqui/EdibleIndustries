@@ -388,7 +388,6 @@ router.get('/warehouse/all', middleware.auth.loggedIn(), function(req, res, next
                 }
             }
         }
-
         res.json({
             warehouses
         });
@@ -561,7 +560,13 @@ router.get('/analytics/inflow', middleware.auth.loggedIn(), function(req, res, n
     });
 });
 
-
+router.get('/users/all', middleware.auth.loggedIn(), function(req, res, next) {
+    utility.user.fetchAll().then(users => {
+        res.json(users);
+    }).catch(err => {
+        res.status(500).json(err);
+    });
+});
 
 
 module.exports = router;

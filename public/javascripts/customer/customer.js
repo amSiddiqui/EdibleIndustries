@@ -12,7 +12,39 @@ function hideBill(element) {
 }
 
 
+function editCustomerLedger(id, credit, date, user) {
+    
+    $("#edit-ledger-id").val(id);
+    $("#edit-ledger-amount").val(credit);
+    $("#edit-ledger-date").val(date);
+    if (user) {
+        $("#edit-ledger-user").val(user);
+    }
+    $("#ledger-edit-modal").addClass('is-active');
+}
+
+function deleteCustomerLedger(id) {
+
+    $("#ledger-delete-form").attr('action', `/customer/ledger/${id}?_method=DELETE`);
+    $("#confirm-delete").addClass('is-active');
+}
+
 $(function() {
+
+    $.ajax({
+        url: `/api/users/all`,
+        success: function(users) {
+            let options = '';
+            for (let user of users) {
+                if (user.id === 1) continue;
+                options += `<option value="${user.id}">${user.first_name} ${user.last_name} (${user.user_type})</option>`;
+            }
+            $("#edit-ledger-user").html(options);
+        },
+        error: function(xhr, statusText, status) {
+            console.log(xhr);
+        }
+    })
 
     // Check if fragment in the url is present
     if (window.location.hash) {
@@ -149,20 +181,24 @@ $(function() {
     if ($("#from_date_billing").length)
         $('#from_date_billing').nepaliDatePicker({
             dateFormat: 'DD/MM/YYYY',
-            closeOnDateSelect: true,
         });
 
     if ($("#to_date_billing").length)
         $('#to_date_billing').nepaliDatePicker({
             dateFormat: 'DD/MM/YYYY',
-            closeOnDateSelect: true,
         });
 
     if ($("#record_date").length)
         $('#record_date').nepaliDatePicker({
             dateFormat: 'DD/MM/YYYY',
-            closeOnDateSelect: true,
         });
+
+    setTimeout(function() {
+        if ($("#edit-ledger-date").length)
+            $("#edit-ledger-date").nepaliDatePicker({
+                dateFormat: 'DD/MM/YYYY',
+            });
+    }, 1000);
     
     var ledger_table =  $("#ledger-table").DataTable({        
         "order": [[0, 'desc']],

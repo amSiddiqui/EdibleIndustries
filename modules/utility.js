@@ -1623,7 +1623,10 @@ module.exports = {
         fetchAllEntry: async (customer_id) => {
             const customer = await models.Customer.findByPk(customer_id);
             var entries = await customer.getCustomer_ledgers({
-                include: [{ model: models.Bill }]
+                include: [
+                    { model: models.Bill },
+                    { model: models.User }
+                ]
             });
             return entries;
         },
@@ -1676,7 +1679,19 @@ module.exports = {
                 }
             }
         },
-        getBalance: getCustomerBalance
+        getBalance: getCustomerBalance,
+        editEntry: async (id, amount, date, user_id) => {
+            let entry = await models.CustomerLedger.findByPk(id);
+            entry.credit = parseFloat(amount);
+            await entry.save();
+            await models.CustomerLedger.update({createdAt: date}, {where: {id: entry.id}, silent: true});
+            let user = await models.User.findByPk(user_id);
+            await entry.setUser(user);
+        },
+        deleteEntry: async (id) => {
+            let entry = await models.CustomerLedger.findByPk(id);
+            await entry.destroy();
+        }
     },
     analytics: {
 
