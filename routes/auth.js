@@ -76,7 +76,10 @@ router.get('/signup', middleware.auth.loggedIn(), (req, res) => {
         data.signup_error = true;
         data.errors = flashData[0];
     }
-    res.render('auth/signup', data);
+    utility.warehouse.fetchWarehouses().then(warehouses => {
+        data.warehouses = warehouses;
+        res.render('auth/signup', data);
+    });
 });
 
 router.get('/users', middleware.auth.loggedIn(), (req, res) => {
@@ -149,8 +152,13 @@ router.get('/users/edit/:id', middleware.auth.loggedIn(), (req, res) => {
     }
 
     utility.user.fetch(id).then((user) => {
-        data.user = user;
-        res.render('auth/user-edit', data);
+        utility.warehouse.fetchWarehouses().then(warehouses => {
+            data.warehouses = warehouses;
+            data.user = user;
+            res.render('auth/user-edit', data);
+        }).catch(err => {
+            throw err;
+        });
     }).catch(err => {
         console.log(err);
         req.flash('flash_message', 'Error opening user');
@@ -170,6 +178,7 @@ router.put('/users/:id', middleware.auth.loggedIn(), (req, res) => {
     var password = req.body.password.trim();
     var re_password = req.body.re_password.trim();
     var user_type = req.body.user_type;
+    var warehouse = req.body.warehouse;
     var change_password = utility.misc.toNumber(req.body.change_password);
     var error = false;
     var error_load = {
@@ -216,7 +225,8 @@ router.put('/users/:id', middleware.auth.loggedIn(), (req, res) => {
         email,
         password,
         user_type,
-        change_password
+        change_password,
+        warehouse
     };
 
     if (!error) {
@@ -261,6 +271,7 @@ router.post('/signup', middleware.auth.loggedIn(), (req, res) => {
     var email = req.body.email.trim();
     var password = req.body.password.trim();
     var re_password = req.body.re_password.trim();
+    var warehouse = req.body.warehouse;
     var user_type = req.body.user_type;
     var error = false;
     var error_load = {
@@ -306,10 +317,11 @@ router.post('/signup', middleware.auth.loggedIn(), (req, res) => {
         last_name,
         email,
         password,
-        user_type
+        user_type,
+        warehouse
     }
     if (!error) {
-        utility.user.createUser(data).then(user => {
+        utility.user.createUser(data).then(() => {
             req.flash('flash_message', 'Added User');
             req.flash('flash_color', 'success');
             res.redirect('/');

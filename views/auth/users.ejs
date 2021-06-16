@@ -30,7 +30,14 @@
                     <div class="content">
                         <h1 class="title is-4"><%= user.first_name+' '+user.last_name %></h1>
                         <p class="subtitle is-6"><%= user.email %></p>
-                        <p><%= user.user_type %></p>
+                        <div class="columns">
+                            <div class="column">
+                                <p><%= user.user_type %></p>
+                            </div>
+                            <div class="column">
+                                <p><%= user.warehouse && user.warehouse.name %></p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

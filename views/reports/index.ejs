@@ -3,26 +3,34 @@
 <div class="container" style="margin-top: 50px">
     <div class="tile is-ancestor">
         <div class="tile is-parent analytics-card" id="analytics-card-1">
-            <div class="tile is-child box" >
+            <div class="tile is-child box">
                 <span class="card-close-button" id="card-close-button-1">
                     &times;
                 </span>
                 <div id="cash-flow-small">
                     <span class="title is-5 cash-inflow-title">Cash Inflow</span>
                     <span class="is-6" id="cash-inflow-date">...</span>
-                    <span class="title is-3 has-text-success"  id="cash-inflow-value">...</span>
+                    <span class="title is-3 has-text-success" id="cash-inflow-value">...</span>
                 </div>
                 <div id="card-date-select-region">
                     <div class="columns">
-                        <div class="column">
+                        <div class="column is-4">
                             <label for="from_date_cash_inflow" class="label">From</label>
-                            <input type="text" class="input" id="from_date_cash_inflow">
-                            <button class="clear-button "><i class="fas fa-times"></i></button>
+                            <input type="text" class="input date-picker" id="from_date_cash_inflow"><button
+                                class="button is-success clear-button "><i class="fas fa-times"></i></button>
                         </div>
-                        <div class="column">
+                        <div class="column is-4">
                             <label for="to_date_cash_inflow" class="label">To</label>
-                            <input type="text" class="input" id="to_date_cash_inflow">
-                            <button class="clear-button"><i class="fas fa-times"></i></button>
+                            <input type="text" class="input date-picker" id="to_date_cash_inflow"><button
+                                class="is-success button clear-button"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="column" id="inflow-warehouse-select-container">
+                            <label for="inflow-warehouse-select" class="label">Warehouse</label>
+                            <div class="select">
+                                <select id="inflow-warehouse-select">
+                                    
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div id="cash-inflow-chart-container">
@@ -33,17 +41,17 @@
         </div>
         <div class="tile is-parent analytics-card" id="analytics-card-2">
             <div class="tile is-child box">
-                
+
             </div>
         </div>
         <div class="tile is-parent analytics-card" id="analytics-card-3">
             <div class="tile is-child box">
-                
+
             </div>
         </div>
         <div class="tile is-parent analytics-card" id="analytics-card-4">
             <div class="tile is-child box">
-                
+
             </div>
         </div>
     </div>

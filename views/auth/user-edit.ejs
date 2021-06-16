@@ -94,6 +94,22 @@
                                         </span>
                                     </div>
                                 </div>
+                                <div class="field">
+                                    <label class="label">Default Warehouse</label>
+                                    <div class="control has-icons-left">
+                                        <div class="select">
+                                            <select name="warehouse" id="warehouse">
+                                                <option value="0"></option>                                                
+                                                <% for(let i = 0; i < warehouses.length; i++) { %>
+                                                    <option value="<%=warehouses[i].id%>" <% if (user.warehouse && warehouses[i].id === user.warehouse.id) { %> selected <% } %>  ><%=warehouses[i].name%></option>
+                                                <% } %>
+                                            </select>
+                                        </div>
+                                        <span class="icon is-small is-left">
+                                            <i class="fas fa-user-cog"></i>
+                                        </span>
+                                    </div>
+                                </div>
                                 <% if (signup_error && (errors.password_error || errors.re_password_error)) { %>
                                 <div class="field is-grouped is-grouped-right">
                                     <p class="control">

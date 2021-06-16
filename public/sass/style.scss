@@ -687,19 +687,15 @@ select {
 }
 
 .clear-button {
-  position: relative; top: -72px; right: -175px;
+  display: inline;
+  height: 2.5em;
+  border-radius: 0 4px 4px 0;
+  border-left: 0;
+  outline: none;
   border: none;
-  border-radius: 999px;
-  color: $danger;
+  padding: 0em 0.3em;
 }
 
-.clear-button:focus {
-  outline: 0;
-}
-
-.clear-button:hover {
-  background-color: rgba(200, 200, 200, 0.4);
-}
 
 
 .preloader {
@@ -769,12 +765,11 @@ select {
   }
 }
 
-#to_date_cash_inflow + .clear-button,
-#from_date_cash_inflow + .clear-button
-{
-  right: -240px
+.date-picker {
+  width: 80%;
+  display: inline;
+  border-radius: 4px 0 0 4px;
 }
-
 
 ::marker {
   font-size: 0;

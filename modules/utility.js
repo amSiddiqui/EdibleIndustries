@@ -201,15 +201,27 @@ async function getBillNo(date = new Date()) {
 module.exports = {
     user: {
         fetchAll: async () => {
-            return await models.User.findAll();
+            return await models.User.findAll({
+                include: {
+                    model: models.Warehouse
+                }
+            });
         },
         fetch: async (id) => {
-            return await models.User.findByPk(id);
+            let user = await models.User.findByPk(id);
+            let warehouse = await user.getWarehouse();
+            user.warehouse = warehouse;
+            return user;
         },
-        createUser: (data) => {
-            return models.User.create({
+        createUser: async (data) => {
+            let user = await models.User.create({
                 ...data
             });
+            try {
+                let warehouse = await models.Warehouse.findByPk(data.warehouse);
+                await user.setWarehouse(warehouse);
+            }catch(err) {}
+
         },
         editUser: async (id, data) => {
             var user = await models.User.findByPk(id);
@@ -221,6 +233,11 @@ module.exports = {
             if (data.change_password === 1) {
                 user.password = data.password;
             }
+            try {
+                let warehouse = await models.Warehouse.findByPk(data.warehouse);
+                await user.setWarehouse(warehouse);
+            } catch (err) {}
+
             await user.save();
         },
         userExists: (email, password) => {

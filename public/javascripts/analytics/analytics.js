@@ -134,6 +134,10 @@ $(() => {
     });
 
     const card_1_click = function () {
+        if (!cashInflowChartData) {
+            return;
+        }
+
         anime({
             targets: "#analytics-card-4",
             "flex-grow": 0,
@@ -248,5 +252,22 @@ $(() => {
             easing: "easeInOutQuad",
         }).finished.then(() => { });
     });
+
+    // Get all warehouse
+    $.ajax({
+        type: 'GET',
+        url: `/api/warehouse/all`,
+        success: function(data) {
+            let options = `<option value="0">All</option>`;
+            for (let warehouse of data.warehouses) {
+                options += `<option value="${warehouse.id}">${warehouse.name}</option>`;
+            }
+            $("#inflow-warehouse-select").html(options);
+        }, 
+        error: function(xhr, statusText, status) {
+            console.log(xhr);
+        }
+    })
+
 
 });

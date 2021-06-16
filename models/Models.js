@@ -588,6 +588,8 @@ InventoryRecord.belongsTo(Warehouse);
 Warehouse.hasMany(Bill);
 Bill.belongsTo(Warehouse);
 
+Warehouse.hasMany(User);
+User.belongsTo(Warehouse);
 
 const CustomerLedger = db.sequelize.define('customer_ledger', {
     id: {

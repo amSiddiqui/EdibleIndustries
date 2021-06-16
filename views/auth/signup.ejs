@@ -170,6 +170,22 @@
                     </div>
                   </div>
                   <div class="field">
+                    <label class="label">Default Warehouse</label>
+                    <div class="control has-icons-left">
+                      <div class="select">
+                        <select name="warehouse" id="warehouse">
+                          <option value=""></option>
+                          <% for(let i = 0; i < warehouses.length; i++) { let warehouse = warehouses[i]; %>
+                            <option value="<%= warehouse.id %>"><%= warehouse.name %></option>
+                          <% } %>
+                        </select>
+                      </div>
+                      <span class="icon is-small is-left">
+                        <i class="fas fa-user-cog"></i>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="field">
                     <label class="label">Password</label>
                     <div class="control has-icons-left has-icons-right">
 
