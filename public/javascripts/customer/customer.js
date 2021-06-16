@@ -11,6 +11,7 @@ function hideBill(element) {
     $(element).find('.bill_tracks').hide();
 }
 
+
 $(function() {
 
     // Check if fragment in the url is present

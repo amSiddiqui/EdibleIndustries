@@ -261,7 +261,7 @@ router.post('/pay/:id', middleware.auth.loggedIn(), function (req, res, next) {
     pay_date = utility.misc.toEnglishDate(pay_date);
     bd = new NepaliDate(pay_date).toJsDate();
   }
-  utility.billing.pay(id, bd).then(() => {
+  utility.billing.pay(id, bd, req.session.email).then(() => {
     req.flash('flash_message', 'Paid Successfully');
     req.flash('flash_color', 'success');
     res.redirect('/billing/' + id);

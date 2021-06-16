@@ -390,7 +390,7 @@ router.post('/:id/deposit',middleware.auth.loggedIn(), function(req, res, next) 
     debit: null,
     date: date
   };
-  utility.ledger.addEntry(id, deposit_data).then(() => {
+  utility.ledger.addEntry(id, deposit_data, req.session.email).then(() => {
     req.flash('flash_message', 'Successfully deposited amount');
     req.flash('flash_color', 'success');
     res.redirect('/customer/'+id+'#ledger');

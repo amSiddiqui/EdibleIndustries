@@ -11,7 +11,7 @@
 <script src="/javascripts/lib/dependencies.min.js"></script>
 <script src="/javascripts/script.js"></script>
 <% if (typeof dependency !== 'undefined') { %>
-    <script type="module" src="/javascripts/<%=dependency %>"></script>
+    <script  src="/javascripts/<%=dependency %>"></script>
 <% } %>
 <% if (typeof dependencies !== 'undefined') { %>
     <% for (let dep of dependencies) { %>

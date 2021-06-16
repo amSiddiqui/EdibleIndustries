@@ -38,6 +38,10 @@ router.post('/login', middleware.auth.notLoggedIn(), (req, res) => {
             req.session.email = email;
             req.session.first_name = data.first_name;
             req.session.user_type = data.user_type;
+            utility.user.getWarehouse().then(warehouse => {
+                if (warehouse)
+                    req.session.warehouse = warehouse.id;
+            });
             res.redirect('/');
         }
     }).catch(err => {
@@ -358,6 +362,7 @@ router.get('/logout', middleware.auth.loggedIn(), (req, res) => {
     req.session.email = null;
     req.session.first_name = null;
     req.session.user_type = null;
+    req.session.warehouse = null;
     req.session.destroy();
     res.redirect('/');
 });

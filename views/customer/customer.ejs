@@ -198,13 +198,14 @@
                             <th>Debit</th>
                             <th>Credit</th>
                             <th>Balance</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <% var balance = 0; for(let i = 0; i < ledger_entries.length; i++) { var entry = ledger_entries[i]; if (entry.credit !== null) { balance += entry.credit; } if (entry.debit !== null) { balance -= entry.debit; }  %>
                         <tr onmouseover="showBill(this);" onmouseleave="hideBill(this);">
                             <td><%= entry.id %>
-                                <% if(entry.type == 'deposit') { %>
+                                <% if(entry.type === 'Deposit') { %>
                                     Bills Paid
                                 <% } %>
                                 <% if(entry.bill) { %>
@@ -218,6 +219,20 @@
                             <td><%= entry.credit === null ? '': entry.credit.toFixed(2); %></td>
                             <td class="<% if(entry.debit !== null){ %>has-text-danger<% } %>"><%= entry.debit === null ? '': entry.debit.toFixed(2); %></td>
                             <td><%= balance.toFixed(2); %></td>
+                            <% if(entry.type === 'Deposit') { %>
+                                <td>
+                                    <div class="field  is-grouped">
+                                        <div class="control">
+                                            <button class="record-edit-button type-edit-button has-text-info"><i class="fas fa-pen"></i></button>
+                                        </div>
+                                        <div class="control">
+                                            <button class="record-delete-button type-delete-button has-text-danger"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </div>
+                                </td>
+                            <% } else { %>
+                                <td></td>
+                            <% } %>
                         </tr>
                         <% } %>
                     </tbody>

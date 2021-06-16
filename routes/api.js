@@ -379,6 +379,16 @@ router.post('/warehouse/exists', middleware.auth.loggedIn(), function(req, res, 
 
 router.get('/warehouse/all', middleware.auth.loggedIn(), function(req, res, next) {
     utility.warehouse.fetchWarehouses().then(warehouses => {
+        let w_id = req.session.warehouse;
+        if (w_id) {
+            for (let i = 0; i < warehouses.length; i++) {
+                warehouses[i].isPrimary = false;
+                if (warehouses[i].id === w_id) {
+                    warehouses[i].isPrimary = true;
+                }
+            }
+        }
+
         res.json({
             warehouses
         });

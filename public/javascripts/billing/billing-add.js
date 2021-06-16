@@ -29,8 +29,12 @@ $(function () {
 
     $.get('/api/warehouse/all', function (data) {
         data.warehouses.forEach(w => {
-            if (w.isPrimary) warehouse = w.id;
-            $("#warehouse").append(`<option value="${w.id}">${w.name}</option>`);
+            if (w.isPrimary) { 
+                warehouse = w.id;
+                $("#warehouse").append(`<option selected value="${w.id}">${w.name}</option>`);
+            } else {
+                $("#warehouse").append(`<option value="${w.id}">${w.name}</option>`);
+            }
         });
     });
 
@@ -534,6 +538,7 @@ $(function () {
             window.location.href = '/billing';
         });
     });
+
 });
 
 

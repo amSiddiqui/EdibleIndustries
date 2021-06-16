@@ -268,6 +268,10 @@ module.exports = {
                     reject('DB ERROR');
                 });
             });
+        },
+        getWarehouse: async (email) => {
+            let user = await models.User.findOne({where: {email}});
+            return await user.getWarehouse();
         }
     },
 
@@ -1302,6 +1306,7 @@ module.exports = {
                 });
                 await customer_ledger.setBill(bill);
                 await customer_ledger.setCustomer(customer);
+                await customer_ledger.setUser(user);
             }
 
             await bill.save();
@@ -1449,20 +1454,22 @@ module.exports = {
             await inv_record.save();
             logTime(_startTime, 'billing.addReturn()');
         },
-        pay: async (id, bd) => {
+        pay: async (id, bd, user_email) => {
             if (utilityCache.has('stats')) {
                 utilityCache.del('stats');
             }
             const bill = await models.Bill.findByPk(id);
+            let user = await models.User.findOne({where: {email: user_email}});
             const customer = await bill.getCustomer();
             const entry = await models.CustomerLedger.create({
-                type: 'deposit',
+                type: 'Deposit',
                 credit: bill.total,
                 debit: null,
                 date: bd
             });
             await entry.setCustomer(customer);
             await entry.setBill(bill);
+            await entry.setUser(user);
             bill.paid = true;
             bill.payment_method = 'Cash';
             bill.paidOn = bd;
@@ -1620,7 +1627,7 @@ module.exports = {
             });
             return entries;
         },
-        addEntry: async (customer_id, entry_data) => {
+        addEntry: async (customer_id, entry_data, email) => {
             // Only adds Deposit entries
             const customer = await models.Customer.findByPk(customer_id);
             if (entry_data.type != 'Deposit') {
@@ -1634,6 +1641,8 @@ module.exports = {
             }
 
             var ledgerEntry = await models.CustomerLedger.create(entry_data);
+            let user = await models.User.findOne({where: {email}});
+            await ledgerEntry.setUser(user);
 
             // Find all unpaid bills oldest first
             var unpaid = await customer.getBills({
@@ -1910,32 +1919,19 @@ module.exports = {
             });
         },
         syncCustomerLedger: async () => {
-            var customers = await models.Customer.findAll();
-            var totalCustomer = customers.length;
-            for (let i = 0; i < customers.length; i++) {
-                var customer = customers[i];
-                var bills = await customer.getBills();
-                for (let j = 0; j < bills.length; j++) {
-                    const bill = bills[j];
-                    if (bill.payment_method === 'Free') {
-                        continue;
+            let ledgers = await models.CustomerLedger.findAll();
+            for (let ledger of ledgers) {
+                if (ledger.type === 'Deposit') continue;
+
+                let bill = await ledger.getBill();
+                if (bill) {
+                    let user = await bill.getUser();
+                    if (user) {
+                        await ledger.setUser(user);
                     }
-                    var debit = bill.total;
-                    var credit = null;
-                    if (bill.payment_method === 'Cash') {
-                        credit = bill.total;
-                    }
-                    var entry = await models.CustomerLedger.create({
-                        type: 'Sale',
-                        credit,
-                        debit,
-                        date: bill.createdAt
-                    });
-                    await entry.setBill(bill);
-                    await entry.setCustomer(customer);
                 }
             }
-            console.log("Customer ledger utility complete");
+            console.log("Ledger sync complete");
         },
         recalibrateBillNo: async function () {
             const bills = await models.Bill.findAll({
