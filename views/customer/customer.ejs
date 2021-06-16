@@ -223,10 +223,15 @@
                                 <td>
                                     <div class="field  is-grouped">
                                         <div class="control">
-                                            <button class="record-edit-button type-edit-button has-text-info"><i class="fas fa-pen"></i></button>
+                                            <button class="record-edit-button type-edit-button has-text-info" onclick="editCustomerLedger(
+                                                `<%= entry.id %>`,
+                                                `<%= entry.credit %>`,
+                                                `<%= entry.nepali_date %>`,
+                                                `<%= entry.user.id %>`
+                                            )"><i class="fas fa-pen"></i></button>
                                         </div>
                                         <div class="control">
-                                            <button class="record-delete-button type-delete-button has-text-danger"><i class="fas fa-trash"></i></button>
+                                            <button class="record-delete-button type-delete-button has-text-danger" onclick="deleteCustomerLedger(`<%=entry.id%>`)"><i class="fas fa-trash"></i></button>
                                         </div>
                                     </div>
                                 </td>
