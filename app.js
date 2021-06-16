@@ -83,9 +83,9 @@ const db = require('./modules/database');
 db.sequelize.authenticate()
   .then(() => {
     console.log("Connected to database successfully");
-    // utility.misc.syncCustomerLedger().then(() => {
-    //   console.log("Customer sync complete");
-    // }).catch(err => {throw err;});
+    utility.misc.syncCustomerLedger().then(() => {
+      console.log("Customer sync complete");
+    }).catch(err => {throw err;});
   })
   .catch(err => {
     console.error("An error occurred while connecting ", err);
@@ -101,13 +101,13 @@ const utility = require('./modules/utility');
 
 // Sync DB and seed
 
-db.sequelize.sync({
-  alter: true
-}).then(() => {
-  console.log("Database synchronized");
-}).catch(err => {
-  console.log("Error while synchronizing data: ", err);
-});
+// db.sequelize.sync({
+//   alter: true
+// }).then(() => {
+//   console.log("Database synchronized");
+// }).catch(err => {
+//   console.log("Error while synchronizing data: ", err);
+// });
 
 
 
