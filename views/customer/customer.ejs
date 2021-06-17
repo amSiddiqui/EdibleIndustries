@@ -204,7 +204,7 @@
                     <tbody>
                         <% var balance = 0; for(let i = 0; i < ledger_entries.length; i++) { var entry = ledger_entries[i]; if (entry.credit !== null) { balance += entry.credit; } if (entry.debit !== null) { balance -= entry.debit; }  %>
                         <tr onmouseover="showBill(this);" onmouseleave="hideBill(this);">
-                            <td><%= entry.id %>
+                            <td data-order="<%=entry.id%>"><%= entry.id %>
                                 
                                 <% if(entry.bill) { %>
                                 <div style="display: none" class="bill_tracks">
