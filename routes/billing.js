@@ -65,7 +65,7 @@ router.get('/api/bills', middleware.auth.loggedIn(), function (req, res, next) {
         bill_data['name'] = bill.customer.organization;
       }
       bill_data['customer_type'] = bill.customer.customer_type.name;
-      bill_data['user'] = bill.user.first_name + ' ' + bill.user.last_name;
+      bill_data['user'] = {name: bill.user.first_name + ' ' + bill.user.last_name, warehouse: bill.warehouse.name};
       bill_data['total'] = {
         'display': 'Re. ' + bill.total,
         'value': bill.total

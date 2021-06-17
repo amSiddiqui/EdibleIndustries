@@ -65,7 +65,15 @@ $(() => {
             {data: 'date'},
             {data: 'name'},
             {data: 'customer_type'},
-            {data: 'user'},
+            {data: 'user', render: function(data, type, row, meta) {
+                if (type === 'filter' || type === 'type' || type === 'sort') {
+                    return data.name;
+                }
+                return `
+                    <p class="billing-user-name">${data.name}</p>
+                    <p class="billing-warehouse-name">${data.warehouse}</p>
+                `;
+            }},
             {data: 'total', render: {_: 'display', sort: 'value'}},
             {data: 'total_sold'},
             {data: 'payment_method'},

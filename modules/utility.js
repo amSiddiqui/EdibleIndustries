@@ -1080,6 +1080,9 @@ module.exports = {
                         },
                         {
                             model: models.User
+                        },
+                        {
+                            model: models.Warehouse
                         }
                     ],
                     order: [
@@ -1111,6 +1114,9 @@ module.exports = {
                             where: {
                                 id: user.id
                             }
+                        },
+                        {
+                            model: models.Warehouse
                         }
                     ],
                     order: [
