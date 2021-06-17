@@ -5,12 +5,12 @@ const month_start_np = new NepaliDate(
     1
 );
 
-function initCashInflow(start_js, end_js) {
+function initCashInflow(start_js, end_js, warehouse) {
     // Get this month cash inflow
     $.ajax({
         type: "GET",
         url: "/api/analytics/inflow",
-        data: { start: start_js.toISOString(), end: end_js.toISOString() },
+        data: { start: start_js.toISOString(), end: end_js.toISOString(), warehouse},
         success: function (res) {
             anime({
                 targets: "#cash-inflow-value",
@@ -64,6 +64,7 @@ $(() => {
     $.ajax({
         type: "GET",
         url: `/api/analytics/inflow/chart`,
+        data: {warehouse: 0},
         success: function (res) {
             if (res.status === 'success') {
                 cashInflowChartData = res;
@@ -81,6 +82,7 @@ $(() => {
     function updateCashInflow() {
         let end = $("#to_date_cash_inflow").val();
         let start = $("#from_date_cash_inflow").val();
+        let warehouse = $("#inflow-warehouse-select").val();
         let start_np = new NepaliDate(start);
         let start_js = start_np.toJsDate();
         let end_np = new NepaliDate(end);
@@ -92,15 +94,40 @@ $(() => {
             end_np.format("DD MMMM, YYYY", "np")
         );
 
-        initCashInflow(start_js, end_js);
+        initCashInflow(start_js, end_js, warehouse);
     }
+
+    $("#inflow-warehouse-select").on('change', function() {
+        updateCashInflow();
+        $.ajax({
+            type: "GET",
+            url: `/api/analytics/inflow/chart`,
+            data: {warehouse: $(this).val()},
+            success: function (res) {
+                if (res.status === 'success') {
+                    cashInflowChartData = res;
+                    if (cashInflowChart !== null) {
+                        cashInflowChart.destroy();
+                        cashInflowChart = null;
+                    }
+                    initCashInflowChart(res);
+                } else {
+                    warn("Charts cannot be show at the moment");
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.log(jqXHR);
+                warn("Charts cannot be shown at the moment");
+            },
+        });
+    });
 
     const formatted_date =
         month_start_np.format("MMMM", "np") + ", " + today_np.getYear();
     $("#cash-inflow-date").html(formatted_date);
     let start_js = month_start_np.toJsDate();
     let end_js = today_np.toJsDate();
-    initCashInflow(start_js, end_js);
+    initCashInflow(start_js, end_js, 0);
 
     $("#test-neapli-date-picker").val(today_np.format("DD/MM/YYYY"));
 
@@ -134,9 +161,7 @@ $(() => {
     });
 
     const card_1_click = function () {
-        if (!cashInflowChartData) {
-            return;
-        }
+        
 
         anime({
             targets: "#analytics-card-4",
@@ -194,7 +219,9 @@ $(() => {
 
             $("#card-date-select-region").show();
 
-            initCashInflowChart(cashInflowChartData);
+            if (cashInflowChartData) {
+                initCashInflowChart(cashInflowChartData);
+            }
         });
     };
 

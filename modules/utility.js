@@ -1701,22 +1701,46 @@ module.exports = {
     },
     analytics: {
 
-        fetchCashInflow: async (start, end) => {
-            const entries = await models.CustomerLedger.findAll({
-                attribute: ['debit'],
-                where: {
-                    [Op.and]: [
-                        sequelize.where(sequelize.fn('date', sequelize.col('date')), Op.lte, getSqlDate(end)),
-                        sequelize.where(sequelize.fn('date', sequelize.col('date')), Op.gte, getSqlDate(start)),
-                    ]
-                }
-            });
-
-            let total = _.sumBy(entries, i => i.debit);
-
-            let formatted = numeral(total).format('0,0');
-
-            return { total, formatted };
+        fetchCashInflow: async (start, end, warehouse) => {
+            if (warehouse != 0) { 
+                const users = await models.User.findAll({
+                    attributes: ['id'],
+                    where: {
+                        warehouse_id: warehouse
+                    }
+                });
+                let user_ids = users.map(user => user.id);
+                const entries = await models.CustomerLedger.findAll({
+                    attribute: ['debit'],
+                    where: {
+                        [Op.and]: [
+                            sequelize.where(sequelize.fn('date', sequelize.col('date')), Op.lte, getSqlDate(end)),
+                            sequelize.where(sequelize.fn('date', sequelize.col('date')), Op.gte, getSqlDate(start)),
+                        ],
+                        userId: user_ids
+                    }
+                });
+                let total = _.sumBy(entries, i => i.debit);
+    
+                let formatted = numeral(total).format('0,0');
+    
+                return { total, formatted };
+            } else {
+                const entries = await models.CustomerLedger.findAll({
+                    attribute: ['debit'],
+                    where: {
+                        [Op.and]: [
+                            sequelize.where(sequelize.fn('date', sequelize.col('date')), Op.lte, getSqlDate(end)),
+                            sequelize.where(sequelize.fn('date', sequelize.col('date')), Op.gte, getSqlDate(start)),
+                        ]
+                    }
+                });
+                let total = _.sumBy(entries, i => i.debit);
+    
+                let formatted = numeral(total).format('0,0');
+    
+                return { total, formatted };
+            }
         }
 
     },

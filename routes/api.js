@@ -502,6 +502,10 @@ router.get('/stats/customer/balance/:id', middleware.auth.loggedIn(), function (
 
 router.get('/analytics/inflow/chart', middleware.auth.loggedIn(), function (req, res, next) {
     let today_np = new NepaliDate(new Date());
+    let warehouse = req.query.warehouse;
+    if (typeof warehouse === 'undefined') {
+        warehouse = 0;
+    }
     let np = today_np;
     let promises = [];
     let dates = [];
@@ -521,7 +525,7 @@ router.get('/analytics/inflow/chart', middleware.auth.loggedIn(), function (req,
         dates.push({id: i, name: np.format("MMMM", "np")});
 
         // Set current np as 1 Year back
-        promises.push(utility.analytics.fetchCashInflow(np_first_date.toJsDate(), np_last_date.toJsDate()).then(val => {
+        promises.push(utility.analytics.fetchCashInflow(np_first_date.toJsDate(), np_last_date.toJsDate(), warehouse).then(val => {
             return {id: i, value: val};
         }));
 
@@ -551,8 +555,9 @@ router.get('/analytics/inflow', middleware.auth.loggedIn(), function(req, res, n
 
     let start = new Date(req.query.start);
     let end = new Date(req.query.end);
+    let warehouse = req.query.warehouse;
 
-    utility.analytics.fetchCashInflow(start, end).then(data => {
+    utility.analytics.fetchCashInflow(start, end, warehouse).then(data => {
         res.json({status: "success", data});
     }).catch(err => {
         console.log(err);
