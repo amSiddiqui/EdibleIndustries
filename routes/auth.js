@@ -38,7 +38,7 @@ router.post('/login', middleware.auth.notLoggedIn(), (req, res) => {
             req.session.email = email;
             req.session.first_name = data.first_name;
             req.session.user_type = data.user_type;
-            utility.user.getWarehouse().then(warehouse => {
+            utility.user.getWarehouse(email).then(warehouse => {
                 if (warehouse)
                     req.session.warehouse = warehouse.id;
             });

@@ -169,14 +169,14 @@ router.get('/customer/:id', middleware.auth.loggedIn(), function (req, res, next
                     status: 'fail',
                     message: 'DB error'
                 });
-            });;
+            });
         }).catch(err => {
             console.log(err);
             res.json({
                 status: 'fail',
                 message: 'DB error'
             });
-        });;
+        });
     }).catch(err => {
         console.log(err);
         res.json({

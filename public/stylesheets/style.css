@@ -8361,7 +8361,7 @@ select {
         font-size: 1.6rem;
         top: 3px;
         right: 8px; }
-  .analytics-card #cash-flow-small {
+  .analytics-card .card-title-small {
     cursor: pointer;
     position: relative;
     display: flex;
