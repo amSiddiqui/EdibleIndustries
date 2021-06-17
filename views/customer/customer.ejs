@@ -219,7 +219,7 @@
                             <td><%= entry.nepali_date %></td>
                             <td><%= entry.credit === null ? '': entry.credit.toFixed(2); %></td>
                             <td class="<% if(entry.debit !== null){ %>has-text-danger<% } %>"><%= entry.debit === null ? '': entry.debit.toFixed(2); %></td>
-                            <td><%= balance.toFixed(2); %></td>
+                            <td data-order="<%=balance%>"><%= balance.toFixed(2); %></td>
                             <% if(entry.type === 'Deposit' && check_perm()) { %>
                                 <td>
                                     <div class="field  is-grouped">

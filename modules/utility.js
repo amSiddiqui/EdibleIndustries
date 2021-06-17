@@ -1936,7 +1936,7 @@ module.exports = {
         syncCustomerLedger: async () => {
             let ledgers = await models.CustomerLedger.findAll();
             for (let ledger of ledgers) {
-                if (ledger.type === 'Deposit') continue;
+                if (ledger.type === 'Sale') continue;
 
                 let bill = await ledger.getBill();
                 if (bill) {
