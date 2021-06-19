@@ -34,13 +34,7 @@ $(() => {
             url: "/api/analytics/inflow",
             data: { start: start_js.toISOString(), end: end_js.toISOString(), warehouse},
             success: function (res) {
-                anime({
-                    targets: "#cash-inflow-value",
-                    textContent: res.data.formatted,
-                    round: 1 / 5,
-                    easing: "easeInOutQuad",
-                    duration: 1000,
-                });
+                $("#cash-inflow-value").html(res.data.formatted);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 console.log(jqXHR.responseJSON);

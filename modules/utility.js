@@ -1711,7 +1711,7 @@ module.exports = {
                 });
                 let user_ids = users.map(user => user.id);
                 const entries = await models.CustomerLedger.findAll({
-                    attribute: ['debit'],
+                    attribute: ['credit'],
                     where: {
                         [Op.and]: [
                             sequelize.where(sequelize.fn('date', sequelize.col('date')), Op.lte, getSqlDate(end)),
@@ -1720,14 +1720,15 @@ module.exports = {
                         userId: user_ids
                     }
                 });
-                let total = _.sumBy(entries, i => i.debit);
+                let total = _.sumBy(entries, i => i.credit);
     
                 let formatted = numeral(total).format('0,0');
     
                 return { total, formatted };
             } else {
+                
                 const entries = await models.CustomerLedger.findAll({
-                    attribute: ['debit'],
+                    attribute: ['credit'],
                     where: {
                         [Op.and]: [
                             sequelize.where(sequelize.fn('date', sequelize.col('date')), Op.lte, getSqlDate(end)),
@@ -1735,10 +1736,9 @@ module.exports = {
                         ]
                     }
                 });
-                let total = _.sumBy(entries, i => i.debit);
+                let total = _.sumBy(entries, i => i.credit);
     
                 let formatted = numeral(total).format('0,0');
-    
                 return { total, formatted };
             }
         }
