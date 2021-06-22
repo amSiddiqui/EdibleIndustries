@@ -567,7 +567,7 @@ router.get('/analytics/inflow/table', middleware.auth.loggedIn(), function(req, 
                 'date': new NepaliDate(entry.date).format('DD/MM/YYYY'),
                 'debit': entry.credit,
                 'credit': entry.debit,
-                'bill': {id: entry.bill?.id, track_id: entry.bill?.track_id},
+                'bill': {id: entry.bill ? entry.bill.id: null, track_id: entry.bill ? entry.bill.track_id: null},
                 'warehouse': entry.user.warehouse.name,
                 'user': entry.user.first_name + ' ' + entry.user.last_name
             }
