@@ -1636,6 +1636,32 @@ module.exports = {
             });
             return entries;
         },
+        fetchEntries: async (start, end, warehouse=0) => {
+            let query = {
+                attribute: ['credit'],
+                where: {
+                    [Op.and]: [
+                        sequelize.where(sequelize.fn('date', sequelize.col('date')), Op.lte, getSqlDate(end)),
+                        sequelize.where(sequelize.fn('date', sequelize.col('date')), Op.gte, getSqlDate(start)),
+                    ]
+                },
+                include: [{
+                    model: models.Customer,
+                }, {
+                    model: models.Bill
+                }, {
+                    model: models.User,
+                    include: {
+                        model: models.Warehouse
+                    }
+                }]
+            };
+            if (warehouse != 0) { 
+                query.where[Op.and].push(sequelize.where(sequelize.col('user->warehouse.id'), Op.eq, warehouse));
+            }
+            const entries = models.CustomerLedger.findAll(query);
+            return entries;
+        },
         addEntry: async (customer_id, entry_data, email) => {
             // Only adds Deposit entries
             const customer = await models.Customer.findByPk(customer_id);

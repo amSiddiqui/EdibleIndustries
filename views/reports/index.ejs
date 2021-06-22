@@ -11,6 +11,7 @@
                     <span class="title is-5 cash-inflow-title">Cash Inflow</span>
                     <span class="is-6" id="cash-inflow-date">...</span>
                     <span class="title is-3 has-text-success" id="cash-inflow-value">...</span>
+                    <span id="describe-cash-inflow" style="display: none;">describe</span>
                 </div>
                 <div id="card-date-select-region">
                     <div class="columns">
@@ -28,7 +29,7 @@
                             <label for="inflow-warehouse-select" class="label">Warehouse</label>
                             <div class="select">
                                 <select id="inflow-warehouse-select">
-                                    
+
                                 </select>
                             </div>
                         </div>
@@ -62,6 +63,47 @@
             </div>
         </div>
     </div>
+</div>
+
+<div class="modal" id="cash-inflow-table-modal">
+    <div class="modal-background"></div>
+    <div class="modal-content">
+        <div class="card">
+            <table id="cash-inflow-table" class="table is-striped is-hoverable" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Ledger ID</th>
+                        <th>Customer</th>
+                        <th>Type</th>
+                        <th>Date</th>
+                        <th>Debit</th>
+                        <th>Credit</th>
+                        <th>Warehouse</th>
+                        <th>User</th>
+                        <th>Bill</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+    </div>
+    <button class="modal-close is-large" aria-label="close"></button>
 </div>
 
 <%include ../partials/footer %>

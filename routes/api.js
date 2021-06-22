@@ -547,6 +547,39 @@ router.get('/analytics/inflow/chart', middleware.auth.loggedIn(), function (req,
     });
 });
 
+router.get('/analytics/inflow/table', middleware.auth.loggedIn(), function(req, res, next) {
+    if (!req.query.start || !req.query.end) {
+        res.status(403).json({status: "error", message: "Please provide start and end date"});
+        return;
+    }
+    
+    let start = new Date(req.query.start);
+    let end = new Date(req.query.end);
+    let warehouse = req.query.warehouse;
+
+    utility.ledger.fetchEntries(start, end, warehouse).then(entries => {
+        let response = {data: []};
+        for (let entry of entries) {
+            entry_data = {
+                'id': {id: entry.id, customer_id: entry.customer.id},
+                'customer': {name: entry.customer.first_name + ' ' + entry.customer.last_name, id: entry.customer.id},
+                'type': entry.type,
+                'date': new NepaliDate(entry.date).format('DD/MM/YYYY'),
+                'debit': entry.credit,
+                'credit': entry.debit,
+                'bill': {id: entry.bill?.id, track_id: entry.bill?.track_id},
+                'warehouse': entry.user.warehouse.name,
+                'user': entry.user.first_name + ' ' + entry.user.last_name
+            }
+            response.data.push(entry_data);
+        }
+        res.json(response);
+    }).catch(err => {
+        console.log(err);
+        res.status(500).json({'status': 'error', 'message': 'Something went wrong please try again later'});
+    });
+});
+
 router.get('/analytics/inflow', middleware.auth.loggedIn(), function(req, res, next) {
     if (!req.query.start || !req.query.end) {
         res.status(403).json({status: "error", message: "Please provide start and end date"});

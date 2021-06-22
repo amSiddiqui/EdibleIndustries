@@ -130,6 +130,7 @@ $(() => {
             // set up large view
 
             $("#cash-inflow-date").hide();
+            $("#describe-cash-inflow").show();
 
             $("#analytics-card-1 #cash-flow-small").css({
                 "align-items": "flex-start",
@@ -190,6 +191,7 @@ $(() => {
             });
 
             $("#cash-inflow-date").show();
+            $("#describe-cash-inflow").hide();
 
             $(".cash-inflow-title").css({
                 "margin-top": 8,
@@ -296,6 +298,145 @@ $(() => {
         error: function(xhr, statusText, status) {
             console.log(xhr);
         }
+    });
+
+    let cash_inflow_table = null;
+    
+    
+    $('#cash-inflow-table thead tr').clone(true).appendTo( '#cash-inflow-table thead' );
+    $('#cash-inflow-table thead tr:eq(1) th').each( function (i) {
+        var title = $(this).text();
+        $(this).html( '<input type="text" style="width: 100%; padding: 3px; box-sizing: border-box;" class="input is-small" placeholder="Search '+title+'" />' );
+ 
+        $( 'input', this ).on( 'keyup change', function () {
+            if ( cash_inflow_table && cash_inflow_table.column(i).search() !== this.value ) {
+                cash_inflow_table
+                    .column(i)
+                    .search( this.value )
+                    .draw();
+            }
+        });
+    } );
+
+    $("#describe-cash-inflow").on('click', function() {
+        let start = new NepaliDate($("#from_date_cash_inflow").val()).toJsDate().toISOString();
+        let end = new NepaliDate($("#to_date_cash_inflow").val()).toJsDate().toISOString();
+        let warehouse = $("#inflow-warehouse-select").val();
+        let url = `/api/analytics/inflow/table?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}&warehouse=${encodeURIComponent(warehouse)}`;
+        if (cash_inflow_table) {
+            cash_inflow_table.ajax.url(url).load();
+        } else {
+            cash_inflow_table = $("#cash-inflow-table").DataTable({
+                ajax: {
+                    url,
+                    dataSrc: 'data'
+                },
+                processing: true,
+                language: {
+                    loadingRecords: '&nbsp;',
+                    processing: `
+                    <div class="sk-chase">
+                        <div class="sk-chase-dot"></div>
+                        <div class="sk-chase-dot"></div>
+                        <div class="sk-chase-dot"></div>
+                        <div class="sk-chase-dot"></div>
+                        <div class="sk-chase-dot"></div>
+                        <div class="sk-chase-dot"></div>
+                    </div>
+                    `
+                },
+                columns: [
+                    {data: 'id', render: function(data, type, row, meta) {
+                        if (type === 'filter' || type === 'type' || type === 'sort') {
+                            return data.id;
+                        }
+                        return `
+                            <a href="/customer/${data.customer_id}#ledger">${data.id}</a>
+                        `;
+                    }},
+                    {data: 'customer', render: function(data, type, row, meta) {
+                        if (type === 'filter' || type === 'type' || type === 'sort') {
+                            return data.name;
+                        }
+                        return `
+                            <a href="/customer/${data.id}">${data.name}</a>
+                        `;
+                    }},
+                    {data: 'type'},
+                    {data: 'date'},
+                    {data: 'debit'},
+                    {data: 'credit'},
+                    {data: 'warehouse'},
+                    {data: 'user'},
+                    {data: 'bill', render: function(data, type, row, meta) {
+                        if (!data.id) {
+                            return '';
+                        }
+                        if (type === 'filter' || type === 'type' || type === 'sort') {
+                            return data.track_id;
+                        }
+                        return `
+                            <a href="/billing/${data.id}">${data.track_id}</a>
+                        `;
+                    }},
+                ],
+                "columnDefs": [{
+                    "width": "3%",
+                    "targets": 0
+                }],
+                "order": [
+                    [0, 'desc']
+                ],
+                orderCellsTop: true,
+                "footerCallback": function (row, data, start, end, display) {
+                    var api = this.api(),
+                        data;
+                    var intVal = function (i) {
+                        if (typeof i === 'string') {
+                            i = i.trim();
+                            if (i.length == 0) {
+                                return 0;
+                            }
+                            if (isNaN(i)) {
+                                i = i.substring(3);
+                                return parseFloat(i);
+                            }
+                            return parseFloat(i);
+                        }
+                        return i;
+                    };
+        
+                    // computing column Total of the complete result 
+                    var debitTotal = api
+                        .column(4, { search:'applied' })
+                        .data()
+                        .reduce(function (a, b) {
+                            return a + intVal(b);
+                        }, 0);
+                    
+                    var creditTotal = api
+                        .column(5, { search:'applied' })
+                        .data()
+                        .reduce(function (a, b) {
+                            return a + intVal(b);
+                        }, 0);
+        
+                    debitTotal = formatMoney(debitTotal);
+                    creditTotal = formatMoney(creditTotal);
+        
+                    // Update footer by showing the total with the reference of the column index 
+                    $(api.column(0).footer()).html('Total');
+                    $(api.column(4).footer()).html('Re. '+debitTotal);
+                    $(api.column(5).footer()).html('Re. '+creditTotal);
+                }
+            });
+        }
+
+        $("#cash-inflow-table-modal").addClass('is-active');
+    });
+
+    $(".modal-close").on('click', function() {
+        $(this).parents('.modal').removeClass('is-active');
     });
 
     const card_2_click = function() {

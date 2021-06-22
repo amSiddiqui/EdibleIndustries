@@ -774,6 +774,25 @@ select {
   border-radius: 4px 0 0 4px;
 }
 
+#describe-cash-inflow {
+  margin-left: 1rem;
+  margin-top: 0.6rem;
+  color: blue;
+  font-style: italic;
+  &:hover {
+    color: navy;
+  }
+}
+
+#cash-inflow-table-modal {
+  .card {
+    padding: 2rem;
+  }
+  .modal-content {
+    width: calc(100vw - 200px);
+  }
+}
+
 ::marker {
   font-size: 0;
 }
