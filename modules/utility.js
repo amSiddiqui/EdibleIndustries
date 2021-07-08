@@ -139,8 +139,10 @@ async function calculateTotalInventory(inv_id, end_date, warehouse_id = 1) {
     };
 }
 
-async function getCustomerBalance(customer_id) {
-    const customer = await models.Customer.findByPk(customer_id);
+async function getCustomerBalance(customer, object=false) {
+    if (!object) {
+        customer = await models.Customer.findByPk(customer);
+    }
     var entries = await customer.getCustomer_ledgers();
     var balance = 0.;
     entries.forEach(ent => {
@@ -153,6 +155,7 @@ async function getCustomerBalance(customer_id) {
     });
     return balance;
 }
+
 
 async function getBillNo(date = new Date()) {
     // if current month == 3 then bill no in category 2077/78/0001
@@ -1767,8 +1770,61 @@ module.exports = {
                 let formatted = numeral(total).format('0,0');
                 return { total, formatted };
             }
-        }
+        },
+        fetchCustomerData: async (customer) => {
+            let bills = await customer.getBills({
+                include: [
+                    {
+                        model: models.User,
+                        include: {
+                            model: models.Warehouse
+                        }
+                    },
+                    {
+                        model: models.BillTransaction,
+                        include: [
+                            {
+                                model: models.BillTransaction,
+                                as: 'return'
+                            }
+                        ]
+                    }
+                ]
+            }); 
+            let warehouses = [];
+            let total = 0;
+            let due = 0;
+            var total_rented = 0;
+            for (let bill of bills) {
+                if (!warehouses.includes(bill.user.warehouse.name)) {
+                    warehouses.push(bill.user.warehouse.name);
+                }
+                total += bill.total;
+                if (!bill.paid) {
+                    due += bill.total;
+                }
+                var rented = 0;
+                for (let j = 0; j < bill.bill_transactions.length; j++) {
+                    var txn = bill.bill_transactions[j];
+                    if (txn.type === 'rented') {
+                        rented += txn.quantity;
+                        var returns = txn.return;
+                        if (returns) {
+                            for (let k = 0; k < returns.length; k++) {
+                                var r = returns[k];
+                                rented -= r.quantity;
+                            }
+                            if (rented > 0) {
+                                total_rented += rented;
+                            }
+                        }
+                    }
+                }
+            }
 
+            let balance = await getCustomerBalance(customer, true);
+            return {billed_by: warehouses, purchase: total, due, rented: total_rented, account: balance};
+        }
     },
     misc: {
         zones: (data) => {

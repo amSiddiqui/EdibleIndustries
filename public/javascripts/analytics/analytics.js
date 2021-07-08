@@ -301,7 +301,7 @@ $(() => {
     });
 
     let cash_inflow_table = null;
-    
+    let customer_table = null;
     
     $('#cash-inflow-table thead tr').clone(true).appendTo( '#cash-inflow-table thead' );
     $('#cash-inflow-table thead tr:eq(1) th').each( function (i) {
@@ -316,7 +316,114 @@ $(() => {
                     .draw();
             }
         });
-    } );
+    });
+
+    $('#customer-table thead tr').clone(true).appendTo( '#customer-table thead' );
+    $('#customer-table thead tr:eq(1) th').each( function (i) {
+        var title = $(this).text();
+        $(this).html( '<input type="text" style="width: 100%; padding: 3px; box-sizing: border-box;" class="input is-small" placeholder="Search '+title+'" />' );
+ 
+        $( 'input', this ).on( 'keyup change', function () {
+            if ( cash_inflow_table && cash_inflow_table.column(i).search() !== this.value ) {
+                cash_inflow_table
+                    .column(i)
+                    .search( this.value )
+                    .draw();
+            }
+        });
+    });
+
+    customer_table = $("#customer-table").DataTable({
+        ajax: {
+            url: `/api/analytics/customer`,
+            dataSrc: 'data'
+        },
+        processing: true,
+        language: {
+            loadingRecords: '&nbsp;',
+            processing: `
+            <div class="sk-chase">
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+            </div>
+            `
+        },
+        columns: [
+            {data: 'id'},
+            {data: 'customer'},
+            {data: 'type'},
+            {data: 'anchal'},
+            {data: 'billed_by'},
+            {data: 'purchase'},
+            {data: 'due'},
+            {data: 'rented'},
+            {data: 'account'},            
+        ],
+        orderCellsTop: true,
+        "footerCallback": function (row, data, start, end, display) {
+            var api = this.api(),
+                data;
+            var intVal = function (i) {
+                if (typeof i === 'string') {
+                    i = i.trim();
+                    if (i.length == 0) {
+                        return 0;
+                    }
+                    if (isNaN(i)) {
+                        i = i.substring(3);
+                        return parseFloat(i);
+                    }
+                    return parseFloat(i);
+                }
+                return i;
+            };
+
+            // computing column Total of the complete result 
+            var t1 = api
+                .column(5, { search:'applied' })
+                .data()
+                .reduce(function (a, b) {
+                    return a + intVal(b);
+                }, 0);
+            
+            var t2 = api
+                .column(6, { search:'applied' })
+                .data()
+                .reduce(function (a, b) {
+                    return a + intVal(b);
+                }, 0);
+
+            var t3 = api
+                .column(7, { search:'applied' })
+                .data()
+                .reduce(function (a, b) {
+                    return a + intVal(b);
+                }, 0);
+
+            var t4 = api
+                .column(8, { search:'applied' })
+                .data()
+                .reduce(function (a, b) {
+                    return a + intVal(b);
+                }, 0);
+
+            t1 = formatMoney(t1);
+            t2 = formatMoney(t2);
+            
+            t4 = formatMoney(t4);
+
+            // Update footer by showing the total with the reference of the column index 
+            $(api.column(0).footer()).html('Total');
+            $(api.column(5).footer()).html('Re. '+t1);
+            $(api.column(6).footer()).html('Re. '+t2);
+            $(api.column(7).footer()).html(t3);
+            $(api.column(8).footer()).html('Re. '+t4);
+        }
+    });
 
     $("#describe-cash-inflow").on('click', function() {
         let start = new NepaliDate($("#from_date_cash_inflow").val()).toJsDate().toISOString();
