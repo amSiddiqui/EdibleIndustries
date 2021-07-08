@@ -352,6 +352,9 @@ $(() => {
             </div>
             `
         },
+        "createdRow": function(row, data, dataIndex) {
+            $(row).attr('onclick', `window.open("/customer/${data.id}")`);
+        },
         columns: [
             {data: 'id'},
             {data: 'customer'},
