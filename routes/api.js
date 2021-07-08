@@ -510,7 +510,7 @@ router.get('/analytics/customer', middleware.auth.loggedIn(), async function(req
                 'id': customer.id,
                 'customer': customer.first_name + ' ' + customer.last_name,
                 'type': customer.customer_type.name,
-                'anchal': customer.zone == null ? '': customer.zone.value,
+                'anchal': customer.district == null ? '': customer.district.value,
                 'billed_by': customer_data.billed_by.join('<br/>'),
                 'purchase': customer_data.purchase.toFixed(2),
                 'due': customer_data.due.toFixed(2),

@@ -324,8 +324,8 @@ $(() => {
         $(this).html( '<input type="text" style="width: 100%; padding: 3px; box-sizing: border-box;" class="input is-small" placeholder="Search '+title+'" />' );
  
         $( 'input', this ).on( 'keyup change', function () {
-            if ( cash_inflow_table && cash_inflow_table.column(i).search() !== this.value ) {
-                cash_inflow_table
+            if ( customer_table && customer_table.column(i).search() !== this.value ) {
+                customer_table
                     .column(i)
                     .search( this.value )
                     .draw();
