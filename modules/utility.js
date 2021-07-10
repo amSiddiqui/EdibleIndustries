@@ -1193,6 +1193,9 @@ module.exports = {
                 },
                 {
                     model: models.User
+                },
+                {
+                    model: models.Warehouse
                 }
                 ]
             });
@@ -1529,6 +1532,31 @@ module.exports = {
                 ]
             });
             return bill.createdAt;
+        },
+        changeWarehouse: async (bill_id, warehouse_id, user_id) => {
+            let bill = await models.Bill.findByPk(bill_id, {
+                include: {
+                    model: models.BillTransaction,
+                    include: {
+                        model: models.InventoryRecord,
+                        include: {
+                            model: models.InventoryBatchRecord,
+                            include: models.InventoryBatch
+                        }
+                    }
+                }
+            });
+            console.log();
+            models.User.findByPk(user_id).then(user => {
+                bill.setUser(user);
+            }).catch(err => {})
+            models.Warehouse.findByPk(warehouse_id).then(async warehouse => {
+                await bill.setWarehouse(warehouse);
+                for (let tn of bill.bill_transactions) {
+                    await tn.inventory_record.setWarehouse(warehouse);
+                }
+            }).catch(err => {
+            });
         }
     },
     warehouse: {
@@ -1880,6 +1908,7 @@ module.exports = {
         },
         toNumberFloat: toNumberFloat,
         toNumber: toNumber,
+        calculateTotalInventory: calculateTotalInventory,
         getThisMonthStart: getThisMonthStart,
         toEnglishDate: (date) => {
             var numbers = {

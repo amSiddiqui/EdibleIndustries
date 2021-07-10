@@ -78,13 +78,23 @@
                         </td>
                     </tr>
                     <tr>
+                        <th>Date: </th>
+                        <td><%=bill.nepali_date%></td>
+                    </tr>
+                    <tr>
                         <th>Billed By: </th>
                         <td><%=bill.user.first_name+' '+bill.user.last_name%></td>
                     </tr>
                     <tr>
-                        <th>Date: </th>
-                        <td><%=bill.nepali_date%></td>
+                        <th>Warehouse: </th>
+                        <td><%=bill.warehouse.name%></td>
                     </tr>
+                    <% if (check_perm()){ %>
+                    <tr>
+                        <th></th>
+                        <td><button id="edit-warehouse" class="button is-primary is-rounded is-small">Edit</button></td>
+                    </tr>
+                    <% } %>
                 </tbody>
             </table>
         </div>
@@ -420,5 +430,51 @@
     </div>
 </div>
 
+
+<div class="modal " id="edit-warehouse-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Edit Warehouse</p>
+            <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+            <p class="has-text-danger" id="edit-warehouse-text"></p>
+            <form id="edit-warehouse-form" style="display: none;" action="/billing/edit-warehouse/" method="POST">
+                <label for="edit-user-select"  class="label">Edit Billed By</label>
+                <div class="select" style="margin-bottom: 1rem;">
+                    <select name="user" id="edit-user-select"> 
+                        <option>Select dropdown</option>
+                        <option>With options</option>
+                    </select>
+                </div>
+                <label for="edit-warehouse-select" class="label">Edit Warehouse</label>
+                <div class="select" >
+                    <select name="warehouse" id="edit-warehouse-select"> 
+                        <option>Select dropdown</option>
+                        <option>With options</option>
+                    </select>
+                </div>
+                <input type="hidden" name="bill" value="<%=bill.id%>">
+                <p id="warehouse-error-message" class="has-text-danger"></p>
+
+                <div style="margin-top: 2rem" class="field is-grouped is-grouped-right">
+                    <div class="control">
+                        <button id="edit-warehouse-button" disabled class="button is-rounded is-success">Save</button>
+                    </div>
+                    <div class="control">
+                        <button type="button" class="button close-modal is-rounded is-light">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+
+<script>
+    var user_id = `<%=bill.user.id%>`;
+    var bill_id = `<%=bill.id%>`;
+    var warehouse_id = `<%=bill.warehouse.id%>`;
+</script>
 
 <%include ../partials/footer %>

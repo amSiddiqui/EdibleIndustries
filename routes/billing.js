@@ -89,6 +89,27 @@ router.get('/api/bills', middleware.auth.loggedIn(), function (req, res, next) {
   });
 });
 
+router.get('/api/check-warehouse-edit', middleware.auth.loggedIn(), async function (req, res, next) {
+  let warehouse_id = req.query.warehouse;
+  let bill_id = req.query.bill;
+  let bill = await utility.billing.fetch(bill_id);
+  let possible = true;
+  let inv_name = '';
+  for (let tn of bill.bill_transactions) {
+    let inv = tn.inventory_record.inventory;
+    let record_info = await utility.misc.calculateTotalInventory(inv.id, new Date(), warehouse_id);
+    if (record_info.in_stock < tn.inventory_record.value) {
+      possible = false;
+      inv_name = inv.name;
+    }
+  }
+  if (possible) {
+    res.json({valid: true, message: "Change allowed"});
+  } else {
+    res.json({valid: false, message: `Change not allowed, ${inv_name} stock: ${record_info.in_stock}, bill items: ${tn.inventory_record.value}`});
+  }
+});
+
 router.get('/add', middleware.auth.loggedIn(), function (req, res, next) {
   var breadcrumbs = [{
     link: '/',
@@ -148,6 +169,16 @@ router.get('/add', middleware.auth.loggedIn(), function (req, res, next) {
       res.redirect('/billing');
     });
 
+});
+
+router.post('/edit-warehouse', middleware.auth.loggedIn(), async (req, res, next) => {
+  let bill_id = req.body.bill;
+  let warehouse_id = req.body.warehouse;
+  let user_id = req.body.user;
+
+  await utility.billing.changeWarehouse(bill_id, warehouse_id, user_id);
+
+  res.redirect('/billing/'+bill_id);
 });
 
 router.get('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {

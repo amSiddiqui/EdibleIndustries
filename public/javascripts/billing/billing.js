@@ -179,6 +179,89 @@ $(() => {
         $("#to_date").val( today_np.format("DD/MM/YYYY"));
         updateDataTable();
     });
+    
+    $.get('/api/warehouse/all', function(warehouse){
+        $.get('/api/users/all', function(users) {
+            if (isNaN(warehouse_id) || isNaN(user_id)) {
+                $("#edit-warehouse-text").html("Error Occurred, try again later");    
+                console.log("Returned part 1");
+                return;
+            }
+
+            if (!warehouse || !warehouse.warehouses) {
+                $("#edit-warehouse-text").html("Error Occurred, try again later");    
+                console.log("Returned part 2");
+                return;
+            }
+
+            if (!users) {
+                $("#edit-warehouse-text").html("Error Occurred, try again later");    
+                console.log("Returned part 3");
+                return;
+            }
+
+            let warehouses = warehouse.warehouses;
+            users = users;
+
+            $("#edit-warehouse-select").find('option').remove(); 
+
+            for (let w of warehouses) {
+                if (w.id == warehouse_id) {
+                    $("#edit-warehouse-select").append(`<option disabled selected value="${w.id}">${w.name}</option>`);
+                } else {
+                    $("#edit-warehouse-select").append(`<option value="${w.id}">${w.name}</option>`);
+                }
+            }
+
+            $("#edit-user-select").find('option').remove(); 
+            for (let u of users) {
+                if (u.email === 'gt_ams@yahoo.in') continue;
+                if (u.id == user_id) {
+                    $("#edit-user-select").append(`<option disabled selected value="${u.id}">${u.first_name} ${u.last_name}</option>`);
+                } else {
+                    $("#edit-user-select").append(`<option value="${u.id}">${u.first_name} ${u.last_name}</option>`);
+                }
+            }
+
+            $("#edit-warehouse-form").show();
+        }).fail(function(err) {
+            console.log(err);
+            $("#edit-warehouse-text").html("Error Occurred, try again later");
+        });
+    }).fail(function(err) {
+        console.log(err);
+        $("#edit-warehouse-text").html("Error Occurred, try again later");
+    });
+
+    $("#edit-warehouse").on('click', function() {
+        $("#edit-warehouse-modal").addClass('is-active');
+    });
+
+    $("#edit-user-select").on('change', function() {
+        $("#edit-warehouse-button").attr('disabled', false);
+    });
+    
+    $("#edit-warehouse-select").on('change', function() {
+        let w_id = $(this).val();
+        $("#edit-warehouse-button").attr('disabled', true);
+        $.ajax({
+            url: '/billing/api/check-warehouse-edit',
+            data: {warehouse: w_id, bill: bill_id},
+            success: function(res) {
+                if (res.valid) {
+                    $("#edit-warehouse-button").attr('disabled', false);
+                    $("#warehouse-error-message").html('');
+                } else {
+                    $("#warehouse-error-message").html(res.message);
+                }
+            },
+            error: function (xhr, statusText, status) {
+                console.log(err);
+                $("#warehouse-error-message").html('Some error occurred try again later');
+            }
+        });
+
+    })
 
 });
 
