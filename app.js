@@ -83,18 +83,6 @@ const db = require('./modules/database');
 db.sequelize.authenticate()
   .then(() => {
     console.log("Connected to database successfully");
-    utility.misc.syncCustomerLedgerSale().then(() => {
-      console.log("Customer ledger sale sync complete");
-      utility.misc.syncCustomerLedgerDeposit().then(() => {
-        console.log("Customer ledger deposit syn complete");
-      }).catch(err => {
-        console.log(err);
-        console.log("Customer ledger deposit sync error");
-      });
-    }).catch(err => {
-      console.log(err);
-      console.log("Customer ledger sync error");
-    });
   })
   .catch(err => {
     console.error("An error occurred while connecting ", err);
