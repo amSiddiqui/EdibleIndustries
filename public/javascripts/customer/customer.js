@@ -202,6 +202,9 @@ $(function() {
     
     var ledger_table =  $("#ledger-table").DataTable({        
         "order": [[0, 'desc']],
+        "columnDefs": [
+            { "width": "10%", "targets": 0 },
+        ],
     });
 
     $("#deposit-button").on('click', function() {

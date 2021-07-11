@@ -458,6 +458,11 @@ const Bill = db.sequelize.define("bill", {
         type: db.Sequelize.BOOLEAN,
         defaultValue: true
     },
+    originalPaid: {
+        type: db.Sequelize.BOOLEAN,
+        allowNull: true,
+        default: null,
+    },
     dueDate: {
         type: db.Sequelize.DATE
     },
@@ -616,8 +621,19 @@ const CustomerLedger = db.sequelize.define('customer_ledger', {
 Customer.hasMany(CustomerLedger);
 CustomerLedger.belongsTo(Customer);
 
-Bill.hasMany(CustomerLedger);
-CustomerLedger.belongsTo(Bill);
+CustomerLedger.hasOne(Bill, {
+    as: 'sale',
+    foreignKey: 'saleId',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+});
+
+CustomerLedger.hasMany(Bill, {
+    as: 'deposit',
+    foreignKey: 'depositId',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+});
 
 User.hasMany(CustomerLedger);
 CustomerLedger.belongsTo(User);

@@ -205,15 +205,16 @@
                         <% var balance = 0; for(let i = 0; i < ledger_entries.length; i++) { var entry = ledger_entries[i]; if (entry.credit !== null) { balance += entry.credit; } if (entry.debit !== null) { balance -= entry.debit; }  %>
                         <tr onmouseover="showBill(this);" onmouseleave="hideBill(this);">
                             <td data-order="<%=entry.id%>"><%= entry.id %>
-                                
-                                <% if(entry.bill) { %>
                                 <div style="display: none" class="bill_tracks">
                                     <% if(entry.type === 'Deposit') { %>
                                         Bills Paid
+                                        <% for(let bill of entry.deposit) { %>
+                                        <br><a href="/bill/<%=bill.id%>"><%=bill.track_id%></a>
+                                        <% } %>
+                                    <% } else { %>
+                                        <br><a href="/bill/<%=entry.sale.id%>"><%=entry.sale.track_id%></a>
                                     <% } %>
-                                    <a href="/bill/<%=entry.bill.id%>"><%=entry.bill.track_id%></a>
                                 </div>
-                                <% } %>
                             </td>
                             <td><%= entry.type %></td>
                             <td><%= entry.nepali_date %></td>

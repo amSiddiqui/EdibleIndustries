@@ -122,3 +122,5 @@ uploads/*.*
 logs/
 
 .vscode
+
+deposit.json

@@ -586,6 +586,14 @@ router.get('/analytics/inflow/table', middleware.auth.loggedIn(), function(req, 
     utility.ledger.fetchEntries(start, end, warehouse).then(entries => {
         let response = {data: []};
         for (let entry of entries) {
+            let bills = [];
+            if (entry.type === 'Sale') {
+                bills.push({id: entry.sale.id, track_id: entry.sale.track_id});
+            } else {
+                for (let d of entry.deposit) {
+                    bills.push({id: d.id, track_id: d.track_id});
+                }
+            }
             entry_data = {
                 'id': {id: entry.id, customer_id: entry.customer.id},
                 'customer': {name: entry.customer.first_name + ' ' + entry.customer.last_name, id: entry.customer.id},
@@ -593,7 +601,7 @@ router.get('/analytics/inflow/table', middleware.auth.loggedIn(), function(req, 
                 'date': new NepaliDate(entry.date).format('DD/MM/YYYY'),
                 'debit': entry.credit,
                 'credit': entry.debit,
-                'bill': {id: entry.bill ? entry.bill.id: null, track_id: entry.bill ? entry.bill.track_id: null},
+                'bill': bills,
                 'warehouse': entry.user.warehouse.name,
                 'user': entry.user.first_name + ' ' + entry.user.last_name
             }

@@ -479,15 +479,17 @@ $(() => {
                     {data: 'warehouse'},
                     {data: 'user'},
                     {data: 'bill', render: function(data, type, row, meta) {
-                        if (!data.id) {
+                        if (data.length === 0) {
                             return '';
                         }
                         if (type === 'filter' || type === 'type' || type === 'sort') {
-                            return data.track_id;
+                            return data[0].track_id;
                         }
-                        return `
-                            <a href="/billing/${data.id}">${data.track_id}</a>
-                        `;
+                        let line = '';
+                        for (let d of data) {
+                            line += `<br/><a href="/billing/${d.id}">${d.track_id}</a>`
+                        }
+                        return line;
                     }},
                 ],
                 "columnDefs": [{
