@@ -487,7 +487,7 @@ $(() => {
                         }
                         let line = '';
                         for (let d of data) {
-                            line += `<br/><a href="/billing/${d.id}">${d.track_id}</a>`
+                            line += `<a href="/billing/${d.id}">${d.track_id}</a><br/>`
                         }
                         return line;
                     }},

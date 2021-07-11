@@ -201,7 +201,7 @@ $(function() {
     }, 1000);
     
     var ledger_table =  $("#ledger-table").DataTable({        
-        "order": [[0, 'desc']],
+        "order": [[2, 'desc']],
         "columnDefs": [
             { "width": "10%", "targets": 0 },
         ],

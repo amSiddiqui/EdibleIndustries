@@ -202,22 +202,22 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <% var balance = 0; for(let i = 0; i < ledger_entries.length; i++) { var entry = ledger_entries[i]; if (entry.credit !== null) { balance += entry.credit; } if (entry.debit !== null) { balance -= entry.debit; }  %>
+                        <% var balance = 0; for(let i = 0; i < ledger_entries.length; i++) { var entry = ledger_entries[i]; %>
                         <tr onmouseover="showBill(this);" onmouseleave="hideBill(this);">
                             <td data-order="<%=entry.id%>"><%= entry.id %>
                                 <div style="display: none" class="bill_tracks">
-                                    <% if(entry.type === 'Deposit') { %>
+                                    <% if(entry.type === 'Deposit') { if(entry.deposit.length > 0){ %>
                                         Bills Paid
                                         <% for(let bill of entry.deposit) { %>
-                                        <br><a href="/bill/<%=bill.id%>"><%=bill.track_id%></a>
+                                        <a href="/bill/<%=bill.id%>"><%=bill.track_id%></a><br/>
                                         <% } %>
-                                    <% } else { %>
-                                        <br><a href="/bill/<%=entry.sale.id%>"><%=entry.sale.track_id%></a>
+                                    <% }} else { %>
+                                        <a href="/bill/<%=entry.sale.id%>"><%=entry.sale.track_id%></a><br/>
                                     <% } %>
                                 </div>
                             </td>
                             <td><%= entry.type %></td>
-                            <td><%= entry.nepali_date %></td>
+                            <td data-order="<%=entry.date.getTime()%>"><%= entry.nepali_date %></td>
                             <td><%= entry.credit === null ? '': entry.credit.toFixed(2); %></td>
                             <td class="<% if(entry.debit !== null){ %>has-text-danger<% } %>"><%= entry.debit === null ? '': entry.debit.toFixed(2); %></td>
                             <td data-order="<%=balance%>"><%= balance.toFixed(2); %></td>
