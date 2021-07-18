@@ -588,7 +588,7 @@ router.get('/analytics/inflow/table', middleware.auth.loggedIn(), function(req, 
         for (let entry of entries) {
             let bills = [];
             if (entry.type === 'Sale') {
-                bills.push({id: entry.sale.id, track_id: entry.sale.track_id});
+                bills.push({id: entry.sale ? entry.sale.id: '', track_id: entry.sale ? entry.sale.track_id: ''});
             } else {
                 for (let d of entry.deposit) {
                     bills.push({id: d.id, track_id: d.track_id});
