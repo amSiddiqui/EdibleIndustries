@@ -1575,6 +1575,29 @@ module.exports = {
                 await tr.inventory_record.destroy();
                 await tr.destroy();
             }
+
+            let ledgers_sale = await models.CustomerLedger.findAll({
+                include: [{
+                    model: models.Bill,
+                    as: 'sale'
+                }],
+                where: sequelize.where(sequelize.col('sale.id'), Op.eq, bill.id)
+            });
+
+            let ledgers_deposit = await models.CustomerLedger.findAll({
+                include: [{
+                    model: models.Bill,
+                    as: 'deposit'
+                }],
+                where: sequelize.where(sequelize.col('deposit.id'), Op.eq, bill.id)
+            });
+
+            for (let i = 0; i < ledgers_sale.length; i++) {
+                let ledger = ledgers_sale[i];
+                if (ledger.type === 'Sale') {
+                    await ledger.destroy();
+                }
+            }
             
             await bill.destroy();
         },
