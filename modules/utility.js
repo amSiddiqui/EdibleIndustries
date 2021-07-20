@@ -1347,9 +1347,9 @@ module.exports = {
             }
             if (bill.payment_method != 'Free') {
                 var credit = null;
-                var debit = bill.total;
+                var debit = cost;
                 if (bill.payment_method === 'Cash') {
-                    credit = bill.total;
+                    credit = cost;
                 }
                 if (bill.payment_method === 'Credit') {
                     var balance = await getCustomerBalance(customer_id);
