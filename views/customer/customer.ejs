@@ -209,10 +209,10 @@
                                     <% if(entry.type === 'Deposit') { if(entry.deposit.length > 0){ %>
                                         Bills Paid
                                         <% for(let bill of entry.deposit) { %>
-                                        <a href="/bill/<%=bill.id%>"><%=bill.track_id%></a><br/>
+                                        <a href="/billing/<%=bill.id%>"><%=bill.track_id%></a><br/>
                                         <% } %>
                                     <% }} else { %>
-                                        <a href="/bill/<%=entry.sale.id%>"><%=entry.sale.track_id%></a><br/>
+                                        <a href="/billing/<%=entry.sale.id%>"><%=entry.sale.track_id%></a><br/>
                                     <% } %>
                                 </div>
                             </td>
