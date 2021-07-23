@@ -624,15 +624,15 @@ CustomerLedger.belongsTo(Customer);
 CustomerLedger.hasOne(Bill, {
     as: 'sale',
     foreignKey: 'saleId',
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
+    onDelete: 'SET NULL',
+    onUpdate: 'SET NULL'
 });
 
 CustomerLedger.hasMany(Bill, {
     as: 'deposit',
     foreignKey: 'depositId',
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
+    onDelete: 'SET NULL',
+    onUpdate: 'SET NULL'
 });
 
 User.hasMany(CustomerLedger);
