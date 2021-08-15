@@ -1384,6 +1384,18 @@ module.exports = {
             var bill = await models.Bill.findByPk(id);
             var customer = await models.Customer.findByPk(data.customer);
             await bill.setCustomer(customer);
+            try {
+                if (bill.saleId) {
+                    var sale = await models.CustomerLedger.findByPk(bill.saleId);
+                    await sale.setCustomer(customer);
+                }
+                if (bill.depositId) {
+                    var deposit = await models.CustomerLedger.findByPk(bill.depositId);
+                    await deposit.setCustomer(customer);
+                }
+            }catch(err) {
+                console.log(err);
+            }
             bill.image = data.image_loc;
             bill.description = data.description;
             if (!data.paid) {
