@@ -1803,7 +1803,7 @@ module.exports = {
             let entry = await models.CustomerLedger.findByPk(id);
             entry.credit = parseFloat(amount);
             await entry.save();
-            await models.CustomerLedger.update({createdAt: date}, {where: {id: entry.id}, silent: true});
+            await models.CustomerLedger.update({createdAt: date, date: date}, {where: {id: entry.id}, silent: true});
             let user = await models.User.findByPk(user_id);
             await entry.setUser(user);
         },
