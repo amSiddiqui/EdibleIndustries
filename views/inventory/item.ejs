@@ -2,6 +2,9 @@
 
 <script>
     const warehouse_id = parseInt('<%=warehouse.id%>');
+    const inventory_id = parseInt('<%=inventory.id%>');
+    const image_location = "<%=inventory.image%>";
+    const has_perm = '<%=check_perm();%>' === 'true';
 </script>
 
 <div class="container">
@@ -103,6 +106,16 @@
             <div class="column">
                 <% var inventory_type = inventory.type == 'manufactured'? 'Manufacture': 'Purchase' %>
                 <h1 class="title is-3 is-capitalized"><%=inventory_type%> History</h1>
+                <div class="columns">
+                    <div class="column is-2">
+                        <label for="from_date_history" class="label">From</label>
+                        <input type="text" class="input date-picker" id="from_date_history"><button class="button is-success clear-button"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="column is-2">
+                        <label for="to_date_history" class="label">To</label>
+                        <input type="text" class="input date-picker" id="to_date_history"><button class="clear-button button is-success"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
                 <table id="history-table" class="table is-striped is-fullwidth">
                     <thead>
                         <tr>
@@ -119,76 +132,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <% for (let i = 0; i < inventory.inventory_records.length; i++) { var record = inventory.inventory_records[i]; %>
-                        <%
-                            var color = 'has-text-success';
-                            if (record.type == 'sold' || record.type == 'discarded' || record.type == 'rented') {
-                                if (record.type == 'sold' || record.type == 'rented') {
-                                    color = '';
-                                }else{
-                                    color = 'has-text-danger';
-                                }
-                            }
-
-                            var hasPacking = typeof record.inventory_batch_record !== 'undefined' && record.inventory_batch_record !== null;
-                        %>
-                        <tr class="<%= record.type == 'sold'?'bill-id-show-container':''; %>">
-                            <td><%=(i+1)%></td>
-                            <td><%=record.user.first_name+' '+record.user.last_name;%>
-                            <% if (record.type == 'sold') { %>
-                            <div class="has-text-success bill-id-show">
-                                <p><%=record.bill_id%></p>
-                            </div>
-                            <% } %>
-                            </td>
-                            <% if (hasPacking) { %>
-                            <td><%=record.inventory_batch_record.inventory_batch.name%>
-                                (<%=record.inventory_batch_record.inventory_batch.quantity%>)</td>
-                            <% }else{ %>
-                            <td>Single</td>
-                            <% } %>
-                            <td class="is-capitalized <%=color%>"><%=record.type%></td>
-                            <% if (hasPacking) { %>
-                            <td>(<%=record.inventory_batch_record.inventory_batch.quantity%> *
-                                <%=record.inventory_batch_record.value%>) <%=record.value%></td>
-                            <% }else{ %>
-                            <td><%=record.value%></td>
-                            <% } %>
-                            <% if (record.type == 'purchased' || record.type == 'manufactured'){ %>
-                            <td><%=record.cost%></td>
-                            <% }else{ %>
-                            <td></td>
-                            <% } %>
-                            <td><%=toNepaliDate(record.recordDate);%></td>
-                            <% if(check_perm()) { %>
-                            <td>
-                                <% if(record.type == 'discarded' || record.type == 'purchased' || record.type == 'manufactured' || record.type == 'transferred') { %>
-                                <div class="field  is-grouped">
-                                    <div class="control">
-                                        <button
-                                        onclick = "recordEdit(
-                                            '<%=toNepaliDate(record.recordDate);%>',
-                                            '<%=record.type%>',
-                                            '<%=record.cost%>',
-                                            '<%=record.inventory_batch_record.inventory_batch.id%>',
-                                            '<%=record.value / record.inventory_batch_record.inventory_batch.quantity %>',
-                                            '<%=record.id%>'
-                                        );"
-                                        class="record-edit-button type-edit-button has-text-info"><i
-                                                class="fas fa-pen"></i></button>
-                                    </div>
-                                    <div class="control">
-                                        <button class="record-delete-button type-delete-button has-text-danger"
-                                        onclick = "recordDelete(
-                                            '<%=record.id%>'
-                                        );"><i class="fas fa-trash"></i></button>
-                                    </div>
-                                </div>
-                                <% } %>
-                            </td>
-                            <% } %>
-                        </tr>
-                        <% } %>
                     </tbody>
                     <tfoot>
                         <tr>
@@ -352,21 +295,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <% for(let i=0; i < bills.length; i++) { const bill = bills[i]; %>
-                        <tr onclick="window.location.href =  '/billing/<%=bill.id%>'">
-                            <td><%=bill.track_id;%></td>
-                            <td><%=bill.nepali_date;%></td>
-                            <td><%=bill.customer.first_name+' '+bill.customer.last_name;%></td>
-                            <td><%=bill.customer.customer_type.name;%></td>
-                            <td><%=bill.user.first_name+' '+bill.user.last_name;%></td>
-                            <td>Re. <%=bill.inv_total.toFixed(2); %></td>
-                            <td><%=bill.total_items; %></td>
-                            <td><%=bill.payment_method%></td>
-                            <td class="rent-status" data-key="<%=bill.id%>">
-                                <%= bill.rented?'Yes':'No' %>
-                            </td>
-                        </tr>
-                        <% } %>
                     </tbody>
                     <tfoot>
                         <tr>
@@ -721,10 +649,5 @@
 </div>
 
 
-<script>
-    var image_location = "<%=inventory.image%>";
-    var totals_bills = parseInt("<%= bills.length %>");
-    var inventory_id = parseInt("<%= inventory.id %>");
-</script>
 
 <%include ../partials/footer %>

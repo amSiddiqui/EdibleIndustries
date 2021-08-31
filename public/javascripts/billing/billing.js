@@ -1,4 +1,3 @@
-
 const today_np = new NepaliDate(new Date());
 var month_start_np = new NepaliDate(
     today_np.getYear(),

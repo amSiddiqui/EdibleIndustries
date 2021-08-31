@@ -364,39 +364,10 @@ module.exports = {
                         model: models.InventoryBatch
                     }]
             });
-            var records = await inv.getInventory_records({
-                order: [
-                    [sequelize.col('record_date')]
-                ],
-                where: {
-                    warehouse_id: warehouse.id
-                },
-                include: [{
-                    model: models.User
-                }, {
-                    model: models.InventoryBatchRecord,
-                    include: [{
-                        model: models.InventoryBatch
-                    }]
-                }, {
-                    model: models.BillTransaction,
-                    include: [{ model: models.Bill }]
-                }]
-            });
-
-            inv.inventory_records = records;
-
             var res = await calculateTotalInventory(inv.id, new Date(), warehouse.id);
             inv.total = res.total;
             inv.in_stock = res.in_stock;
 
-            for (let i = 0; i < inv.inventory_records.length; i++) {
-                var record = inv.inventory_records[i];
-                if (record.type == 'sold') {
-                    var txn = record.bill_transaction;
-                    inv.inventory_records[i].bill_id = txn.bill.track_id;
-                }
-            }
             logTime(_startTime, 'inventory.fetchInventory()');
             return inv;
         },
@@ -625,7 +596,58 @@ module.exports = {
             logTime(_startTime, 'inventory.deleteRecord()');
             return true;
         },
-        fetchBills: async (id, user_email, w_id = -1) => {
+        fetchHistory: async (id, start, end, w_id = -1) => {
+            var _startTime = new Date();
+            var warehouse = await models.Warehouse.findByPk(w_id);
+            if (warehouse === null) {
+                warehouse = await models.Warehouse.findOne({ where: { isPrimary: true } });
+            }
+            
+            var inv = await models.Inventory.findOne({
+                where: {
+                    id
+                },
+                include: [
+                    {
+                        model: models.InventoryBatch
+                    }]
+            });
+            var records = await inv.getInventory_records({
+                order: [
+                    [sequelize.col('record_date')]
+                ],
+                where: {
+                    warehouse_id: warehouse.id,
+                    [Op.and]: [
+                        sequelize.where(sequelize.fn('date', sequelize.col('inventory_record.record_date')), Op.lte, getSqlDate(end)),
+                        sequelize.where(sequelize.fn('date', sequelize.col('inventory_record.record_date')), Op.gte, getSqlDate(start)),
+                    ]
+                },
+                include: [{
+                    model: models.User
+                }, {
+                    model: models.InventoryBatchRecord,
+                    include: [{
+                        model: models.InventoryBatch
+                    }]
+                }, {
+                    model: models.BillTransaction,
+                    include: [{ model: models.Bill }]
+                }]
+            });
+
+            for (let i = 0; i < records.length; i++) {
+                var record = records[i];
+                if (record.type == 'sold') {
+                    var txn = record.bill_transaction;
+                    records[i].bill_id = txn.bill.track_id;
+                }
+            }
+
+            logTime(_startTime, 'inventory.fetchHistory()');
+            return records;
+        },
+        fetchBills: async (id, user_email, start, end, w_id = -1) => {
             var _startTime = new Date();
             var warehouse = await models.Warehouse.findByPk(w_id);
             if (warehouse === null) {
@@ -639,6 +661,12 @@ module.exports = {
             var bills = [];
             if (user.user_type === 'Admin') {
                 bills = await warehouse.getBills({
+                    where: {
+                        [Op.and]: [
+                            sequelize.where(sequelize.fn('date', sequelize.col('bill.createdAt')), Op.lte, getSqlDate(end)),
+                            sequelize.where(sequelize.fn('date', sequelize.col('bill.createdAt')), Op.gte, getSqlDate(start)),
+                        ]
+                    },
                     include: [{
                         model: models.BillTransaction,
                         include: [
@@ -661,10 +689,19 @@ module.exports = {
                     }, {
                         model: models.User
                     }
+                    ],
+                    order: [
+                        ['id', 'DESC']
                     ]
                 });
             } else {
                 bills = await warehouse.getBills({
+                    where: {
+                        [Op.and]: [
+                            sequelize.where(sequelize.fn('date', sequelize.col('bill.createdAt')), Op.lte, getSqlDate(end)),
+                            sequelize.where(sequelize.fn('date', sequelize.col('bill.createdAt')), Op.gte, getSqlDate(start)),
+                        ]
+                    },
                     include: [{
                         model: models.BillTransaction,
                         include: [
@@ -689,6 +726,9 @@ module.exports = {
                             id: user.id
                         }
                     }
+                    ],
+                    order: [
+                        ['id', 'DESC']
                     ]
                 });
             }

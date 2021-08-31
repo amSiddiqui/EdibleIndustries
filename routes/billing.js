@@ -56,7 +56,7 @@ router.get('/api/bills', middleware.auth.loggedIn(), function (req, res, next) {
 
       bills[i].nepali_date = new NepaliDate(bill.createdAt).format("DD/MM/YYYY");
       
-      bill_data = {};
+      let bill_data = {};
       bill_data['track_id'] = bills[i].track_id;
       bill_data['date'] = bills[i].nepali_date;
       if (bill.customer.organization.length === 0) {

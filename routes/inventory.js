@@ -166,16 +166,202 @@ router.get('/api/:id/bills', middleware.auth.loggedIn(), function (req, res, nex
   let id = parseInt(req.params.id);
   var user_email = req.session.email;
   var w_id = req.query.warehouse;
+  
+  let start_js = req.query.start;
+  let end_js = req.query.end;
+
+  
+  if (!start_js || !end_js) {
+
+    const today_np = new NepaliDate(new Date());
+    var month_start_np = new NepaliDate(
+      today_np.getYear(),
+      today_np.getMonth() - 1,
+      today_np.getDate()
+    );
+    if (today_np.getMonth() === 0) {
+      month_start_np = new NepaliDate(
+        today_np.getYear() - 1,
+        11,
+        today_np.getDate()
+      );
+    }
+
+    if (!start_js)
+      start_js = month_start_np.toJsDate().toISOString();
+    if (!end_js)
+      end_js = today_np.toJsDate().toISOString();
+  }
+
+  start_js = new Date(start_js);
+  end_js = new Date(end_js);
+  var data = {
+    data: [],
+    'type': 'success',
+    'message': ''
+  };
+
   if (w_id === undefined) {
     w_id = -1;
   } else {
     w_id = parseInt(w_id);
     w_id = isNaN(w_id) ? -1 : w_id;
   }
-  utility.inventory.fetchBills(id, user_email, w_id).then(() => {
+  utility.inventory.fetchBills(id, user_email, start_js, end_js, w_id).then((bills) => {
+    for (let i = 0; i < bills.length; i++) {
+      const bill = bills[i];
+      let bill_data = {};
+      var total_items = 0;
+      const transactions = bill.bill_transactions;
+      for(let j = 0; j < transactions.length; j++)
+      {
+        const tr = transactions[j];
+        if (tr.inventory_record.inventory.id == id && tr.type != 'returned') {
+          total_items += tr.quantity;
+        }
+      }
+      bills[i].total_items = total_items;
 
+      bills[i].nepali_date = new NepaliDate(bill.createdAt).format("DD/MM/YYYY");
+      if (!bill.paid) {
+        if (bill.dueDate == null) 
+          bills[i].nepali_due = '';
+        else
+          bills[i].nepali_due = new NepaliDate(bill.dueDate).format("DD/MM/YYYY");
+        if (bill.dueDate < bill.createdAt) {
+          bills[i].danger = true;
+        }else{
+          bills[i].danger = false;
+        }
+      }
+      
+      bill_data['track_id'] = bill.track_id;
+      bill_data['nepali_date'] = bills[i].nepali_date;
+      bill_data['customer_name'] = bills[i].customer.first_name+' '+bills[i].customer.last_name;
+      bill_data['customer_type'] = bills[i].customer.customer_type.name;
+      bill_data['user'] = bills[i].user.first_name+' '+bills[i].user.last_name;
+      bill_data['inv_total'] = 'Rs. '+bills[i].inv_total.toFixed(2);
+      bill_data['total_items'] = bills[i].total_items;
+      bill_data['payment_method'] = bills[i].payment_method;
+      bill_data['rent_status'] = bills[i].rented? 'Yes' : 'No';
+      data.data.push(bill_data);
+    }
+    res.json(data);
   }).catch(err => {
+    console.log(err);
+    data['type'] = 'fail';
+    data['message'] = 'Server problem try again later';
+    res.json(data);
+  });
+});
 
+router.get('/api/:id/history', middleware.auth.loggedIn(), function(req, res, next) {
+  let id = parseInt(req.params.id);
+  var w_id = req.query.warehouse;
+  
+  let start_js = req.query.start;
+  let end_js = req.query.end;
+
+  
+  if (!start_js || !end_js) {
+
+    const today_np = new NepaliDate(new Date());
+    var month_start_np = new NepaliDate(
+      today_np.getYear(),
+      today_np.getMonth() - 1,
+      today_np.getDate()
+    );
+    if (today_np.getMonth() === 0) {
+      month_start_np = new NepaliDate(
+        today_np.getYear() - 1,
+        11,
+        today_np.getDate()
+      );
+    }
+
+    if (!start_js)
+      start_js = month_start_np.toJsDate().toISOString();
+    if (!end_js)
+      end_js = today_np.toJsDate().toISOString();
+  }
+  
+  start_js = new Date(start_js);
+  end_js = new Date(end_js);
+  var data = {
+    data: [],
+    'type': 'success',
+    'message': ''
+  };
+
+  if (w_id === undefined) {
+    w_id = -1;
+  } else {
+    w_id = parseInt(w_id);
+    w_id = isNaN(w_id) ? -1 : w_id;
+  }
+
+  utility.inventory.fetchHistory(id, start_js, end_js, w_id)
+  .then((history) => {
+    for (let i = 0; i < history.length; i++) {
+      const record = history[i];
+      let record_data = {};
+      record_data['id'] = record.id;
+      record_data['type'] = record.type;
+      record_data['user_info'] = {
+        'name': record.user.first_name + ' ' + record.user.last_name,
+        'type': record.type,
+        'bill_id': record.bill_id
+      }
+      record_data['type_info'] = {};
+      record_data['bill_id'] = record.bill_id;
+      var has_packing = typeof record.inventory_batch_record !== 'undefined' && record.inventory_batch_record !== null; 
+      if (has_packing) {
+        record_data['packing'] = `${record.inventory_batch_record.inventory_batch.name} (${record.inventory_batch_record.inventory_batch.quantity})`;
+      } else {
+        record_data['packing'] = 'Single';
+      }
+      var color = 'success';
+      if (record.type == 'sold' || record.type == 'discarded' || record.type == 'rented') {
+          if (record.type == 'sold' || record.type == 'rented') {
+              color = '';
+          }else{
+              color = 'danger';
+          }
+      }
+      record_data['type_info'] = {
+        'type': record.type,
+        'color' : color
+      };
+      if (has_packing) {
+        record_data['quantity'] = `(${record.inventory_batch_record.inventory_batch.quantity} * ${record.inventory_batch_record.value}) ${record.value}`;
+      } else {
+        record_data['quantity'] = record.value;
+      }
+
+      if (record.type == 'purchased' || record.type == 'manufactured'){ 
+        record_data['cost'] = record.cost;
+      } else {
+        record_data['cost'] = '';
+      }
+
+      record_data['nepali_date'] = new NepaliDate(record.recordDate).format("DD/MM/YYYY");
+      record_data['edit_data'] = {
+        'date': record_data['nepali_date'],
+        'type': record_data['type'],
+        'cost': record_data['cost'],
+        'batch_id': record.inventory_batch_record.inventory_batch.id,
+        'quantity': record.value / record.inventory_batch_record.inventory_batch.quantity,
+        'id': record.id,
+      }
+      data.data.push(record_data);
+    }
+    res.json(data);
+  })
+  .catch(err => {
+    console.log(err);
+    data['type'] = 'fail';
+    data['message'] = 'Server problem try again later';
+    res.json(data);
   });
 });
 
@@ -221,8 +407,7 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
 
     var tData = {
       inventory: inv,
-      dependency: 'inventory/inventory-item.js',
-      recordsExists: inv.inventory_records.length !== 0,
+      dependencies: ["lib/nepali-date-converter.umd.js", 'inventory/inventory-item.js'],
       in_stock: inv.in_stock,
       total: inv.total,
       color: 'success',
@@ -237,12 +422,11 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
     var dt = new Date();
     for (let i = 0; i < 5; i++) {
       var np = new NepaliDate(dt);
-      last_5_dates.push(np)
+      last_5_dates.push(np);
       dt.setDate(dt.getDate() - 1);
     }
     
     data.last_5_dates = last_5_dates;
-
     
     data.toNepaliDate = (d) => {
       if (d == null) return '';
@@ -265,43 +449,10 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
       data.flash_message = flash_message;
       data.flash_color = flash_color;
     }
-    var user_email = req.session.email;
-    return utility.inventory.fetchBills(id, user_email, w_id);
-  }).
-  then(bills => {
-    for (let i = 0; i < bills.length; i++) {
-      const bill = bills[i];
-      var total_items = 0;
-      const transactions = bill.bill_transactions;
-      for(let j = 0; j < transactions.length; j++)
-      {
-        const tr = transactions[j];
-        if (tr.inventory_record.inventory.id == id && tr.type != 'returned') {
-          total_items += tr.quantity;
-        }
-      }
-      bills[i].total_items = total_items;
-      
-
-      bills[i].nepali_date = new NepaliDate(bill.createdAt).format("DD/MM/YYYY");
-      if (!bill.paid) {
-        if (bill.dueDate == null) 
-          bills[i].nepali_due = '';
-        else
-          bills[i].nepali_due = new NepaliDate(bill.dueDate).format("DD/MM/YYYY");
-        if (bill.dueDate < bill.createdAt) {
-          bills[i].danger = true;
-        }else{
-          bills[i].danger = false;
-        }
-      }
-    }
-    data.bills = bills;
     return utility.inventory.fetchBatches(id);
   }).
   then(batches => {
     data.batches = batches;
-
     data.reports = reports;
     res.render('inventory/item', data);
   }).

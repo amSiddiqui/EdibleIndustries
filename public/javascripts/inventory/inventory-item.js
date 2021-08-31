@@ -3,7 +3,12 @@ function resetTabs() {
     $(".tab-content").hide();
 }
 
-
+const today_np = new NepaliDate(new Date());
+var month_start_np = new NepaliDate(
+    today_np.getYear(),
+    today_np.getMonth(),
+    1
+);
 var warehouses = []; 
 $.get('/api/warehouse/all', function(data) {
     warehouses = data.warehouses;
@@ -119,30 +124,40 @@ $(function () {
         window.location.hash = "bills";
     });
 
-
-
-    $.fn.dataTable.ext.search.push(
-        function(settings, data, dataIndex) {
-            if (settings.nTable.id !== 'billing-table') return true;
-
-            var min_date = $("#from_date_billing").val();
-            if (!validDate(min_date)) {
-                min_date = "0/0/0";
-            }
-            var max_date = $("#to_date_billing").val();
-            if (!validDate(max_date)){
-                max_date = "99/99/9999";
-            }
-            var date = data[1];
-            min_date = convertNepaliToEnglish(min_date);
-            max_date = convertNepaliToEnglish(max_date);
-            date = convertNepaliToEnglish(date);
-            return dateInRange(date, min_date, max_date);
-        }
-    );
-
     
     var billingTable = $("#billing-table").DataTable({
+        "ajax": {
+            "url": `/inventory/api/${inventory_id}/bills?start=${month_start_np.toJsDate().toISOString()}&end=${today_np.toJsDate().toISOString()}`,
+            'dataSrc': 'data'
+        },
+        "processing": true,
+        "language": {
+            'loadingRecords': '&nbsp;',
+            'processing': `
+            <div class="sk-chase">
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+            </div>
+            `
+        },
+        "createdRow": function(row, data, dataIndex) {
+            $(row).attr('onclick', `window.location.href = "/billing/${data.bill_id}"`);
+        },
+        "columns": [
+            {data: 'track_id'},
+            {data: 'nepali_date'},
+            {data: 'customer_name'},
+            {data: 'customer_type'},
+            {data: 'user'},
+            {data: 'inv_total'},
+            {data: 'total_items'},
+            {data: 'payment_method'},
+            {data: 'rent_status'}
+        ],
         "columnDefs": [{
             "width": "3%",
             "targets": 0
@@ -150,6 +165,7 @@ $(function () {
         "order": [
             [0, 'desc']
         ],
+        orderCellsTop: true,
         "footerCallback": function (row, data, start, end, display) {
             var api = this.api(),
                 data;
@@ -192,17 +208,42 @@ $(function () {
         }
     });
 
-    if ($("#from_date_billing").length)
-    $('#from_date_billing').nepaliDatePicker({
-        dateFormat: 'DD/MM/YYYY',
-        onChange: () => {billingTable.draw();}
-    });
+    if ($("#from_date_billing").length) {
+        $('#from_date_billing').nepaliDatePicker({
+            dateFormat: 'DD/MM/YYYY',
+            disableAfter: today_np.format("YYYY-MM-DD"),
+            onChange: updateDataTable
+        });
+        $("#from_date_billing").val( month_start_np.format("DD/MM/YYYY"));
+        $("#from_date_billing + .clear-button").off("click");
+        $("#from_date_billing + .clear-button").on("click", function() {
+            $("#from_date_billing").val( month_start_np.format("DD/MM/YYYY"));
+            updateDataTable();
+        });
+    }
 
-    if ($("#to_date_billing").length)
-    $('#to_date_billing').nepaliDatePicker({
-        dateFormat: 'DD/MM/YYYY',
-        onChange: () => {billingTable.draw();}
-    });
+    if ($("#to_date_billing").length) {
+        $('#to_date_billing').nepaliDatePicker({
+            dateFormat: 'DD/MM/YYYY',
+            disableAfter: today_np.format("YYYY-MM-DD"),
+            onChange: updateDataTable
+        });
+        $("#to_date_billing").val( today_np.format("DD/MM/YYYY") );
+        
+        $("#to_date_billing + .clear-button").off("click");
+        $("#to_date_billing + .clear-button").on("click", function() {
+            $("#to_date_billing").val( today_np.format("DD/MM/YYYY"));
+            updateDataTable();
+        });
+    }
+
+    function updateDataTable() {
+        let start_js_val = $("#from_date_billing").val();
+        let end_js_val = $("#to_date_billing").val();
+        let start = new NepaliDate(start_js_val);
+        let end = new NepaliDate(end_js_val);
+        billingTable.ajax.url(`/inventory/api/${inventory_id}/bills?start=${start.toJsDate().toISOString()}&end=${end.toJsDate().toISOString()}`).load();
+    }
 
 
     $('#billing-table thead tr').clone(true).appendTo( '#billing-table thead' );
@@ -220,7 +261,100 @@ $(function () {
         } );
     } );
 
+    var history_table_columns = [
+        {data: 'id'},
+        {data: 'user_info', render: function(data, type, row, meta) {
+            if (type === 'filter' || type === 'sort') {
+                return data.name;
+            }
+            let html = data.name;
+            if (data.type === 'sold') {
+                html += `<div class="has-text-success bill-id-show"><p>${data.bill_id}</p></div>`;
+            }
+            return html;
+        }},
+        {data: 'packing'},
+        {data: 'type_info', render: function(data, type, row, meta) {
+            return data.type
+        }, createdCell: function(cell, cellData, rowData, rowIndex, colIndex) {
+            $(cell).addClass('is-capitalized');
+            let color_class = '';
+            if (cellData.color === 'success') {
+                color_class = 'has-text-success';   
+            }
+            if (cellData.color === 'danger') {
+                color_class = 'has-text-danger';
+            }
+            $(cell).addClass(color_class);
+        }},
+        {data: 'quantity'},
+        {data: 'cost'},
+        {data: 'nepali_date'},
+    ];
+
+    if (has_perm) {
+        history_table_columns.push({
+            data: 'edit_data',
+            render: function(record, type, row, meta) {
+                if (type === 'filter' || type === 'sort') {return '';}
+                if(record.type == 'discarded' || record.type == 'purchased' || record.type == 'manufactured' || record.type == 'transferred') {
+                    return `
+                    <div class="field is-grouped">
+                        <div class="control">
+                            <button
+                            onclick = "recordEdit(
+                                '${record.date}',
+                                '${record.type}',
+                                '${record.cost}',
+                                '${record.batch_id}',
+                                '${record.quantity}',
+                                '${record.id}'
+                            );"
+                            class="record-edit-button type-edit-button has-text-info"><i
+                                    class="fas fa-pen"></i></button>
+                        </div>
+                        <div class="control">
+                            <button class="record-delete-button type-delete-button has-text-danger"
+                            onclick = "recordDelete(
+                                '${record.id}'
+                            );"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    `;
+                }
+                return '';
+            }
+        });
+    }
+
     var historyTable = $("#history-table").DataTable({
+        "ajax": {
+            "url": `/inventory/api/${inventory_id}/history?start=${month_start_np.toJsDate().toISOString()}&end=${today_np.toJsDate().toISOString()}`,
+            'dataSrc': 'data'
+        },
+        "processing": true,
+        "language": {
+            'loadingRecords': '&nbsp;',
+            'processing': `
+            <div class="sk-chase">
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+            </div>
+            `
+        },
+        "createdRow": function(row, data, dataIndex) {
+            if (data.type === 'sold') {
+                $(row).addClass('bill-id-show-container');
+            }
+        },
+        "order": [
+            [0, 'desc']
+        ],
+        "columns": history_table_columns,
         "footerCallback": function (row, data, start, end, display) {
             var api = this.api();
             var intVal = function (i) {
@@ -262,6 +396,45 @@ $(function () {
             $(api.column(5).footer()).html('Re. '+costTotal);
         }
     });
+
+    
+    if ($("#from_date_history").length) {
+        $('#from_date_history').nepaliDatePicker({
+            dateFormat: 'DD/MM/YYYY',
+            disableAfter: today_np.format("YYYY-MM-DD"),
+            onChange: updateDataTableHistory
+        });
+        $("#from_date_history").val( month_start_np.format("DD/MM/YYYY"));
+        $("#from_date_history + .clear-button").off("click");
+        $("#from_date_history + .clear-button").on("click", function() {
+            $("#from_date_history").val( month_start_np.format("DD/MM/YYYY"));
+            updateDataTableHistory();
+        });
+    }
+
+    if ($("#to_date_history").length) {
+        $('#to_date_history').nepaliDatePicker({
+            dateFormat: 'DD/MM/YYYY',
+            disableAfter: today_np.format("YYYY-MM-DD"),
+            onChange: updateDataTableHistory
+        });
+        $("#to_date_history").val( today_np.format("DD/MM/YYYY") );
+        
+        $("#to_date_history + .clear-button").off("click");
+        $("#to_date_history + .clear-button").on("click", function() {
+            $("#to_date_history").val( today_np.format("DD/MM/YYYY"));
+            updateDataTableHistory();
+        });
+    }
+
+    function updateDataTableHistory() {
+        let start_js_val = $("#from_date_history").val();
+        let end_js_val = $("#to_date_history").val();
+        let start = new NepaliDate(start_js_val);
+        let end = new NepaliDate(end_js_val);
+        historyTable.ajax.url(`/inventory/api/${inventory_id}/history?start=${start.toJsDate().toISOString()}&end=${end.toJsDate().toISOString()}`).load();
+    }
+
 
     
     $('#history-table thead tr').clone(true).appendTo( '#history-table thead' );
@@ -365,15 +538,15 @@ $(function () {
     });
 
     // Reports Script
-    if($("#report-date-from").length)
-    $("#report-date-from").nepaliDatePicker({
-        dateFormat: 'DD/MM/YYYY',
-    });
+    // if($("#report-date-from").length)
+    // $("#report-date-from").nepaliDatePicker({
+    //     dateFormat: 'DD/MM/YYYY',
+    // });
 
-    if($("#report-date-to").length)
-    $("#report-date-to").nepaliDatePicker({
-        dateFormat: 'DD/MM/YYYY',
-    });
+    // if($("#report-date-to").length)
+    // $("#report-date-to").nepaliDatePicker({
+    //     dateFormat: 'DD/MM/YYYY',
+    // });
 
     fetchAndUpdateReport();
 });
