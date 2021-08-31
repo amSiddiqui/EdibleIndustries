@@ -480,6 +480,22 @@
                 <div class="columns">
                     <div class="column">
                         <div class="field">
+                            <div class="control">
+                                <label for="edit_inventory_user" class="label">User</label>
+                                <div class="select is-fullwidth">
+                                    <select name="user_id" id="edit_inventory_user">
+                                        <% for(let i = 0; i < users.length; i++) { const user = users[i]; if(user.id === 1) {continue;} %>
+                                            <option value="<%=user.id%>"><%=user.first_name+' '+user.last_name%></option>
+                                        <% } %>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="column">
+                        <div class="field">
                             <label for="edit-inv-batch" class="label">Packing</label>
                             <div class="control">
                                 <div class="select is-fullwidth">

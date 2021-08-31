@@ -25,7 +25,8 @@ function recordEdit(
     cost,
     packing,
     quantity,
-    record_id
+    record_id,
+    user_id
 ) {
     $("#edit-inventory-type").val(type);
     var nepali_date = convertEnglishToNepali(date);
@@ -34,6 +35,7 @@ function recordEdit(
     $("#edit-inv-batch").val(packing);
     $("#edit-quantity").val(quantity);
     $("#edit-inventory-record-modal").find('form').attr('action', '/inventory/edit/'+record_id+'?_method=PUT');
+    $("#edit_inventory_user").val(user_id);
     $("#edit-inventory-record-modal").addClass('is-active');
 }
 
@@ -308,7 +310,9 @@ $(function () {
                                 '${record.cost}',
                                 '${record.batch_id}',
                                 '${record.quantity}',
-                                '${record.id}'
+                                '${record.id}',
+                                '${record.user_id}',
+                                '${record.user_name}',
                             );"
                             class="record-edit-button type-edit-button has-text-info"><i
                                     class="fas fa-pen"></i></button>

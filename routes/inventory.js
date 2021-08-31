@@ -95,6 +95,8 @@ router.put('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
     batch_id: req.body.batch,
   };
 
+  var user_id = req.body.user_id;
+
   var record_date = req.body.record_date.trim();
   data.created = new Date();
   if (typeof record_date !== 'undefined' && record_date != null && record_date.length !== 0) {
@@ -104,6 +106,7 @@ router.put('/edit/:id', middleware.auth.loggedIn(), function (req, res, next) {
   data.value = utility.misc.toNumber(data.value);
   data.batch_id = utility.misc.toNumber(data.batch_id);
   data.cost = utility.misc.toNumberFloat(req.body.inventory_cost.trim());
+  data.user_id = user_id;
   utility.inventory.editRecord(id, data).then((inventory_id)=>{
     req.flash('flash_message', 'Record Added');
     req.flash('flash_color', 'success');
@@ -352,6 +355,7 @@ router.get('/api/:id/history', middleware.auth.loggedIn(), function(req, res, ne
         'batch_id': record.inventory_batch_record.inventory_batch.id,
         'quantity': record.value / record.inventory_batch_record.inventory_batch.quantity,
         'id': record.id,
+        'user_id': record.user.id,
       }
       data.data.push(record_data);
     }
@@ -399,6 +403,10 @@ router.get('/:id', middleware.auth.loggedIn(), function (req, res, next) {
   }
   utility.warehouse.getWarehouse(w_id).then(warehouse => {
     data.warehouse = warehouse;
+    return utility.user.fetchAll();
+  }).
+  then(users => {
+    data.users = users;
     return inventory.fetchInventory(id, w_id);
   }).
   then(inv => {

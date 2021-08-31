@@ -537,6 +537,8 @@ module.exports = {
             var inventory_record = await models.InventoryRecord.findByPk(id);
             var batch = await models.InventoryBatch.findByPk(data.batch_id);
             var batch_value = data.value;
+            var user = await models.User.findByPk(data.user_id);
+            await inventory_record.setUser(user);
             inventory_record.value = batch_value * batch.quantity;
             inventory_record.recordDate = data.created;
             inventory_record.cost = data.cost;
