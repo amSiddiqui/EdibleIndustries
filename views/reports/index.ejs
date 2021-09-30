@@ -63,7 +63,81 @@
             </div>
         </div>
     </div>
-    <div class="card" style="padding: 5px">
+    <div class="my-4 p-5 border rounded-md shadow-md ">
+        <h1 class="text-lg mb-4">Filters</h1>
+        <div class="columns">
+            <div class="column">
+                <h1 class="mb-2">Rented</h1>
+                <div class="columns">
+                    <div class="column">
+                        <!-- Bulma input -->
+                        <div class="field">
+                            <label class="label">From</label>
+                            <div class="control">
+                                <input class="input" id="rented-from" type="number" placeholder="From">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="field">
+                            <label class="label">To</label>
+                            <div class="control">
+                                <input class="input" id="rented-to" type="number" placeholder="To">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <!-- Bulma checkbox -->
+                        <div class="field">
+                            <div class="control">
+                                <label class="checkbox">
+                                    <input type="checkbox" id="rented-checkbox">
+                                    <span>Toggle 0</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- tailwind horizontal separator -->
+
+            <div class="column">
+                <h1 class="mb-2">Balance</h1>
+                <div class="columns">
+                    <div class="column">
+                        <!-- Bulma input -->
+                        <div class="field">
+                            <label class="label">From</label>
+                            <div class="control">
+                                <input class="input" id="balance-from" type="number" placeholder="From">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="field">
+                            <label class="label">To</label>
+                            <div class="control">
+                                <input class="input" id="balance-to" type="number" placeholder="To">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <!-- Bulma checkbox -->
+                        <div class="field">
+                            <div class="control">
+                                <label class="checkbox">
+                                    <input type="checkbox" id="balance-checkbox">
+                                    <span>Toggle 0</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card p-5">
         <table id="customer-table" class="table is-striped is-hoverable" style="width: 100%;">
             <thead>
                 <tr>
@@ -79,7 +153,7 @@
                 </tr>
             </thead>
             <tbody>
-                
+
             </tbody>
             <tfoot>
                 <tr>
@@ -118,7 +192,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    
+
                 </tbody>
                 <tfoot>
                     <tr>
