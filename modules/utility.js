@@ -202,6 +202,9 @@ async function getBillNo(date = new Date()) {
 
 
 async function addLedgerEntry(customer_id, entry_data, email) {
+    if (utilityCache.has('customer_stats')) {
+        utilityCache.del('customer_stats');
+    }
     // Only adds Deposit entries
     const customer = await models.Customer.findByPk(customer_id);
     if (entry_data.type != 'Deposit') {
@@ -249,6 +252,61 @@ async function addLedgerEntry(customer_id, entry_data, email) {
             await ledgerEntry.addDeposit(unpaid[i]);
         }
     }
+}
+
+async function getCustomerData(customer) {
+    let bills = await customer.getBills({
+        include: [
+            {
+                model: models.User,
+                include: {
+                    model: models.Warehouse
+                }
+            },
+            {
+                model: models.BillTransaction,
+                include: [
+                    {
+                        model: models.BillTransaction,
+                        as: 'return'
+                    }
+                ]
+            }
+        ]
+    }); 
+    let warehouses = [];
+    let total = 0;
+    let due = 0;
+    var total_rented = 0;
+    for (let bill of bills) {
+        if (!warehouses.includes(bill.user.warehouse.name)) {
+            warehouses.push(bill.user.warehouse.name);
+        }
+        total += bill.total;
+        if (!bill.paid) {
+            due += bill.total;
+        }
+        var rented = 0;
+        for (let j = 0; j < bill.bill_transactions.length; j++) {
+            var txn = bill.bill_transactions[j];
+            if (txn.type === 'rented') {
+                rented += txn.quantity;
+                var returns = txn.return;
+                if (returns) {
+                    for (let k = 0; k < returns.length; k++) {
+                        var r = returns[k];
+                        rented -= r.quantity;
+                    }
+                    if (rented > 0) {
+                        total_rented += rented;
+                    }
+                }
+            }
+        }
+    }
+
+    let balance = await getCustomerBalance(customer, true);
+    return {billed_by: warehouses, purchase: total, due, rented: total_rented, account: balance};
 }
 
 module.exports = {
@@ -913,12 +971,20 @@ module.exports = {
         }
     },
     customer: {
-        create: (data) => {
-            return models.Customer.create({
+        create: async (data) => {
+            if (utilityCache.has('customer_stats')) {
+                utilityCache.del('customer_stats');
+            }
+            let temp = await models.Customer.create({
                 ...data
             });
+
+            return temp;
         },
         createFull: async (customerData, addressData, customerType, rates) => {
+            if (utilityCache.has('customer_stats')) {
+                utilityCache.del('customer_stats');
+            }
             var customer = await models.Customer.create({
                 ...customerData
             });
@@ -980,6 +1046,9 @@ module.exports = {
             return customer.id;
         },
         addInventoryRate: (customer_id, inventory_id, rate) => {
+            if (utilityCache.has('customer_stats')) {
+                utilityCache.del('customer_stats');
+            }
             return models.CustomerRate.create({
                 inventoryId: inventory_id,
                 customerId: customer_id,
@@ -1138,7 +1207,46 @@ module.exports = {
                 total += bill.total;
             });
             return numeral(total).format('0,0.00');
-        }
+        },
+        getCustomerStats: async () => {
+            if (utilityCache.has('customer_stats')) {
+                return utilityCache.get('customer_stats');
+            }
+            var customers = await models.Customer.findAll({
+                include: [{
+                    model: models.Zone
+                },
+                {
+                    model: models.District,
+                },
+                {
+                    model: models.PostOffice
+                },
+                {
+                    model: models.CustomerType
+                }
+                ]
+            });
+
+            let data = [];
+            for (let customer of customers) { 
+                let customer_data = await getCustomerData(customer);
+                let entry_data = {
+                    'id': customer.id,
+                    'customer': customer.first_name + ' ' + customer.last_name,
+                    'type': customer.customer_type.name,
+                    'anchal': customer.district == null ? '': customer.district.value,
+                    'billed_by': customer_data.billed_by.join('<br/>'),
+                    'purchase': customer_data.purchase.toFixed(2),
+                    'due': customer_data.due.toFixed(2),
+                    'rented': customer_data.rented,
+                    'account': customer_data.account.toFixed(2)
+                };
+                data.push(entry_data);
+            }
+            utilityCache.set('customer_stats', data);
+            return data;
+        }   
     },
     billing: {
         fetchAll: async (user_email, start, end) => {
@@ -1296,6 +1404,9 @@ module.exports = {
         createFull: async (customer_id, data, transactions, userEmail, w_id = -1) => {
             if (utilityCache.has('stats')) {
                 utilityCache.del('stats');
+            }
+            if (utilityCache.has('customer_stats')) {
+                utilityCache.del('customer_stats');
             }
 
             var _startTime = new Date();
@@ -1903,60 +2014,7 @@ module.exports = {
                 return { total, formatted };
             }
         },
-        fetchCustomerData: async (customer) => {
-            let bills = await customer.getBills({
-                include: [
-                    {
-                        model: models.User,
-                        include: {
-                            model: models.Warehouse
-                        }
-                    },
-                    {
-                        model: models.BillTransaction,
-                        include: [
-                            {
-                                model: models.BillTransaction,
-                                as: 'return'
-                            }
-                        ]
-                    }
-                ]
-            }); 
-            let warehouses = [];
-            let total = 0;
-            let due = 0;
-            var total_rented = 0;
-            for (let bill of bills) {
-                if (!warehouses.includes(bill.user.warehouse.name)) {
-                    warehouses.push(bill.user.warehouse.name);
-                }
-                total += bill.total;
-                if (!bill.paid) {
-                    due += bill.total;
-                }
-                var rented = 0;
-                for (let j = 0; j < bill.bill_transactions.length; j++) {
-                    var txn = bill.bill_transactions[j];
-                    if (txn.type === 'rented') {
-                        rented += txn.quantity;
-                        var returns = txn.return;
-                        if (returns) {
-                            for (let k = 0; k < returns.length; k++) {
-                                var r = returns[k];
-                                rented -= r.quantity;
-                            }
-                            if (rented > 0) {
-                                total_rented += rented;
-                            }
-                        }
-                    }
-                }
-            }
-
-            let balance = await getCustomerBalance(customer, true);
-            return {billed_by: warehouses, purchase: total, due, rented: total_rented, account: balance};
-        }
+        fetchCustomerData: getCustomerData
     },
     misc: {
         zones: (data) => {

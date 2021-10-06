@@ -502,23 +502,7 @@ router.get('/stats/customer/balance/:id', middleware.auth.loggedIn(), function (
 
 router.get('/analytics/customer', middleware.auth.loggedIn(), async function(req, res, next) {
     try {
-        let customers = await utility.customer.fetchAllCustomer();
-        let response = {data: []};
-        for (let customer of customers) {
-            let customer_data = await utility.analytics.fetchCustomerData(customer);
-            entry_data = {
-                'id': customer.id,
-                'customer': customer.first_name + ' ' + customer.last_name,
-                'type': customer.customer_type.name,
-                'anchal': customer.district == null ? '': customer.district.value,
-                'billed_by': customer_data.billed_by.join('<br/>'),
-                'purchase': customer_data.purchase.toFixed(2),
-                'due': customer_data.due.toFixed(2),
-                'rented': customer_data.rented,
-                'account': customer_data.account.toFixed(2)
-            };
-            response.data.push(entry_data);
-        }
+        let response = {data: await utility.customer.getCustomerStats()};
         res.json(response);
     } catch (err) {
         console.log(err);
