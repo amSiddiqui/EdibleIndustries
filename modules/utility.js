@@ -1496,14 +1496,14 @@ module.exports = {
 
             for (let ledger of ledgers) {
                 if (ledger.type === 'Sale') {
-                    ledger.debit = total;
+                    ledger.credit = total;
+                    if (data.paid) {
+                        ledger.debit = total;
+                    } else {
+                        ledger.debit = 0;
+                    }
                 }
                 
-                if (data.paid) {
-                    ledger.credit = total;
-                } else {
-                    ledger.debit = 0;
-                }
                 ledger.save();
             }
 
