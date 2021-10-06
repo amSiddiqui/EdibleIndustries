@@ -1497,8 +1497,14 @@ module.exports = {
             for (let ledger of ledgers) {
                 if (ledger.type === 'Sale') {
                     ledger.debit = total;
-                    ledger.save();
                 }
+                
+                if (data.paid) {
+                    ledger.credit = total;
+                } else {
+                    ledger.debit = 0;
+                }
+                ledger.save();
             }
 
             logTime(_startTime, 'billing.edit_bill()');
