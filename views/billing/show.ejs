@@ -49,10 +49,10 @@
                         <th style="width: 95px; height: 165px;">Customer: </th>
                         <td style="font-size: 0.9rem;">
                             <% if (bill.customer.organization.length == 0) { %>
-                            <h1 class="title is-4"><a href="/customer/<%customer.id%>"> <%=customer.first_name%> <%=customer.last_name%></a></h1>
+                            <h1 class="title is-4"><a href="/customer/<%=customer.id%>"> <%=customer.first_name%> <%=customer.last_name%></a></h1>
                             <p class="subtitle"><em><%=bill.customer.customer_type.name%></em></p>
                             <% }else{ %>
-                            <h1 class="title is-5" style="margin-bottom: 2px;"><%=bill.customer.organization%></h1>
+                            <h1 class="title is-5" style="margin-bottom: 2px;"><a href="/customer/<%=customer.id%>"> <%=bill.customer.organization%></a></h1>
                             <p><%=bill.customer.first_name+' '+bill.customer.last_name%>
                                 <em>(<%=bill.customer.customer_type.name;%>)</em></p>
                             <% } %>
