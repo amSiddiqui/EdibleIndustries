@@ -1607,11 +1607,11 @@ module.exports = {
 
             for (let ledger of ledgers) {
                 if (ledger.type === 'Sale') {
-                    ledger.credit = total;
+                    ledger.debit = total;
                     if (data.paid) {
-                        ledger.debit = total;
+                        ledger.credit = total;
                     } else {
-                        ledger.debit = 0;
+                        ledger.credit = 0;
                     }
                 }
                 
