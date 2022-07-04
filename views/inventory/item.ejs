@@ -342,7 +342,6 @@
                             </div>
                         </div>
                     </div>
-                    <% if(check_perm()){ %>
                     <div class="column">
                         <div class="field">
                             <div class="control">
@@ -351,22 +350,6 @@
                             </div>
                         </div>
                     </div>
-                    <% }else{ %>
-                    <div class="column">
-                        <div class="field">
-                            <div class="control">
-                                <label for="record_date" class="label">Record Date</label>
-                                <div class="select">
-                                    <select name="record_date" id="record_date">
-                                        <% for(let i = 0; i < last_5_dates.length; i++){ var d = last_5_dates[i] %>
-                                            <option value="<%=d.format("DD/MM/YYYY");%>"><%=d%></option>
-                                        <% } %>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <% } %>
                 </div>
                 <div class="columns">
                     <div class="column">
