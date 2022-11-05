@@ -333,6 +333,8 @@ module.exports = {
                 await user.setWarehouse(warehouse);
             }catch(err) {}
 
+            return user;
+
         },
         editUser: async (id, data) => {
             var user = await models.User.findByPk(id);
@@ -1846,7 +1848,8 @@ module.exports = {
             }
             return warehouse;
         },
-        addWarehouse: async (warehouseName, addressData) => {
+        addWarehouse: async (warehouseName, addressData, isPrimary) => {
+            isPrimary = !!isPrimary;
             var res = await models.Warehouse.findOne({
                 where: {
                     name: warehouseName
@@ -1857,7 +1860,8 @@ module.exports = {
             }
             var warehouse = await models.Warehouse.create({
                 name: warehouseName,
-                address1: addressData.address1
+                address1: addressData.address1,
+                isPrimary: isPrimary
             });
             if (addressData.zone.trim().length > 0 && !isNaN(addressData.zone)) {
                 var zone = await models.Zone.findByPk(addressData.zone);

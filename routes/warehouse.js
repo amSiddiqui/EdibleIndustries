@@ -144,7 +144,7 @@ router.post('/', middleware.auth.loggedIn(), function (req, res, next) {
         address1: req.body.address.trim()
     };
 
-    utility.warehouse.addWarehouse(warehouseName, address).then(() => {
+    utility.warehouse.addWarehouse(warehouseName, address, false).then(() => {
         req.flash('flash_message', 'Warehouse added successfully');
         req.flash('flash_color', 'success');
         res.redirect('/warehouse');

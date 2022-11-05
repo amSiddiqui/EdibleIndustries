@@ -102,25 +102,39 @@ async function addZones(fillAdd) {
 }
 
 module.exports = function (fillAdd, fullSync) {
-    var data = [{
-        first_name: 'Aamir',
-        last_name: 'Mushtaq Siddiqui',
-        email: 'gt_ams@yahoo.in',
-        password: 'Edible1077',
-    }, {
-        first_name: 'Bhim',
-        last_name: 'Singh Khatri',
-        email: 'bhimsinghkhatri9@gmail.com',
-        password: 'WaterPlant9876',
-    }]
 
-    data.forEach(d => {
-        utility.user.createUser(d).then(u => {
-            console.log("User Successfully created with id: ", u.id);
-        }).catch(err => {
-            console.log("Error Creating User:", err);
+    utility.warehouse.addWarehouse('Factory', {
+        address1: '',
+        zone: '',
+        post_office: ''
+    }, true).then(() => {
+        var data = [{
+            id: 1,
+            first_name: 'Aamir',
+            last_name: 'Mushtaq Siddiqui',
+            email: 'gt_ams@yahoo.in',
+            password: 'Edible1077',
+            warehouse: 1,
+        }, {
+            id: 2,
+            first_name: 'Bhim',
+            last_name: 'Singh Khatri',
+            email: 'bhimsinghkhatri9@gmail.com',
+            password: 'WaterPlant9876',
+            warehouse: 1,
+        }]
+    
+        data.forEach(d => {
+            utility.user.createUser(d).then(u => {
+                console.log("User Successfully created with id: ", u);
+            }).catch(err => {
+                console.log("Error Creating User:", err);
+            });
         });
     });
+
+
+
     if (fullSync) {
         utility.inventory.createInventory({
             type: 'purchased',
