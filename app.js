@@ -96,16 +96,18 @@ console.log("Current Environment: ", process.env.ENV);
 // Initializing models
 const models = require('./models/Models');
 const utility = require('./modules/utility');
+const seed = require('./modules/seed');
 
 // Sync DB and seed
 
-// db.sequelize.sync({
-//   alter: true
-// }).then(() => {
-//   console.log("Database synchronized");
-// }).catch(err => {
-//   console.log("Error while synchronizing data: ", err);
-// });
+db.sequelize.sync({
+  alter: true
+}).then(() => {
+  console.log("Database synchronized");
+  seed(true, false);
+}).catch(err => {
+  console.log("Error while synchronizing data: ", err);
+});
 
 
 

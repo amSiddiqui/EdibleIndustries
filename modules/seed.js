@@ -107,6 +107,11 @@ module.exports = function (fillAdd, fullSync) {
         last_name: 'Mushtaq Siddiqui',
         email: 'gt_ams@yahoo.in',
         password: 'Edible1077',
+    }, {
+        first_name: 'Bhim',
+        last_name: 'Singh Khatri',
+        email: 'bhimsinghkhatri9@gmail.com',
+        password: 'WaterPlant9876',
     }]
 
     data.forEach(d => {
