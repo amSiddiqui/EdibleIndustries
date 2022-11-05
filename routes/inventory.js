@@ -677,7 +677,6 @@ router.get('/', middleware.auth.loggedIn(), function (req, res, next) {
     warehouse = parseInt(warehouse);
     warehouse = isNaN(warehouse) ? -1 : warehouse;
   }
-  console.log("Warehouse: ", warehouse);
   utility.warehouse.getWarehouse(warehouse).then(w => {
     data.warehouse = w;
     return utility.warehouse.fetchWarehouses();
