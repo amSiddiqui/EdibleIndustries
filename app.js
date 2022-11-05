@@ -101,7 +101,8 @@ const seed = require('./modules/seed');
 // Sync DB and seed
 
 db.sequelize.sync({
-  alter: true
+  alter: true,
+  force: true,
 }).then(() => {
   console.log("Database synchronized");
   seed(true, false);
